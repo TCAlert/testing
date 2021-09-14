@@ -1,25 +1,8 @@
-from netCDF4 import Dataset      # Read / Write NetCDF4 files
-import matplotlib.pyplot as plt  # Plotting library
-from cpt_convert import loadCPT # Import the CPT convert function
-from matplotlib.colors import LinearSegmentedColormap # Linear interpolation for color maps
-import cartopy, cartopy.crs as ccrs  # Plot maps
-import numpy.ma as ma
-import numpy as np
-import xarray as xr
 import datetime
-import wget
-import urllib
-from matplotlib.colors import ListedColormap, BoundaryNorm
-from matplotlib.colors import from_levels_and_colors
-import matplotlib.patches as mpatches
 import pandas as pd
 import urllib.request as urllib
 
-# Open the GOES-R image
-    
-usage = '`$smap [storm] [ascending/descending]`'
-
-
+# Retrieve most recent fix in the NHC or JTWC Best Track for a given storm
 def mostRecent(storm):
     year = str(datetime.datetime.now().year)
     if ('al' in storm.lower() or 'ep' in storm.lower() or 'cp' in storm.lower()):
@@ -42,6 +25,7 @@ def mostRecent(storm):
     line = data.split("\n")
     return line[-2]         
 
+# Retrieve best track data for a given TC in a Pandas Dataframe
 def getStorm(storm):
     year = str(datetime.datetime.now().year)
     if ('al' in storm.lower() or 'ep' in storm.lower() or 'cp' in storm.lower()):
@@ -62,6 +46,7 @@ def getStorm(storm):
             data = pd.read_csv(link, header = None, usecols=range(20))
     return data
 
+# Retrieve latitude and longitude data for a given TC
 def latlon(storm):
     data = getStorm(storm)
     #print(data)
@@ -79,6 +64,7 @@ def latlon(storm):
             lon[x] = 360 - int(lon[x].replace('W', '')) * .1
     return lat.iloc[-1], lon.iloc[-1]
 
+# Returns the RMW (radius of maximum winds) for a TC
 def rmw(storm):
     data = getStorm(storm)
     return int(data[19].iloc[-1])
