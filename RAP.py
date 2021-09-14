@@ -1,21 +1,13 @@
-from netCDF4 import Dataset      # Read / Write NetCDF4 files
 import matplotlib.pyplot as plt  # Plotting library
-from cpt_convert import loadCPT # Import the CPT convert function
 import cartopy, cartopy.crs as ccrs  # Plot maps
-import numpy.ma as ma
 import numpy as np
-import pandas as pd
-import urllib.request as urllib
 import matplotlib.patches as mpatches
-import xarray as xr 
-from siphon.catalog import TDSCatalog
-from siphon.http_util import session_manager
-from datetime import datetime 
-from netCDF4 import num2date
-import cartopy.feature as cfeature
 import rapRetrieve as rr
 import cmaps as cmap
 
+# Three functions for charts made using RAP data
+
+# Plots dewpoint depression and 1000mb winds along side mean sea level pressure contours
 def rapdew():
     data = rr.retrieveData(["mslmamsl", "ugrdprs", "vgrdprs", 'depr2m'])
 
@@ -23,7 +15,6 @@ def rapdew():
     time = str(time).split("T")
     time = f"{time[0]} at {time[1][:8]}"
 
-    #ax = rr.map(np.nanmin(data[0].lon), np.nanmax(data[0].lon), np.nanmin(data[0].lat), np.nanmax(data[0].lat))
     ax = rr.map(-130, -65, 20, 51, (20, 8.75))
     value1 = data[0] / 100
     value2 = data[3]
@@ -35,7 +26,6 @@ def rapdew():
     plt.contour(data[1].lon, data[1].lat, value1, levels = np.arange(993, 1033, 2), linewidths = 2, cmap = "seismic_r")
     plt.contourf(data[1].lon, data[1].lat, value2, levels = np.arange(0, 30, 0.5), extend = 'max', cmap = cmap.cmap('Greens_r', 64, 'pink_r', 128))
     plt.colorbar(orientation = 'vertical', aspect = 50, pad = .02, extendrect = True, label = f'Dewpoint Depression (°C)')
-    #plt.colorbar(orientation = 'vertical', aspect = 50, pad = .02, extendrect = True, label = 'Vorticity')
 
     uwn = (uwn)[::8, ::8]
     vwn = (vwn)[::8, ::8]
@@ -43,10 +33,11 @@ def rapdew():
         
     plt.title(f'RAP 1000mb Winds (arrows), Sea Level Pressure (contours), Dewpoint Depression (fill)\n{time}' , fontweight='bold', fontsize=10, loc='left')
     plt.title(f'TCAlert', fontsize=10, loc='right')
-    plt.savefig(r"C:\Users\Jariwala\Downloads\rap.png", dpi = 400, bbox_inches = 'tight')
-    #plt.show()
+    plt.savefig(r"C:\Users\Username\Downloads\rap.png", dpi = 400, bbox_inches = 'tight')
+    plt.show()
     plt.close()
-
+    
+# Plots CIN, CAPE, and winds at the 500, 850, and 1000mb levels.
 def rapcape():
     data = rr.retrieveData(["cinsfc", "capesfc", "ugrdprs", "vgrdprs"])
 
@@ -54,7 +45,6 @@ def rapcape():
     time = str(time).split("T")
     time = f"{time[0]} at {time[1][:8]}"
 
-    #ax = rr.map(np.nanmin(data[0].lon), np.nanmax(data[0].lon), np.nanmin(data[0].lat), np.nanmax(data[0].lat))
     ax = rr.map(-130, -65, 20, 51, (20, 8.75))
 
     mask_lon = (data[1].lon >= -130) & (data[1].lon <= -65)
@@ -87,10 +77,11 @@ def rapcape():
     plt.legend(handles = handles)  
     plt.title(f'RAP Surface CAPE (fill) and CINH (contour) - Arrows Depicting Wind per Legend\n{time}' , fontweight='bold', fontsize=10, loc='left')
     plt.title(f'TCAlert\nHighest CAPE: {str(maxi.values)}', fontsize=10, loc='right')
-    plt.savefig(r"C:\Users\Jariwala\Downloads\rap.png", dpi = 250, bbox_inches = 'tight')
-    #plt.show()
+    plt.savefig(r"C:\Users\Username\Downloads\rap.png", dpi = 250, bbox_inches = 'tight')
+    plt.show()
     plt.close()
 
+# Plots absolute vorticity, geopotential height, and winds at 500mb, along with preciptable water
 def rapup():
     data = rr.retrieveData(["absv500mb", "hgtprs", "ugrdprs", "vgrdprs", 'pwatclm'])
 
@@ -98,7 +89,6 @@ def rapup():
     time = str(time).split("T")
     time = f"{time[0]} at {time[1][:8]}"
 
-    #ax = rr.map(np.nanmin(data[0].lon), np.nanmax(data[0].lon), np.nanmin(data[0].lat), np.nanmax(data[0].lat))
     ax = rr.map(-130, -65, 20, 51, (20, 8.75))
 
     value1 = data[1].sel(lev = 500) / 10
@@ -111,7 +101,6 @@ def rapup():
     plt.colorbar(orientation = 'vertical', aspect = 50, pad = .02, extendrect = True, label = 'PWAT')
     plt.contour(data[1].lon, data[1].lat, value3, levels = [50], colors = "white")
     plt.contourf(data[1].lon, data[1].lat, value2, extent = extent, origin = 'lower', extend = 'max', levels = np.arange(10, 40, 1), cmap = 'autumn_r', transform = ccrs.PlateCarree(central_longitude = 0))
-    #plt.colorbar(orientation = 'vertical', aspect = 50, pad = .02, extendrect = True, label = 'Vorticity')
 
     uwn = data[2].sel(lev = '500')
     vwn = data[3].sel(lev = '500')
@@ -121,6 +110,6 @@ def rapup():
         
     plt.title(f'RAP 500mb Vorticity, Geopotential Height, Winds + Precipitable Water (50 kg/m^2 in white)\n{time}' , fontweight='bold', fontsize=10, loc='left')
     plt.title(f'TCAlert', fontsize=10, loc='right')
-    plt.savefig(r"C:\Users\Jariwala\Downloads\rap.png", dpi = 400, bbox_inches = 'tight')
-    #plt.show()
+    plt.savefig(r"C:\Users\Username\Downloads\rap.png", dpi = 400, bbox_inches = 'tight')
+    plt.show()
     plt.close()
