@@ -1,13 +1,11 @@
-from netCDF4 import Dataset      # Read / Write NetCDF4 files
-import matplotlib.pyplot as plt  # Plotting library
-from cpt_convert import loadCPT # Import the CPT convert function
-from matplotlib.colors import LinearSegmentedColormap # Linear interpolation for color maps
-import cartopy, cartopy.crs as ccrs  # Plot maps
-import numpy.ma as ma
-import numpy as np
+import matplotlib.pyplot as plt
+import cartopy, cartopy.crs as ccrs
 from siphon.catalog import TDSCatalog
 import xarray as xr 
 
+# This set of functions grabs GOES 16 and 17 data from Unidata's Thredds Data Server
+
+# Function to retrieve GLM lightning data
 def getLightning(satellite, region, var):
     catalog = TDSCatalog(f'https://thredds-test.unidata.ucar.edu/thredds/catalog/satellite/goes/{satellite.lower()}/products/GeostationaryLightningMapper/FullDisk/current/catalog.xml')    
     dataset = list(catalog.datasets.values())[-1]
@@ -23,6 +21,8 @@ def getLightning(satellite, region, var):
     data.close()
     return dat, time
 
+# Function to retrieve GOES ABI data
+# NOTE: Full Disk imagery on this TDS is reduced to 8 kilometer resolution. Other products remain their native size.
 def getData(satellite, band, region):
     catalog = TDSCatalog(f'https://thredds-test.unidata.ucar.edu/thredds/catalog/satellite//goes/{satellite}/products/CloudAndMoistureImagery/{region}/Channel{band.zfill(2)}/current/catalog.xml')
     dataset = list(catalog.datasets.values())[-1]
@@ -40,13 +40,13 @@ def getData(satellite, band, region):
     data.close()
     return dat, time, info, cent
 
+# Creates a map using Cartopy
 def makeMap(loc, size):
     # Choose the plot size (width x height, in inches)
     plt.figure(figsize = size)
 
-    ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=0))#, satellite_height=35786023.0))
+    ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=0))
     ax.set_extent(loc, crs=ccrs.PlateCarree())
-    #ax = plt.axes(projection = ccrs.Geostationary(central_longitude=-75.2, satellite_height=35786023.0)) 
 
     # Add coastlines, borders and gridlines
     ax.coastlines(resolution='10m', color='black', linewidth=0.8)
