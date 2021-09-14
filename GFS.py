@@ -1,22 +1,12 @@
-from netCDF4 import Dataset      # Read / Write NetCDF4 files
 import matplotlib.pyplot as plt  # Plotting library
 from cpt_convert import loadCPT # Import the CPT convert function
 import cartopy, cartopy.crs as ccrs  # Plot maps
-import numpy.ma as ma
-import numpy as np
-import pandas as pd
-import urllib.request as urllib
-import matplotlib.patches as mpatches
 import xarray as xr 
-from siphon.catalog import TDSCatalog
-from siphon.http_util import session_manager
 from datetime import datetime 
-from netCDF4 import num2date
 import cartopy.feature as cfeature
 
-
+# Generate a URL that you will use to retrieve the data
 def url():
-    #grabbing data from NOMADS
     startTime=datetime.now()
 
     year = startTime.year
@@ -55,19 +45,19 @@ def url():
     url = 'http://nomads.ncep.noaa.gov:80/dods/gfs_0p25_1hr/gfs'+mdate+'/gfs_0p25_1hr_'+init_hour+'z'
     return init_hour, mdate, url
 
+# Retrieve data for the requested parameters
+# Variable "request" should be a list
 def data(request, hour):
     init_hour, mdate, link = url()
     print("GFS Initialization: ", init_hour, mdate)
     dataset = xr.open_dataset(link).isel(time = hour)
-    #print(dataset)
     data = []
     for x in range(len(request)):
         data.append((dataset[request[x]]).squeeze())
-    #print(data.time.values)
-    #gfsdata = hgt.interp(lat = lat, lon = lon)
     dataset.close()
     return data
 
+# Create a map using Cartopy
 def map(n, s, e, w):
     fig = plt.figure(figsize=(20, 10))
 
@@ -83,11 +73,13 @@ def map(n, s, e, w):
     gl.xlabels_top = gl.ylabels_right = False 
     return n, s, e, w
 
+# Function to plot windbarbs 
 def windbarbs(lons, lats, uwnd, vwnd, lvl):
     uwnd = uwnd.sel(lev = lvl)
     vwnd = vwnd.sel(lev = lvl)
     plt.barbs(lons, lats, uwnd.values * 1.9438, vwnd.values * 1.94384, zorder = 10)
 
+# Function to plot filled contours
 def contourf(data, lvl, ranges, color):
     try:
         data = data.sel(lev = lvl)
@@ -96,13 +88,7 @@ def contourf(data, lvl, ranges, color):
     plt.contourf(data.lon, data.lat, data.values, levels = ranges, cmap = color)    
     plt.colorbar(orientation = 'vertical', aspect = 50, pad = .02)
 
-def contourf2(data, lvl, lvl2):
-    dat1 = data.sel(lev = lvl)
-    dat2 = data.sel(lev = lvl2)
-    data = dat1 - dat2
-    plt.contourf(data.lon, data.lat, data.values, range(-20, 20), cmap = 'RdBu_r')    
-    plt.colorbar(orientation = 'vertical', aspect = 50, pad = .02)
-
+# Function to plot contours
 def contour(data, lvl, value, color, linewidth):
     data = data.sel(lev = lvl)
     plt.contour(data.lon, data.lat, data.values, origin = 'upper', levels = value, colors = color, linewidths = linewidth)
