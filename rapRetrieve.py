@@ -1,19 +1,10 @@
-from netCDF4 import Dataset      # Read / Write NetCDF4 files
-import matplotlib.pyplot as plt  # Plotting library
-from cpt_convert import loadCPT # Import the CPT convert function
+import matplotlib.pyplot as plt
 import cartopy, cartopy.crs as ccrs  # Plot maps
-import numpy.ma as ma
-import numpy as np
-import pandas as pd
-import urllib.request as urllib
-import matplotlib.patches as mpatches
 import xarray as xr 
-from siphon.catalog import TDSCatalog
-from siphon.http_util import session_manager
 from datetime import datetime 
-from netCDF4 import num2date
 import cartopy.feature as cfeature
 
+# Create URL for RAP initialization
 def url():
     yer = datetime.now().year
     mon = datetime.now().month
@@ -24,6 +15,8 @@ def url():
     url = f'http://nomads.ncep.noaa.gov:80/dods/rap/rap{date}/rap_f00'
     return date, url
 
+# Retrieve data using the link in the first function
+# The variable "requests" must contain a list
 def retrieveData(requests):
     date, link = url()
     print("RAP Forecast Hour 00: ", date)
@@ -36,6 +29,7 @@ def retrieveData(requests):
     print("Data retrieved")
     return dat
 
+# Creates a Cartopy map 
 def map(e, w, s, n, size):
     plt.figure(figsize = size)
 
@@ -51,6 +45,7 @@ def map(e, w, s, n, size):
     gl.xlabels_top = gl.ylabels_right = False 
     return ax
 
+# Plots windbarbs
 def windbarbs(lons, lats, uwnd, vwnd, lvl):
     uwnd = uwnd.sel(lev = lvl)
     vwnd = vwnd.sel(lev = lvl)
