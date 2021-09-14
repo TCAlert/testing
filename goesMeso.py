@@ -1,23 +1,14 @@
-from netCDF4 import Dataset      # Read / Write NetCDF4 files
 import matplotlib.pyplot as plt  # Plotting library
-from cpt_convert import loadCPT # Import the CPT convert function
-from matplotlib.colors import LinearSegmentedColormap # Linear interpolation for color maps
 import cartopy, cartopy.crs as ccrs  # Plot maps
-import numpy.ma as ma
 import numpy as np
-from siphon.catalog import TDSCatalog
-import xarray as xr 
 import goesRequest as goes
-import cgfs as gfs 
 
-usage = 'Format - `$meso [east/west] [1/2] [band] [band] [band] [optional G flag (t)]`\nEnsure that your chosen bands are between 1 and 16.'
-
-def title(band, mini, maxi, satellite, info, time, model):
-    if int(band) > 5:
-        plt.title(f'GOES {satellite} Channel {band.zfill(2)} {info} and GFS 500mb Heights/Winds at Initialization\nSatellite Image: {time} | GFS Frame: {model}' , fontweight='bold', fontsize=10, loc='left')
-    else:
-        plt.title(f'GOES {satellite} Channel {band.zfill(2)} and GFS 500mb Heights at Initialization\n{time}' , fontweight='bold', fontsize=10, loc='left')
-
+# Mesoscale Floater plotting tool              #
+# ----------- Variable Description ----------- #
+# Satt - Satellite chose, either east or west  #
+# Loc - Floater one or floater two             #
+# Bands - List of bands to use in a composite  #
+# Flag - Make this to "t" use synthetic green  #
 def run(satt, loc, bands, flag = 'f'):
     data = ["", "", ""]
     datl = []
@@ -59,7 +50,6 @@ def run(satt, loc, bands, flag = 'f'):
 
     composite = np.dstack(data)
     if bands == ['2', '2', '2'] or bands == ['2', '3', '1']:
-        #print(avg)
         if (avg[2]) > 0.3:
             composite = (composite**(4/3))   
         else:
@@ -78,13 +68,12 @@ def run(satt, loc, bands, flag = 'f'):
         l[0] = '0.5km' 
 
     ax = plt.axes(projection=ccrs.Geostationary(central_longitude=-75.0, satellite_height=35786023.0))
-    ax.imshow(composite, origin = 'upper')#, transform = ccrs.Geostationary(central_longitude = center, satellite_height=35786023.0))
+    ax.imshow(composite, origin = 'upper')
     if 3 in bands and flag == 't':
         plt.title(f'GOES {satellite.capitalize()} Channel {bands} Mesoscale Sector {loc} w/ Modified Band 03 data\n{time}' , fontweight='bold', fontsize=10, loc='left')
     else:
         plt.title(f'GOES {satellite.capitalize()} Channel {bands} Mesoscale Sector {loc}\n{time}' , fontweight='bold', fontsize=10, loc='left')
     plt.title(f'TCAlert\nResolution: {l[0]}', fontsize=10, loc='right')
-    plt.savefig(r"C:\Users\Jariwala\Downloads\goesmeso.png", dpi = 400, bbox_inches = 'tight')
-    #plt.show()
+    plt.savefig(r"C:\Users\Username\Downloads\goesmeso.png", dpi = 400, bbox_inches = 'tight')
+    plt.show()
     plt.close()
-#run("west", "1", ["2", "2", "2"], 'f')
