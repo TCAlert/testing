@@ -1,31 +1,22 @@
-from netCDF4 import Dataset      # Read / Write NetCDF4 files
-import matplotlib.pyplot as plt  # Plotting library
-from cpt_convert import loadCPT # Import the CPT convert function
-from matplotlib.colors import LinearSegmentedColormap # Linear interpolation for color maps
-import cartopy, cartopy.crs as ccrs  # Plot maps
-import numpy.ma as ma
-import numpy as np
-from siphon.catalog import TDSCatalog
-import xarray as xr 
+import matplotlib.pyplot as plt
+import cartopy, cartopy.crs as ccrs
 import goesRequest as goes
-import cgfs as gfs 
-import cmaps as cmap
 import bdeck as bdeck 
-from matplotlib import cm
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 import urllib.request as urllib
 import math 
 from matplotlib.offsetbox import AnchoredText
 from datetime import datetime
 import goesRequest2 as goes2
-import pandas as pd
 
-usage = '```$glm [storm (Best Track ID)]```'
+# Set of functions that try to replicate a figure recommended in Stevensons et al 2018
 
+# Little helper function to embolden text
 def bold(string):
     string = r"$\bf{" + string + "}$" + " "
     return string
 
+# Function that retrieves the latest ARCHER position fixes
+# These position fixes aren't always accurate, but frequency > best track
 def archer(storm):
     if 'al' in storm.lower():
         storm = storm[2:4] + 'L'
@@ -40,8 +31,7 @@ def archer(storm):
 
     return lat, lon
 
-#print(archer('al09'))
-
+# SHIPS function to retrieve information regarding wind shear magnitude and direction
 def ships(storm):
     year = (str(datetime.utcnow().year))[2:4]
     mon = (str(datetime.utcnow().month)).zfill(2)
@@ -63,6 +53,7 @@ def ships(storm):
 
     return (u, v, shear, direc)
 
+# Plotting function
 def run(storm):
     lat, lon = archer(storm)
     rmwval = bdeck.rmw(storm)
@@ -78,13 +69,11 @@ def run(storm):
     region = 'FullDisk'
 
     bounds = [lon - 5, lon + 5, lat - 5, lat + 5]
-    #bounds = [lon - 70, lon + 70, lat - 70, lat + 70]
 
     try:
         data, center, info, time = goes2.getData(satellite, band)
         ax = goes2.makeMap(bounds, (18, 9))
         plt.imshow(data, origin = 'upper', vmin = 200, vmax = 310, cmap = 'Greys', transform = ccrs.Geostationary(central_longitude = center, satellite_height=35786023.0))
-
     except:
         if int(lon) > 255:
             satellite = 'East'
@@ -94,10 +83,10 @@ def run(storm):
         ax = goes.makeMap(bounds, (18, 9))
         plt.imshow(data, origin = 'upper', vmin = 200, vmax = 310, cmap = 'Greys', transform = ccrs.Geostationary(central_longitude = center, satellite_height=35786023.0))
 
-    #print('IR plotted')
+    print('IR plotted')
     data, ltime = goes.getLightning('east', 'FullDisk', 'flash_extent_density')
-    plt.imshow(data, origin = 'upper', cmap = 'BuPu_r', vmin = 0, vmax = 25, transform = ccrs.Geostationary(central_longitude = center, satellite_height=35786023.0))#, interpolation = 'Gaussian')
-    #print('Lightning plotted')
+    plt.imshow(data, origin = 'upper', cmap = 'BuPu_r', vmin = 0, vmax = 25, transform = ccrs.Geostationary(central_longitude = center, satellite_height=35786023.0))
+    print('Lightning plotted')
     plt.colorbar(orientation = 'vertical', aspect = 50, pad = .02)
 
     rmw = plt.Circle((lon, lat), rmwval/60, edgecolor = 'black', fill = False, linewidth = 4, linestyle = '--', transform = ccrs.PlateCarree(central_longitude=0))
@@ -123,7 +112,6 @@ def run(storm):
     plt.title(f'GOES {satellite} Channel {band.zfill(2)} {info} and GLM Flash Extent Density\nSatellite Image: {time} | GLM Frame: {ltime}' , fontweight='bold', fontsize=10, loc='left')
     plt.title('TCAlert', fontsize=10, loc='right')
     plt.legend(title = f'{bold("Data")}{bold("from")}{bold("SHIPS")}\nShear (kts): {shear}\nShear (°): {direc}\nCentered at: {str(round(float(lat), 2))}N, {str(round(float(lon), 2))}E', fancybox = True, shadow = True)
-    plt.savefig(r"C:\Users\Jariwala\Downloads\stevenson2018iclbplot.png", dpi = 100, bbox_inches = 'tight')
-    #plt.show()
+    plt.savefig(r"C:\Users\Username\Downloads\stevenson2018iclbplot.png", dpi = 100, bbox_inches = 'tight')
+    plt.show()
     plt.close()
-#run('al09')
