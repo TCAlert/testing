@@ -1,28 +1,14 @@
-from netCDF4 import Dataset      # Read / Write NetCDF4 files
-import matplotlib.pyplot as plt  # Plotting library
-from cpt_convert import loadCPT # Import the CPT convert function
-from matplotlib.colors import LinearSegmentedColormap # Linear interpolation for color maps
-import cartopy, cartopy.crs as ccrs  # Plot maps
-import numpy.ma as ma
+import matplotlib.pyplot as plt
+import cartopy, cartopy.crs as ccrs
 import numpy as np
-from siphon.catalog import TDSCatalog
-import xarray as xr 
-import goesRequest as goes
-import cgfs as gfs 
-import cmaps as cmap
-import bdeck as bdeck 
-from matplotlib import cm
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 import urllib.request as urllib
-import math 
-from matplotlib.offsetbox import AnchoredText
 from datetime import datetime
 import matplotlib.patches as mpatches
 import pandas as pd 
 import bdeck as bdeck 
 
-usage = '```$ships [storm (best track ID)]```'
 
+# Function to retrieve SHIPS data for given storm (best track ID)
 def ships(storm, year, mon, day):
     print(year, mon, day)
     for x in ['18', '12', '06', '00']:
@@ -138,6 +124,7 @@ def chart1(shr, vmx, sst, hum, time, stime, storm, fig):
     hour.set_title(f"As of {stime}", fontsize=10, loc = 'right')
     hour.grid(True)
 
+# Make plot   
 def run(storm):
     fig = plt.figure(figsize=(24, 10))
     
@@ -150,9 +137,6 @@ def run(storm):
     btk = bdeck.mostRecent(storm)
     btk = btk.split(',')
     btk = (', '.join(btk[:10])) + '\n' + (', '.join(btk[10:20]) + '\n' + (', '.join(btk[20:30])) + '\n' + (', '.join(btk[30:])))
-
-    #for x in range(len(dat)):
-    #    print(f'{x}. {dat[x]}')
 
     time = dat[0]
     
@@ -219,7 +203,7 @@ def run(storm):
 
     mp.outline_patch.set_visible(False)
     mp.set_facecolor('whitesmoke')
-    #mp.set_title("Map", fontweight = 'bold')
+
     try:
         mp.set_extent([np.nanmin(lon) - 10, np.nanmax(lon) + 10, np.nanmin(lat) - 5, np.nanmax(lat) + 5], crs=ccrs.PlateCarree())
     except:
@@ -233,9 +217,8 @@ def run(storm):
     chart1(shr, vmx, sst, hum, time, stime, storm.upper(), fig)
     chart2(div, ohc, vmx, spd, time, stime, storm.upper(), fig)
 
-    #print('Plotting complete')
-    plt.savefig(r"C:\Users\Jariwala\Downloads\shipsplot.png", dpi = 300, bbox_inches = 'tight', facecolor=fig.get_facecolor())
-    #plt.show()
+    print('Plotting complete')
+    plt.savefig(r"C:\Users\Username\Downloads\shipsplot.png", dpi = 300, bbox_inches = 'tight', facecolor=fig.get_facecolor())
+    plt.show()
     plt.close()
     return link
-#print(run("al12"))
