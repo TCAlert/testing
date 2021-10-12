@@ -15,12 +15,13 @@ def getData(satellite, band):
     date = datetime.utcnow()
     days = date.strftime('%j')
     try:
-        files = np.array(fs.ls(f'noaa-goes{satellite}/ABI-L2-CMIPF/{date.year}/{days}/{str(date.hour).zfill(2)}/'))
+        files = fs.ls(f'noaa-goes{satellite}/ABI-L2-CMIPF/{date.year}/{days}/{str(date.hour).zfill(2)}/')
     except:
         try:
-            files = np.array(fs.ls(f'noaa-goes{satellite}/ABI-L2-CMIPF/{date.year}/{days}/{str(date.hour - 1).zfill(2)}/'))
+            fs.ls(f'noaa-goes{satellite}/ABI-L2-CMIPF/{date.year}/{days}/{str(date.hour - 1).zfill(2)}/')
         except:
-            files = np.array(fs.ls(f'noaa-goes{satellite}/ABI-L2-CMIPF/{date.year}/{days - 1}/{str(23).zfill(2)}/'))
+            fs.ls(f'noaa-goes{satellite}/ABI-L2-CMIPF/{date.year}/{days - 1}/{str(23).zfill(2)}/')
+    files = np.array(files)
 
     l = []
     for x in range(len(files)):
@@ -36,7 +37,7 @@ def getData(satellite, band):
     time = (data.time_coverage_start).split('T')
     time = f"{time[0]} at {time[1][:5]} UTC"
     
-    return dat, center, 'Brightness Temperature', time
+    return dat, center, time
 
 # Creates Cartopy map 
 def makeMap(loc, size):
