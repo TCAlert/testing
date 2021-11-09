@@ -1,18 +1,15 @@
-from netCDF4 import Dataset      # Read / Write NetCDF4 files
 import matplotlib.pyplot as plt  # Plotting library
-from cpt_convert import loadCPT # Import the CPT convert function
 import cartopy, cartopy.crs as ccrs  # Plot maps
-import numpy.ma as ma
 import numpy as np
-import pandas as pd
-import urllib.request as urllib
-import matplotlib.patches as mpatches
 import xarray as xr 
 from datetime import datetime 
-from netCDF4 import num2date
 import cartopy.feature as cfeature
 import cmaps as cmap
 import bdeck as bdeck 
+
+# Move GEFS functions to own file? 
+# Suggest merger of GEFS and GFS code, make single clear function
+# bounds() seems redundant, consider merging with basins()
 
 def url(flag):
     #grabbing data from NOMADS
@@ -53,7 +50,7 @@ def data(request, hour):
         init_hour, mdate, link = url(False)
         dataset = xr.open_dataset(link).isel(time = hour)
 
-    print("GFS Initialization: ", init_hour, mdate)
+    print("GEFS Initialization: ", init_hour, mdate)
 
     data = []
     for x in range(len(request)):
@@ -150,4 +147,4 @@ def run(basin):
     #print("Saving complete")
     plt.show()
     plt.close() 
-run('us')
+#run('us')
