@@ -151,7 +151,7 @@ def run(basin):
     plt.title(f'0.5\u00b0 GEFS Mean 500mb Height Contours and Standard Deviation (dam), Wind Barbs (knots)\nInitialization: {mdate} at {init_hour}:00z', fontweight='bold', fontsize=10, loc='left')
     plt.title(f'Forecast Hour: {str(hour * 6)} ({time})', fontsize = 10, loc = 'center')
     plt.title('TCAlert\nData from NOMADS', fontsize=10, loc='right') 
-    #plt.savefig(r"C:\Users\Jariwala\Downloads\stddevplot.png", dpi = 150, bbox_inches = 'tight')
+    #plt.savefig(r"C:\Users\Username\Downloads\stddevplot.png", dpi = 150, bbox_inches = 'tight')
     #print("Saving complete")
     plt.show()
     plt.close() 
