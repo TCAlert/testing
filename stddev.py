@@ -8,16 +8,11 @@ import pandas as pd
 import urllib.request as urllib
 import matplotlib.patches as mpatches
 import xarray as xr 
-from siphon.catalog import TDSCatalog
-from siphon.http_util import session_manager
 from datetime import datetime 
 from netCDF4 import num2date
 import cartopy.feature as cfeature
-import cgfs as gfs
 import cmaps as cmap
 import bdeck as bdeck 
-
-usage = '```$pv [basin: epac, wpac, natl, watl, us]```'
 
 def url(flag):
     #grabbing data from NOMADS
