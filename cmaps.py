@@ -1,19 +1,8 @@
-from netCDF4 import Dataset      # Read / Write NetCDF4 files
-import matplotlib.pyplot as plt
-from numpy.core.function_base import linspace  # Plotting library
-from cpt_convert import loadCPT # Import the CPT convert function
-import cartopy, cartopy.crs as ccrs  # Plot maps
-import numpy.ma as ma
 import numpy as np
-import pandas as pd
-import xarray as xr
-import metpy 
-import windclimo as wc
-import datetime
 from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-import goesRequest2 as goes2
 
+# Shortwave Infrared
 def swir():
     num1 = 15
     num2 = 55
@@ -29,6 +18,7 @@ def swir():
     newcmp = ListedColormap(newcolors, name='temp')
     return newcmp
 
+# "Halloween" IR Colortable
 def spooky():
     num1 = 20
     num2 = 85
@@ -44,6 +34,7 @@ def spooky():
     newcmp = ListedColormap(newcolors, name='temp')
     return newcmp
 
+# "Christmas" IR Colortable
 def santa():
     num1 = 20
     num2 = 30
@@ -62,24 +53,7 @@ def santa():
     newcmp = ListedColormap(newcolors, name='temp')
     return newcmp
 
-def santa2():
-    num1 = 20
-    num2 = 30
-    num3 = 50
-    num4 = 40
-
-    top = cm.get_cmap('hot_r', num1)
-    mid = cm.get_cmap('Reds_r', num2)
-    mid2 = cm.get_cmap('PiYG', num3)
-    bot = cm.get_cmap('Greys', num3)
-
-    newcolors = np.vstack((top(np.linspace(0, 0.3, num1)),
-                           mid(np.linspace(0.3, 1, num2)),
-                           mid2(np.linspace(0.6, 1, num3)),
-                           bot(np.linspace(0.1, 0.9, num4))))
-    newcmp = ListedColormap(newcolors, name='temp')
-    return newcmp
-
+# Colormap for GEOS-5 and MERRA-2 Dust Extinction Data
 def dust():
     num1 = 40
     num2 = 10
@@ -95,6 +69,7 @@ def dust():
     newcmp = ListedColormap(newcolors, name='temp')
     return newcmp
 
+# SSTA Colormap
 def ssta():
     num1 = 45
     num2 = 50
@@ -116,10 +91,7 @@ def ssta():
     newcmp = ListedColormap(newcolors, name='temp')
     return newcmp
 
-def tddev():
-    newcmp = LinearSegmentedColormap.from_list("", [(0.0, "gray"), (0.2, 'white'), (0.4, "#72aefc"), (1, "#141414")])
-    return newcmp
-
+# Standard Deviation Colormap for GEFS Data
 def stddev():
     num1 = 40
     num2 = 160
@@ -132,15 +104,7 @@ def stddev():
     newcmp = ListedColormap(newcolors, name='temp')
     return newcmp
 
-def cmap(color1, num1, color2, num2):
-    top = cm.get_cmap(color1, num1)
-    bottom = cm.get_cmap(color2, num2)
-
-    newcolors = np.vstack((top(np.linspace(0, 1, num1)),
-                       bottom(np.linspace(0, 1, num2))))
-    newcmp = ListedColormap(newcolors, name='temp')
-    return newcmp
-
+# Three PV Colormaps for GFS and Reanalysis Data
 def pv():
     top = cm.get_cmap('BuPu_r', 3)
     bottom = cm.get_cmap('OrRd', 8)
@@ -166,6 +130,7 @@ def pv3():
     newcmp = ListedColormap(newcolors, name = 'temp')
     return newcmp
 
+# Plain IR Colormap
 def ir():
     color1 = 'twilight'
     num1 = 110
@@ -179,27 +144,7 @@ def ir():
     newcmp = ListedColormap(newcolors, name='temp')
     return newcmp
 
-def wind():
-    num1 = 34
-    num2 = 30
-    num3 = 19
-    num4 = 13
-    num5 = 17
-    num6 = 24
-    num7 = 43
-
-    top = cm.get_cmap('Greys_r', num1)
-    mid = cm.get_cmap('Blues', num2)
-    bot = cm.get_cmap('Greens_r', num3)
-    nex1 = cm.get_cmap('Purples', num4)
-    nex2 = cm.get_cmap('Oranges_r', num5)
-    nex3 = cm.get_cmap('pink_r', num6)
-    nex4 = cm.get_cmap('Reds_r', num7)
-
-    newcolors = np.vstack((top(np.linspace(0, 1, num1)), mid(np.linspace(0, 1, num2)), bot(np.linspace(0, 1, num3)), nex1(np.linspace(0, 1, num4)), nex2(np.linspace(0, 1, num5)), nex3(np.linspace(0, 1, num6)), nex4(np.linspace(0, 1, num7))))
-    newcmp = ListedColormap(newcolors, name='temp')
-    return newcmp
-
+# Older, More Detailed Colormap
 def oldir():
     num1 = 20
     num2 = 60
@@ -216,6 +161,7 @@ def oldir():
     newcmp = ListedColormap(newcolors, name='temp')
     return newcmp
 
+# Update to "oldir"
 def whaticouldvedone():
     num1 = 25
     num2 = 55
@@ -232,6 +178,7 @@ def whaticouldvedone():
     newcmp = ListedColormap(newcolors, name='temp')
     return newcmp
 
+# Water Vapor Colormap
 def wv():
     num1 = 20
     num2 = 40
@@ -244,6 +191,7 @@ def wv():
     newcmp = ListedColormap(newcolors, name='temp')
     return newcmp
 
+# Reflectivity Data Colormap (MRMS Data)
 def ref():
     num1 = 30
     num2 = 20
