@@ -1,14 +1,10 @@
-from netCDF4 import Dataset      # Read / Write NetCDF4 files
-import matplotlib.pyplot as plt  # Plotting library
-from cpt_convert import loadCPT # Import the CPT convert function
+import matplotlib.pyplot as plt  
 import cartopy, cartopy.crs as ccrs  # Plot maps
-import numpy.ma as ma
 import numpy as np
 import pandas as pd
 from datetime import datetime
 from cartopy.io import shapereader
 import cartopy.io.shapereader as shpreader
-import cartopy.crs as ccrs
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import matplotlib.patches as mpatches
 
@@ -17,11 +13,9 @@ def casesP(cdate, ctotal, ctdeath, cvax, country, fig):
     ax1.set_facecolor('whitesmoke')
 
     ax1.get_yaxis().get_major_formatter().set_scientific(False)
-    #ax1.set_ylim(ymin = 0, ymax = 30000000)
     ax1.set_ylabel(r'$\bf{Total}$' + " " + r'$\bf{Cases}$')
 
     ax2 = ax1.twinx()
-    #ax2.set_ylim(ymin = 0, ymax = 1200000)
     ax2.set_ylabel(r'$\bf{Total}$' + " " + r'$\bf{Deaths}$')
 
     ax1.plot(cdate, ctotal, linewidth = 4, color = 'purple')
@@ -44,11 +38,9 @@ def cases(cdate, cndeath, cnew, country, fig):
     total.set_facecolor('whitesmoke')
 
     total.get_yaxis().get_major_formatter().set_scientific(False)
-    #total.set_ylim(ymin = 0, ymax = 30000000)
     total.set_ylabel(r'$\bf{Daily}$' + " " + r'$\bf{Deaths}$')
 
     daily = total.twinx()
-    #daily.set_ylim(ymin = 0, ymax = 300000)
     daily.set_ylabel(r'$\bf{Daily}$' + " " + r'$\bf{Cases}$')
 
     total.bar(cdate, cndeath, color = 'lightslategrey')
@@ -85,7 +77,7 @@ def covid(country):
     life = data['life_expectancy']
     gdp = data['gdp_per_capita']
     vax = data['total_vaccinations']
-    #print('Data retrieved')
+    print('Data retrieved')
 
     cdate = []
     ctotal = []
@@ -108,7 +100,7 @@ def covid(country):
             population = pop[x]
     cdate = [datetime.strptime(date, '%Y-%m-%d').date() for date in cdate]
 
-    #print('Plotting data')
+    print('Plotting data')
     fig.set_facecolor('snow')
 
     text = fig.add_subplot(1, 2, 1)
@@ -157,8 +149,10 @@ def covid(country):
     cases(cdate, cndeath, cnew, country, fig)
     casesP(cdate, ctotal, ctdeath, cvax, country, fig)
 
-    #print('Plotting complete')
-    plt.savefig(r"C:\Users\Jariwala\Downloads\covidMap.png", dpi = 300, bbox_inches = 'tight', facecolor=fig.get_facecolor())
+    print('Plotting complete')
+    plt.savefig(r"C:\Users\[Username]\Downloads\covidMap.png", dpi = 300, bbox_inches = 'tight', facecolor=fig.get_facecolor())
+    plt.show()
     plt.close()
-    #plt.show()
-#covid("United Kingdom")
+    
+# Sample Usage
+# covid("United States")
