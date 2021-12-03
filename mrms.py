@@ -1,8 +1,5 @@
-from netCDF4 import Dataset      # Read / Write NetCDF4 files
-import matplotlib.pyplot as plt  # Plotting library
-from cpt_convert import loadCPT # Import the CPT convert function
-import cartopy, cartopy.crs as ccrs  # Plot maps
-import numpy as np 
+import matplotlib.pyplot as plt 
+import cartopy, cartopy.crs as ccrs
 import cmaps as cmap 
 import xarray as xr
 from datetime import datetime
@@ -46,7 +43,6 @@ def plot(lat, lon = 0):
     gl.xlabels_top = gl.ylabels_right = False
     ax.set_extent(extent, crs=ccrs.PlateCarree())
 
-    #plt.imshow(mrms, cmap = cmap.ref(), extent = [min(mrms.lon), max(mrms.lon), min(mrms.lat), max(mrms.lat)], origin = 'upper', vmin = 0, vmax = 75, transform = ccrs.PlateCarree(central_longitude = 180))
     plt.pcolormesh(mrms.lon, mrms.lat, mrms.values, cmap = cmap.ref(), vmin = 0, vmax = 75, transform=ccrs.PlateCarree(central_longitude = 0))
 
     t = str(data['time'][-1].values).split('T')
@@ -57,8 +53,7 @@ def plot(lat, lon = 0):
     
     #print('Plotting complete!')
     plt.colorbar(orientation = 'vertical', aspect = 50, pad = .02)
-    plt.savefig(r"C:\Users\Jariwala\Downloads\mrmsradar.png", dpi = 250, bbox_inches = 'tight')
-    #print('saved')
-    #plt.show()
+    plt.savefig(r"C:\Users\[Username]\Downloads\mrmsradar.png", dpi = 250, bbox_inches = 'tight')
+    plt.show()
     plt.close()
 #plot(34.822, -98.757)
