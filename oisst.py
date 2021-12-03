@@ -1,18 +1,17 @@
-import datetime as dt
-from netCDF4 import Dataset      # Read / Write NetCDF4 files
-import matplotlib.pyplot as plt  # Plotting library
-import cartopy, cartopy.crs as ccrs  # Plot maps
+import matplotlib.pyplot as plt
+import cartopy, cartopy.crs as ccrs
 import xarray as xr
-from siphon.catalog import TDSCatalog
-import xarray as xr 
 import bdeck as bdeck 
 from matplotlib import cm
 import numpy as np
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 import basins as ba
 
-usage = f'```$cyoi [basin/storm]\nAvailable Basins - {str(list(ba.func_map.keys()))}```'
+# Sample Usage
+#    stormCenteredOISST('al01')
+#    stormCenteredOISST('natl')
 
+# Make colormap that splits at 26C
 def cmap():
     top = cm.get_cmap('BuPu_r', 128)
     bottom = cm.get_cmap('Reds', 32)
@@ -22,6 +21,7 @@ def cmap():
     newcmp = ListedColormap(newcolors, name='temp')
     return newcmp
 
+# Plot data
 def stormCenteredOISST(storm):
     fig = plt.figure(figsize=(25, 7))
 
@@ -45,7 +45,6 @@ def stormCenteredOISST(storm):
     # Add coastlines, borders and gridlines
     ax.coastlines(resolution='10m', color='black', linewidth=0.8, zorder = 97)
     ax.add_feature(cartopy.feature.BORDERS.with_scale('10m'), edgecolor='black', facecolor=cartopy.feature.COLORS['land'], linewidth=0.5, zorder = 99) 
-    #ax.add_feature(cartopy.feature.STATES.with_scale('10m'), edgecolor = 'black', linewidth = 0.1, zorder = 98)
     ax.add_feature(cartopy.feature.LAND.with_scale('10m'), zorder = 96)
     if (storm.lower() == 'npac' or storm.lower() == 'enso' or storm.lower() == 'pacific' or storm.lower() == 'spac' or storm.lower() == 'wpac'):
         pass
@@ -62,7 +61,6 @@ def stormCenteredOISST(storm):
 
     plt.title(f'OISST SST ({time[0]}) - {storm.upper()}\n26C Isotherm Outlined', fontweight='bold', fontsize=10, loc='left')
     plt.title('TCAlert\nCredit to guyph#0609 & CyclonicWx for CMap', fontsize=10, loc='right')
-    plt.savefig(r"C:\Users\Jariwala\Downloads\stormcenteredoisst.png", dpi = 300, bbox_inches = 'tight')
-    #plt.show()
+    plt.savefig(r"C:\Users\[Username]\Downloads\stormcenteredoisst.png", dpi = 300, bbox_inches = 'tight')
+    plt.show()
     plt.close()
-#stormCenteredOISST("globe")
