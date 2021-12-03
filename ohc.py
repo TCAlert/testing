@@ -4,7 +4,8 @@ import numpy as np
 import xarray as xr  
 import bdeck as bdeck 
 
-usage = '```$ohc [storm (best track ID)]```'
+# sample usage
+#   run('al01')
 
 def run(storm):
     # Grabs lat/lon position for existing storm off of best track
