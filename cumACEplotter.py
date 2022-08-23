@@ -1,13 +1,11 @@
 import numpy as np
 import pandas as pd 
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 import matplotlib.patheffects as PathEffects
 from bdeckFormatter import getStorms
 import datetime
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
-import time
 
 climoYears = [1951, 2021]
 basin = 'AL'
