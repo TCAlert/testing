@@ -4,7 +4,7 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import math 
 import matplotlib.pyplot as plt
-import cartopy, cartopy.crs as ccrs  # Plot maps
+import cartopy, cartopy.crs as ccrs
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 
 pd.options.mode.chained_assignment = None
