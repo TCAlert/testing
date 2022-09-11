@@ -301,15 +301,14 @@ def retrieveStorm(dataset, storm = None, ID = None):
             data = 'Storm not found!'
     return data
 
+
+# Sample Usage:
+# Pass processed database to retrieveStorm function with necessary inputs
+# Returns dictionary with storm information and a few basic charts
 hurdat2 = database()
 
-storm = retrieveStorm(hurdat2, ['emily', '2005'])
-storm['ratio'](storm)
-storm = retrieveStorm(hurdat2, ['katrina', '2005'])
-storm['ratio'](storm)
-storm = retrieveStorm(hurdat2, ['Rita', '2005'])
-storm['ratio'](storm)
-storm = retrieveStorm(hurdat2, ['Wilma', '2005'])
+storm = retrieveStorm(hurdat2, ['Irma', '2017'])
 storm['ratio'](storm)
 
 plt.show()
+plt.chose()
