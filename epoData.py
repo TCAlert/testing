@@ -30,5 +30,5 @@ for x in range(len(data['year'])):
 reformattedData = (pd.DataFrame(years[1:], columns = years[0], index = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])).transpose()
 print(reformattedData)
 
-# Locally download the data as a CSV
+# Locally download the data as a CSV 
 reformattedData.to_csv(r'C:\Users\Username\Downloads\epo.csv')
