@@ -76,7 +76,7 @@ axes = [fig.add_subplot(gs[0, 0]),
 smallPlot(axes[1], data[2])
 bigPlot(axes[0], data[0], data[1])
 
-axes[0].set_title(f'NCEP/NCAR Reanalysis I: Vertical Velocity (Top) and VP200 (Bottom)\nVV Data Upscaled by 500x', fontweight='bold', fontsize=10, loc='left')
+axes[0].set_title(f'NCEP/NCAR Reanalysis I: Vertical Velocity (Top) and VP200 (Bottom) Anomalies\nVV Data Upscaled by 500x', fontweight='bold', fontsize=10, loc='left')
 axes[0].set_title(f'{months[month]} {str(years)[1:-1]}', fontsize = 10, loc = 'center')
 axes[0].set_title('Deelan Jariwala\nClimatology: 1991-2020', fontsize=10, loc='right') 
 plt.savefig(r"C:\Users\[Username]\Downloads\vpprof.png", dpi = 400, bbox_inches = 'tight')
