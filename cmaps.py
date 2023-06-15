@@ -2,6 +2,22 @@ import numpy as np
 from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 
+def wind():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/160, "#000000"), 
+    (34/160, "#a6a6a6"),
+    (34/160, "#4245a6"),
+    (64/160, "#29a668"),
+    (96/160, "#cccc33"),
+    (113/160, "#cc3333"),
+    (137/160, "#cc7acc"),
+    (160/160, "#ffffff")])
+    
+    vmin = 0
+    vmax = 160
+
+    return newcmp
+
 # Shortwave Infrared
 def swir():
     num1 = 15
