@@ -7,7 +7,6 @@ import matplotlib.patches as mpatches
 import pandas as pd 
 import bdeck as bdeck 
 
-
 # Function to retrieve SHIPS data for given storm (best track ID)
 def ships(storm, year, mon, day):
     print(year, mon, day)
@@ -69,11 +68,9 @@ def chart2(div, ohc, vmx, spd, time, stime, storm, fig):
     para.set_facecolor('whitesmoke')
 
     para.get_yaxis().get_major_formatter().set_scientific(False)
-    #total.set_ylim(ymin = 0, ymax = 30000000)
 
     hour = para.twinx()
     hour.set_ylabel(r'$\bf{Winds}$' + " " + r'$\bf{(knots)}$')
-    #daily.set_ylim(ymin = 0, ymax = 300000)
     para.set_ylabel(r'$\bf{Divergence/OHC/Speed}$')
 
     hour.plot(time, vmx[1:], linewidth = 4, color = 'darkslateblue')
@@ -99,11 +96,9 @@ def chart1(shr, vmx, sst, hum, time, stime, storm, fig):
     para.set_facecolor('whitesmoke')
 
     para.get_yaxis().get_major_formatter().set_scientific(False)
-    #total.set_ylim(ymin = 0, ymax = 30000000)
 
     hour = para.twinx()
     hour.set_ylabel(r'$\bf{Winds}$' + " " + r'$\bf{(knots)}$')
-    #daily.set_ylim(ymin = 0, ymax = 300000)
     para.set_ylabel(r'$\bf{SST/RH/Shear}$')
 
     hour.plot(time, vmx[1:], linewidth = 4, color = 'darkslateblue')
@@ -132,7 +127,7 @@ def run(storm):
     mon = (str(datetime.utcnow().month)).zfill(2)
     day = (str(datetime.utcnow().day)).zfill(2)
 
-    dat, stime, ri, annular, link = ships(storm, year, mon, day)#, '21', '08', '24')
+    dat, stime, ri, annular, link = ships(storm, year, mon, day)
         
     btk = bdeck.mostRecent(storm)
     btk = btk.split(',')
@@ -144,16 +139,16 @@ def run(storm):
     vmx = dat[2]
     shr = dat[3]
     sst = dat[6]
-    hum = dat[11]
+    hum = dat[10]
     
     # chart 2
-    ohc = dat[20]
-    div = dat[14]
-    spd = dat[19]
+    ohc = dat[19]
+    div = dat[13]
+    spd = dat[18]
 
     # chart 3
-    lat = dat[17][1:]
-    lon = dat[18][1:]
+    lat = dat[16][1:]
+    lon = dat[17][1:]
 
     for x in range(len(lon)):
         if lon[x] != None:
@@ -201,7 +196,7 @@ def run(storm):
     mp.add_feature(cartopy.feature.OCEAN, facecolor = 'whitesmoke')
     mp.add_feature(cartopy.feature.LAND, facecolor = 'whitesmoke')
 
-    mp.outline_patch.set_visible(False)
+    mp.axis('off')
     mp.set_facecolor('whitesmoke')
 
     try:
