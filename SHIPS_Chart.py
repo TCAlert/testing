@@ -6,6 +6,7 @@ from datetime import datetime
 import matplotlib.patches as mpatches
 import pandas as pd 
 import bdeck as bdeck 
+from goesRequest2 import getData
 
 # Function to retrieve SHIPS data for given storm (best track ID)
 def ships(storm, year, mon, day):
@@ -44,10 +45,13 @@ def ships(storm, year, mon, day):
         except Exception as e:
             pass
 
-    if 'AL' in storm.upper():
-        line = line[1:4] + line[7:11] + line[12:26]
-    else:
-        line = line[1:4] + line[7:26]
+    # If they add back the missing parameter, bring this back too
+    #if 'AL' in storm.upper():
+    #    line = line[1:4] + line[7:11] + line[12:26]
+    #else:
+    #    line = line[1:4] + line[7:26]
+    line = line[1:4] + line[7:11] + line[12:26]
+
 
     for x in range(len(line)):
         sep = ''
@@ -209,6 +213,15 @@ def run(storm):
 
     mp.scatter(lon, lat, linewidths=0.5, vmin = 0, vmax = 1000, edgecolors='black', zorder = 500, transform = ccrs.PlateCarree(central_longitude = 0))
     mp.plot(lon, lat, color = 'black', alpha = 0.5, linewidth = 0.5, transform = ccrs.PlateCarree(central_longitude = 0))
+    if 360 - lon[0] > 255:
+        satellite = '16'
+    else:
+        satellite = '18'
+    try:
+        data, center, info, t, data2 = getData(satellite, '13')
+        plt.imshow(data - 273, origin = 'upper', extent = (-5434894.67527,5434894.67527,-5434894.67527,5434894.67527), vmin = -70, vmax = 40, cmap = 'Greys', transform = ccrs.Geostationary(central_longitude = center, satellite_height=35786023.0))
+    except:
+        pass
     chart1(shr, vmx, sst, hum, time, stime, storm.upper(), fig)
     chart2(div, ohc, vmx, spd, time, stime, storm.upper(), fig)
 
