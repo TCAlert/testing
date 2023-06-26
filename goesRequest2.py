@@ -44,6 +44,8 @@ def getData(satellite, band):
 
 # Function that retrieves Himawari-9 tiles of the requested band and melds them together
 # Data is returned at full resolution, regardless of band
+bucket = 'noaa-himawari9'
+product_name = 'AHI-L2-FLDK-ISatSS'
 def getHimawariData(band):
     dat = []
     dataset = []
