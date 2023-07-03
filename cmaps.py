@@ -18,6 +18,22 @@ def wind():
 
     return newcmp
 
+
+def shear():
+    newcmp = LinearSegmentedColormap.from_list("", [ 
+    (0/80, "#f5f5f5"),
+    (10/80, "#4245a6"),
+    (15/80, "#29a668"),
+    (25/80, "#cccc33"),
+    (35/80, "#cc3333"),
+    (50/80, "#cc7acc"),
+    (80/80, "#ffffff")])
+
+    vmin = 0
+    vmax = 80
+    
+    return newcmp
+
 # Shortwave Infrared
 def swir():
     num1 = 15
