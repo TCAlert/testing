@@ -32,7 +32,7 @@ def windbarbs(ax, uwnd, vwnd, txt, lat, lon):
     mV = vwnd.sel(lat = slice(lat - 2.5, lat + 2.5), lon = slice(lon - 2.5, lon + 2.5)).mean(['lat', 'lon'])
     mMag = shearMag(mU, mV)
     ax.text(lon - 9, lat + 6, f'{txt}', color = 'black', fontsize = 14, fontweight = 'bold', path_effects = [patheffects.withStroke(linewidth=1.25, foreground="white")], zorder = 20, transform = ccrs.PlateCarree(central_longitude = 360))
-    ax.text(lon, lat - 1, f'{round(mMag, 1)} knots', color = '#ff5959', ha = 'center', path_effects = [patheffects.withStroke(linewidth=1.25, foreground="black")], zorder = 20, transform = ccrs.PlateCarree(central_longitude = 360))
+    ax.text(lon, lat - 1, f'{round(mMag, 1)} knots', color = 'black', ha = 'center', path_effects = [patheffects.withStroke(linewidth=1.25, foreground="white")], zorder = 20, transform = ccrs.PlateCarree(central_longitude = 360))
     ax.quiver(np.array([lon]), np.array([lat + .5]), np.array([mU.values]) / mMag, np.array([mV.values]) / mMag, pivot = 'middle', scale = 15, minshaft = 2, minlength=0, headaxislength = 3, headlength = 3, color = '#ff5959', zorder = 20, path_effects = [patheffects.withStroke(linewidth=1.25, foreground="black")], transform = ccrs.PlateCarree(central_longitude = 360))
     return c
 
@@ -121,6 +121,7 @@ def finalPlot(hour, lat, lon):
     axes[0].set_title(f'Wind Shear Diagnostics\nInitialization: {mdate} at {init_hour}:00z', fontweight='bold', fontsize=10, loc='left')
     axes[0].set_title(f'Forecast Hour: {time}', fontsize = 10, loc = 'center')
     axes[0].set_title('0.25\u00b0 GFS\nDeelan Jariwala', fontsize=10, loc='right') 
+    #axes[0].set_title('##L\nDeelan Jariwala', fontsize=10, loc='right') 
 
     # Since Matplotlib was being difficult, this is the colorbar 
     cax = inset_axes(axes[3], width="200%", height="3%", loc='lower right', bbox_to_anchor=(1, -0.1, 1, 1), bbox_transform=axes[3].transAxes, borderpad = .02)
