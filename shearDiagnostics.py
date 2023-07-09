@@ -45,10 +45,10 @@ def makeMap(axes, lat, lon):
     # Loop through the four panels and create the map, as well as the red box in the center
     for x in range(1, 5):
         axes[x].tick_params(axis='both', direction='in')
-        axes[x].add_feature(cfeature.COASTLINE.with_scale('50m'), linewidth = 1)
-        axes[x].add_feature(cfeature.BORDERS.with_scale('50m'), linewidth = 1)
-        axes[x].add_feature(cfeature.STATES.with_scale('50m'), linewidth = 1)
-        gl = axes[x].gridlines(crs=ccrs.PlateCarree(central_longitude = 0), zorder = 9, draw_labels = True, linewidth = 0.5, color='black', alpha=0.5, linestyle='--', transform = ccrs.PlateCarree(central_longitude=180))
+        axes[x].add_feature(cfeature.COASTLINE.with_scale('50m'), linewidth = 1, zorder = 20)
+        axes[x].add_feature(cfeature.BORDERS.with_scale('50m'), linewidth = 1, zorder = 20)
+        axes[x].add_feature(cfeature.STATES.with_scale('50m'), linewidth = 1, zorder = 20)
+        gl = axes[x].gridlines(crs=ccrs.PlateCarree(central_longitude = 0), zorder = 20, draw_labels = True, linewidth = 0.5, color='black', alpha=0.5, linestyle='--', transform = ccrs.PlateCarree(central_longitude=180))
         gl.xlabel_style, gl.ylabel_style = {'size': 8}, {'size': 8}
         gl.xlabels_top = False 
 
