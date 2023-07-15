@@ -9,6 +9,7 @@ import cartopy.feature as cfeature
 import cmaps as cmap 
 from matplotlib import patheffects
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+from matplotlib.patches import Rectangle
 
 # Helper function to calculate wind shear, primarily for the maximum wind function
 def calcShear(u, v, top, bot):
@@ -63,7 +64,9 @@ def makeMap(axes, lat, lon):
                 axes[x].plot([boxXCoords[y], boxXCoords[y + 1]], [boxYCoords[y], boxYCoords[y + 1]], color = 'red', zorder = 20, transform = ccrs.PlateCarree(central_longitude = 360))
             except:
                 pass
-
+        r = Rectangle((lon - 2.5, lat - 2.5), 5, 5, zorder = 19, color = '#bfbfbf', alpha = 0.4, transform = ccrs.PlateCarree(central_longitude = 360))
+        axes[x].add_patch(r)
+        
 # Helper function to calculate maximum shear
 # Returns the upper and lower level that compose this shear vector as integers
 def maxShear(u, v):
@@ -127,9 +130,10 @@ def finalPlot(hour, lat, lon):
     cax = inset_axes(axes[3], width="200%", height="3%", loc='lower right', bbox_to_anchor=(1, -0.1, 1, 1), bbox_transform=axes[3].transAxes, borderpad = .02)
     cb = fig.colorbar(c, cax=cax, orientation="horizontal")
     cb.set_ticks(range(0, 85, 5))
-    plt.savefig(r"C:\Users\deela\Downloads\shearDiagnostics.png", dpi = 400, bbox_inches = 'tight')
+    plt.savefig(r"C:\Users\[Username]\Downloads\shearDiagnostics.png", dpi = 400, bbox_inches = 'tight')
     plt.show() 
 
+# Sample Usage
 t = datetime.utcnow()
 year = t.year
 month = t.month
