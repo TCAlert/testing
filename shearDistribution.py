@@ -9,6 +9,7 @@ import cartopy.feature as cfeature
 import cmaps as cmap 
 from matplotlib import patheffects
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+from matplotlib.offsetbox import AnchoredText
 
 # Helper function to calculate wind shear, primarily for the maximum wind function
 def calcShear(u, v, top, bot):
@@ -76,6 +77,11 @@ def finalPlot(hour, lat, lon):
     ax.set_title(f'Vertical Wind Shear Distribution\nInitialization: {mdate} at {init_hour}:00z', fontweight='bold', fontsize=10, loc='left')
     ax.set_title(f'Forecast Hour: {time}', fontsize = 10, loc = 'center')
     ax.set_title('Subtropical Storm DON\nDeelan Jariwala | cyclonicwx.com', fontsize=10, loc='right') 
+    at = AnchoredText("Inspired by Michael Fischer",
+                  prop=dict(size=8, color = 'gray'), frameon=False,
+                  loc=4)
+    at.patch.set_alpha(.1)
+    ax.add_artist(at)
     cb = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
     cb.set_ticks(range(0, 85, 5))
     plt.savefig(r"C:\Users\deela\Downloads\shearDiagnostics.png", dpi = 400, bbox_inches = 'tight')
