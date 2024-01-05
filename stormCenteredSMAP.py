@@ -43,7 +43,7 @@ def smap(storm, ascending):
 
     # Calculate maximum winds using the formula in the usage instructions
     calc = ((given * 362.644732816453) + 2913.62505913216) / 380.88384339523
-
+ 
     # Gets the nearest time to the satellite overpass and reformats it
     try:
         time = minu.sel(lat = lat, lon = lon, method = 'nearest')
