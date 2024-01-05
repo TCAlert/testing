@@ -69,8 +69,8 @@ def smap(storm, ascending):
     plt.title('Deelan Jariwala', fontsize=10, loc='right') 
     plt.colorbar(orientation = 'vertical', aspect = 50, pad = .02)
     plt.savefig(r"C:\Users\deela\Downloads\stormSMAP.png", dpi = 400, bbox_inches = 'tight')
-    plt.close()
-
+    plt.show()
+#smap((45, 168), 'asc')
 #Sample Usage:
 # smap((45, 168), 'desc')
 

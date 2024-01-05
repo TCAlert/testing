@@ -7,6 +7,7 @@ import math
 from matplotlib.offsetbox import AnchoredText
 from datetime import datetime
 import goesRequest2 as goes2
+import pandas as pd
 
 # Set of functions that try to replicate a figure recommended in Stevensons et al 2018
 
