@@ -1,14 +1,11 @@
 from netCDF4 import Dataset      # Read / Write NetCDF4 files
 import matplotlib.pyplot as plt
 from numpy.core.function_base import linspace  # Plotting library
-from cpt_convert import loadCPT # Import the CPT convert function
 import cartopy, cartopy.crs as ccrs  # Plot maps
 import numpy.ma as ma
 import numpy as np
 import pandas as pd
 import xarray as xr
-import metpy 
-import windclimo as wc
 import datetime
 from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
