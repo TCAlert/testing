@@ -1,44 +1,35 @@
 import matplotlib.pyplot as plt  # Plotting library
-from cpt_convert import loadCPT # Import the CPT convert function
 import cartopy, cartopy.crs as ccrs  # Plot maps
 import xarray as xr 
-from datetime import datetime 
+from datetime import datetime, timedelta
 import cartopy.feature as cfeature
 
 # Generate a URL that you will use to retrieve the data
 def url(flag):
     t = datetime.utcnow()
-
-    year = str(t.year)
-    month = str(t.month).zfill(2)
-    day = str(t.day).zfill(2)
-    hour = str(t.hour).zfill(2)
+    hour = str(t.hour)
 
     def get_init_hr(hour):
         if hour < 6:
             init_hour = '00'
         elif hour < 12:
             init_hour = '06'
-        elif hour < 17:
+        elif hour < 18:
             init_hour = '12'
-        elif hour < 22:
+        elif hour < 24:
             init_hour = '18'
         else:
             init_hour = '00'
-        return(init_hour)
+        return(init_hour.zfill(2))
 
     init_hour = get_init_hr(int(hour))
 
-    if flag == False:
-        init_hour = int(init_hour) - 6
-        if init_hour < 0:
-            init_hour = 18
-            day = int(day) - 1
+    if not flag:
+        t = t - timedelta(hours = 6)
+        init_hour = get_init_hr(t.hour)
 
-    init_hour = str(init_hour).zfill(2)
-    day = str(day).zfill(2)
-    mdate = year + month + day
-    url = 'http://nomads.ncep.noaa.gov:80/dods/gfs_0p25_1hr/gfs'+mdate+'/gfs_0p25_1hr_'+init_hour+'z'
+    mdate = f'{str(t.year).zfill(2)}{str(t.month).zfill(2)}{str(t.day).zfill(2)}'
+    url = 'http://nomads.ncep.noaa.gov:80/dods/gfs_0p25_1hr/gfs'+ mdate + '/gfs_0p25_1hr_' + init_hour + 'z'
 
     return init_hour, mdate, url
 
