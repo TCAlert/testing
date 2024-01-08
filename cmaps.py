@@ -2,6 +2,32 @@ import numpy as np
 from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 
+def temperature():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/200, "#f2bbd4"), 
+    (5/200, "#5f0d2e"),
+    (10/200, "#840f09"),
+    (20/200, "#ce3f1b"),
+    (28/200, "#e8b05f"),
+    (35/200, "#e6d874"),
+    (50/200, "#71b634"),
+    (60/200, "#21843f"),
+    (68/200, "#21432b"),
+    (68/200, "#66b0db"),
+    (75/200, "#206493"),
+    (79/200, "#385484"),
+    (81/200, "#434c7d"),
+    (90/200, "#7970f0"),
+    (100/200, "#e7dbfe"),
+    (110/200, "#9053e6"),
+    (122.5/200, "#8916a8"),
+    (125/200, "#080305"),
+    (127.5/200, "#39142a"),
+    (160/200, "#ad3aa7"),
+    (200/200, "#ffdefe")])
+
+    return newcmp.reversed()
+
 def wind():
     newcmp = LinearSegmentedColormap.from_list("", [
     (0/160, "#000000"), 
@@ -17,7 +43,6 @@ def wind():
     vmax = 160
 
     return newcmp
-
 
 def shear():
     newcmp = LinearSegmentedColormap.from_list("", [ 

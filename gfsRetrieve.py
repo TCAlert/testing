@@ -10,6 +10,7 @@ def url(flag):
     hour = str(t.hour)
 
     def get_init_hr(hour):
+        print(hour)
         if hour < 6:
             init_hour = '00'
         elif hour < 12:
@@ -35,21 +36,22 @@ def url(flag):
 
 # Retrieve data for the requested parameters, as well as pertinent information regarding the run
 # Variable "request" should be a list
-def data(request, hour):
+def getData(request, hour):
     try:
         init_hour, mdate, link = url(True)
         dataset = xr.open_dataset(link).sel(time = hour)
     except:
         init_hour, mdate, link = url(False)
         dataset = xr.open_dataset(link).sel(time = hour)
-        
-    print("GFS Initialization: ", init_hour, mdate)
+    
+    init = f'{mdate[0:4]}-{mdate[4:6]}-{mdate[6:8]} at {init_hour}:00z'
+    print("GFS Initialization: ", init)
 
     data = []
     for x in range(len(request)):
         data.append((dataset[request[x]]).squeeze())
     dataset.close()
-    return data, mdate, init_hour
+    return data, init
 
 # Create a map using Cartopy
 def map(n, s, e, w):
