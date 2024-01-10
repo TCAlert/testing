@@ -28,6 +28,20 @@ def temperature():
 
     return newcmp.reversed()
 
+def pwat():
+    newcmp = LinearSegmentedColormap.from_list("",[
+    (0/80, "#eeeeee"),
+    (10/80, "#2e2e2e"),
+    (15/80, "#6e3e04"),
+    (30/80, "#c7ad8d"),
+    (40/80, "#1f5725"),
+    (50/80, "#5c9d8d"),
+    (60/80, "#385472"),
+    (70/80, "#a98dc3"),
+    (80/80, "#e7e7e7")])
+
+    return newcmp
+
 def wind():
     newcmp = LinearSegmentedColormap.from_list("", [
     (0/160, "#000000"), 
@@ -41,6 +55,22 @@ def wind():
     
     vmin = 0
     vmax = 160
+
+    return newcmp
+
+def wind2():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/152, "#ffffff"),
+    (20/152, "#74C9DA"), 
+    (34/152, "#A8F39B"),
+    (50/152, "#F9F797"),
+    (64/152, "#f09571"),
+    (83/152, "#F96B6B"),
+    (96/152, "#F26EF5"),
+    (113/152, "#7030A0"),
+    (125/152, "#283B76"),
+    (140/152, "#a28df0"),
+    (152/152, "#d0cdfa")])
 
     return newcmp
 
