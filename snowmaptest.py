@@ -6,6 +6,7 @@ import cartopy.feature as cfeature
 import gfsRetrieve as gfs 
 import numpy as np 
 import cmaps as cmap 
+import urllib.request 
 
 # Create a map using Cartopy
 def map(interval, labelsize):
@@ -29,25 +30,25 @@ def map(interval, labelsize):
     return ax 
 
 labelsize = 9
-year = 2024
+year = 2016
 month = 1
-day = 15
-hour = 20
-data = xr.open_dataset(f'http://nomads.ncep.noaa.gov:80/dods/rtma2p5/rtma2p5{str(year)}{str(month).zfill(2)}{str(day).zfill(2)}/rtma2p5_anl_{str(hour).zfill(2)}z')
-data = data['tmp2m'].squeeze()
-data.values = ((data.values - 273.15) * (9/5)) + 32
+day = 25
+link = f'https://www.nohrsc.noaa.gov/snowfall_v2/data/{year}{str(month).zfill(2)}/sfav2_CONUS_72h_{year}{str(month).zfill(2)}{str(day).zfill(2)}12.nc'
+urllib.request.urlretrieve(link, r"C:\Users\deela\Downloads\snow.nc")
+data = xr.open_dataset(r"C:\Users\deela\Downloads\snow.nc")
 print(data)
+data = data['Data'].squeeze() * 39.3700789
+print(data.attrs)
 
 date = f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}'
 ax = map(4, labelsize - 1)
 ax.set_extent([-126, -67, 23, 51])
-c = plt.contourf(data.lon, data.lat, data.values, cmap = cmap.temperature(), levels = np.arange(-100, 101, 1), extend = 'both')
-plt.contour(data.lon, data.lat, data.values, colors = 'black', levels = [32])
+c = plt.contourf(data.lon, data.lat, data.values, levels = np.arange(0, 96.1, .1), cmap = cmap.snow(), extend = 'both')
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
-cbar.ax.set_yticks(np.arange(-100, 110, 10))
+cbar.ax.set_yticks(np.arange(0, 102, 6))
 
-plt.title(f'2m AGL Temperature (\u00b0F)\nInitialization: {date} at {str(hour).zfill(2)}:00z', fontweight='bold', fontsize=labelsize, loc='left')
-plt.title(f'Valid at {date} at {str(hour).zfill(2)}:00z', fontsize=labelsize)
-plt.title('RTMA\nDeelan Jariwala', fontsize=labelsize, loc='right')
-plt.savefig(r"C:\Users\deela\Downloads\rtmatest.png", dpi = 400, bbox_inches = 'tight')
+plt.title(f'National Gridded Snowfall Analysis\n72hr Accumulation (inches)', fontweight='bold', fontsize=labelsize, loc='left')
+plt.title(f'Ending at {date} at 12:00z', fontsize=labelsize)
+plt.title('NOHRSC\nDeelan Jariwala', fontsize=labelsize, loc='right')
+plt.savefig(r"C:\Users\deela\Downloads\snowtest.png", dpi = 400, bbox_inches = 'tight')
 plt.show()
