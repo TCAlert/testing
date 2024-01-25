@@ -84,6 +84,37 @@ def presPlot(station):
     #plt.show()
     plt.close()
 
+def windPlot(station):
+    vars = getMETAR(station, ['observation_time', 'wind_dir_degrees', 'wind_speed_kt', 'wind_gust_kt'])
+    wind = vars[2]
+    gust = vars[3]
+
+    # Creates plot and map using matplotlib/cartopy
+    fig = plt.figure(figsize=(12, 9))
+    ax = plt.axes()
+    ax.set_frame_on(False)
+    ax.tick_params(axis='both', labelsize = 7.5, left = False, bottom = False)
+    ax.grid(linestyle = '--', alpha = 0.5, color = 'black', linewidth = 0.5, zorder = 100)
+    ax.set_ylabel('Windspeed (kts)', weight = 'bold', size = 9)
+    ax.set_xlabel('Time', weight = 'bold', size = 9)
+
+    ax.plot(vars[0], wind, color = '#50246b', linewidth = 2.5)
+    ax.plot(vars[0], gust, color = '#b185cc', linewidth = 2.5)
+    ax.scatter(vars[0].iloc[0], wind.iloc[0], color = 'black', zorder = 10)
+    ax.scatter(vars[0].iloc[0], gust.iloc[0], color = 'black', zorder = 10)
+    plt.text(vars[0].iloc[0] + 14400, wind.iloc[0], f'{round(wind.iloc[0], 2)}kt', size=8, color='black', horizontalalignment = 'center', verticalalignment = 'center', path_effects=[pe.withStroke(linewidth=1.5, foreground="white")])
+    plt.text(vars[0].iloc[0] + 14400, gust.iloc[0], f'{round(gust.iloc[0], 2)}kt', size=8, color='black', horizontalalignment = 'center', verticalalignment = 'center', path_effects=[pe.withStroke(linewidth=1.5, foreground="white")])
+    plt.legend(title = f'Most Recent Change (W): {round(wind.iloc[0] - wind.iloc[1], 2)}kt\nMost Recent Change (G): {round(gust.iloc[0] - gust.iloc[1], 2)}kt', title_fontsize = 8)
+    print(vars[0].iloc[0], vars[0].iloc[1])
+    
+    plt.title(f"{station.upper()} Wind Speed, Direction, and Gust Time Series\nMax Wind: {round(np.nanmax(wind), 1)}kt\nMax Gust: {round(np.nanmax(gust), 1)}kt" , fontweight='bold', fontsize=9, loc='left')
+    plt.title(f'Deelan Jariwala', fontsize=9, loc='right')
+
+    plt.savefig(r"C:\Users\deela\Downloads\metarwind.png", dpi = 200, bbox_inches = 'tight')
+    plt.show()
+    plt.close()
+
 #presPlot('gvnp')
 #tempPlot('gvnp')
+windPlot('kmia')
 #plt.show()
