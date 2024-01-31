@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt  # Plotting library
 import numpy as np
 import xarray as xr 
 from datetime import datetime 
-import cgfs as gfs
+import gfsRetrieve as gfs
 import cmaps as cmaps 
 import cartopy, cartopy.crs as ccrs  # Plot maps
 import cartopy.feature as cfeature
@@ -20,7 +20,6 @@ def calcShear(u, v, top, bot):
 # Helper function to calculate the shear magnitude
 def shearMag(u, v):
     return float(((u**2 + v**2)**0.5).values)
-
 
 # Calculates all the possible shear layers
 def allShear(u, v):

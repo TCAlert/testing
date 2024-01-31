@@ -68,23 +68,3 @@ def map(n, s, e, w):
     gl = ax.gridlines(crs=ccrs.PlateCarree(central_longitude=180), zorder = 9, draw_labels = True, linewidth = 0.5, color='white', alpha=0.5, linestyle='--', transform = ccrs.PlateCarree(central_longitude=180))
     gl.xlabels_top = gl.ylabels_right = False 
     return n, s, e, w
-
-# Function to plot windbarbs 
-def windbarbs(lons, lats, uwnd, vwnd, lvl):
-    uwnd = uwnd.sel(lev = lvl)
-    vwnd = vwnd.sel(lev = lvl)
-    plt.barbs(lons, lats, uwnd.values * 1.9438, vwnd.values * 1.94384, zorder = 10)
-
-# Function to plot filled contours
-def contourf(data, lvl, ranges, color):
-    try:
-        data = data.sel(lev = lvl)
-    except:
-        data = data
-    plt.contourf(data.lon, data.lat, data.values, levels = ranges, cmap = color)    
-    plt.colorbar(orientation = 'vertical', aspect = 50, pad = .02)
-
-# Function to plot contours
-def contour(data, lvl, value, color, linewidth):
-    data = data.sel(lev = lvl)
-    plt.contour(data.lon, data.lat, data.values, origin = 'upper', levels = value, colors = color, linewidths = linewidth)

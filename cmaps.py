@@ -41,6 +41,21 @@ def pwat():
 
     return newcmp
 
+def tempAnoms():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/20, "#f2b3b3"),
+    (5/20, "#802525"),
+    (7.5/20, "#faa44d"),
+    (10/20, "#FFFFFF"),
+    (12.5/20, "#4da4fa"),
+    (15/20, "#252580"),
+    (20/20, "#d3b3f2")])
+
+    vmin = -5
+    vmax = 5
+
+    return newcmp.reversed()
+
 def snow():
     newcmp = LinearSegmentedColormap.from_list("",[
     (0/96, "#F4F4F4"),

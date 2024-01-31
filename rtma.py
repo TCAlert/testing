@@ -6,10 +6,11 @@ import cartopy.feature as cfeature
 import gfsRetrieve as gfs 
 import numpy as np 
 import cmaps as cmap 
+import matplotlib.patheffects as pe
 
 # Create a map using Cartopy
 def map(interval, labelsize):
-    fig = plt.figure(figsize=(16, 6))
+    fig = plt.figure(figsize=(18, 9))
 
     # Add the map and set the extent
     ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=0))
@@ -29,22 +30,28 @@ def map(interval, labelsize):
     return ax 
 
 labelsize = 9
+spacing = 1
 year = 2024
 month = 1
-day = 15
-hour = 20
+day = 26
+hour = 19
+extent = [-85, -70, 35, 45]
 data = xr.open_dataset(f'http://nomads.ncep.noaa.gov:80/dods/rtma2p5/rtma2p5{str(year)}{str(month).zfill(2)}{str(day).zfill(2)}/rtma2p5_anl_{str(hour).zfill(2)}z')
 data = data['tmp2m'].squeeze()
 data.values = ((data.values - 273.15) * (9/5)) + 32
 print(data)
 
 date = f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}'
-ax = map(4, labelsize - 1)
-ax.set_extent([-126, -67, 23, 51])
+ax = map(spacing, labelsize - 1)
+ax.set_extent(extent)
 c = plt.contourf(data.lon, data.lat, data.values, cmap = cmap.temperature(), levels = np.arange(-100, 101, 1), extend = 'both')
 plt.contour(data.lon, data.lat, data.values, colors = 'black', levels = [32])
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.set_yticks(np.arange(-100, 110, 10))
+
+for x in np.arange(extent[0] + spacing / 2, extent[1], spacing):
+    for y in np.arange(extent[2] + spacing / 2, extent[3], spacing):
+        plt.text(x, y, int(np.round(data.sel(lon = x, lat = y, method = 'nearest').values, 0)), size=labelsize, color='black', horizontalalignment = 'center', verticalalignment = 'center', path_effects=[pe.withStroke(linewidth = 1, foreground="white")])#, transform = ccrs.PlateCarree(central_longitude = 0))
 
 plt.title(f'2m AGL Temperature (\u00b0F)\nInitialization: {date} at {str(hour).zfill(2)}:00z', fontweight='bold', fontsize=labelsize, loc='left')
 plt.title(f'Valid at {date} at {str(hour).zfill(2)}:00z', fontsize=labelsize)
