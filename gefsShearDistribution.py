@@ -50,7 +50,7 @@ def allShear(u, v):
     return grid, np.array(shear).reshape(grid[0].shape), np.array(us).reshape(grid[0].shape), np.array(vs).reshape(grid[0].shape)
 
 # Function to put together the whole plot
-def finalPlot(grid, shears, us, vs, mag, init):
+def finalPlot(grid, shear, us, vs, init, title):
     # Creates the plot
     fig = plt.figure(figsize=(15, 12))
     ax = plt.axes()
@@ -63,14 +63,14 @@ def finalPlot(grid, shears, us, vs, mag, init):
     # Plots the data using the pressure level grid created before
     # Note that the vectors in the plot are normalized by the magnitude of the shear
     c = ax.contourf(grid[0], grid[1], shear, cmap = cmap.shear(), levels = np.arange(0, 80, .1), extend = 'max')
-    ax.quiver(grid[0], grid[1], us / mag, vs / mag, pivot = 'middle', scale = 15, minshaft = 2, minlength=0, headaxislength = 3, headlength = 3, color = 'black', zorder = 20, path_effects = [patheffects.withStroke(linewidth=1.25, foreground="white")])
+    ax.quiver(grid[0], grid[1], us / (2.5 * shear), vs / (2.5 * shear), pivot = 'middle', scale = 15, minshaft = 2, minlength=0, headaxislength = 3, headlength = 3, color = 'black', zorder = 20, path_effects = [patheffects.withStroke(linewidth=1.25, foreground="white")])
 
     time = (str(data[0].time.values)).split('T')
     time = f'{time[0]} at {(time[1][:5])}z'
 
     ax.set_title(f'GEFS Vertical Wind Shear Distribution: SH09\nInitialization: {init}', fontweight='bold', fontsize=10, loc='left')
     ax.set_title(f'Forecast Hour: {time}', fontsize = 10, loc = 'center')
-    ax.set_title('Ensemble Mean\nDeelan Jariwala | cyclonicwx.com', fontsize=10, loc='right') 
+    ax.set_title(f'{title}\nDeelan Jariwala | cyclonicwx.com', fontsize=10, loc='right') 
     at = AnchoredText("Inspired by Michael Fischer",
                   prop=dict(size=8, color = 'gray'), frameon=False,
                   loc=4)
@@ -82,24 +82,24 @@ def finalPlot(grid, shears, us, vs, mag, init):
     plt.show() 
 
 # Sample usage
-t = datetime.utcnow()
+t = datetime.now()
 year = t.year
 month = t.month
 day = t.day
-hr = 0
+hr = 18
 hour = xr.Dataset({"time": datetime(year, month, day, hr)})['time'].values
 lat = 35.64
 lon = 360 - 48.11
 
 storm = 'sh09'
+title = 'Maximum Shear in Ensemble Suite'
+print([f'{year}{str(month).zfill(2)}{str(day).zfill(2)}{str(hr).zfill(2)}'])
 adeckDF = adeck.filterData(storm, [f'{year}{str(month).zfill(2)}{str(day).zfill(2)}{str(hr).zfill(2)}'], ['AP01', 'AP02', 'AP03', 'AP04', 'AP05', 'AP06', 'AP07', 'AP08', 'AP09', 'AP10', 'AP11', 'AP12', 'AP13', 'AP14', 'AP15', 'AP16', 'AP17', 'AP18', 'AP19', 'AP20', 'AP21', 'AP22', 'AP23', 'AP24', 'AP25', 'AP26', 'AP27', 'AP28', 'AP29', 'AP30', 'AP31'], [0])
 print(adeckDF)
 data, init = gefs.getData(['ugrdprs', 'vgrdprs'], hour)
-print(data)
 shears = []
 us = []
 vs = []
-mags = []
 for x in range(1, 31):
     member = adeckDF.iloc[x - 1]
     uData, vData = data[0].sel(ens = x + 1), data[1].sel(ens = x + 1)
@@ -108,11 +108,21 @@ for x in range(1, 31):
     shears.append(shear)
     us.append(u)
     vs.append(v)
-    mags.append(2.5 * (u**2 + v**2)**0.5)
 
-shears = sum(shears) / len(shears)
-us = sum(us) / len(us)
-vs = sum(vs) / len(vs)
-mags = sum(mags) / len(mags)
-
-finalPlot(grid, shears, us, vs, mags, init)
+if title == 'Ensemble Mean':
+    shears = sum(shears) / len(shears)
+    us = sum(us) / len(us)
+    vs = sum(vs) / len(vs)
+elif title == 'Maximum Shear in Ensemble Suite':
+    shears = np.nanmax(shears, axis = 0)
+    us = sum(us) / len(us)
+    vs = sum(vs) / len(vs)
+elif title == 'Minimum Shear in Ensemble Suite':
+    shears = np.nanmin(shears, axis = 0)
+    us = sum(us) / len(us)
+    vs = sum(vs) / len(vs)
+elif title == 'Probability a Layer has the Max Shear Vector':
+    for x in range(len(shears)):
+        shears[x] = np.where(shears[x] == np.nanmax(shears[x]))
+    shears = np.sum(shears, axis = 0) / len(shears)
+finalPlot(grid, shears, us, vs, init, title)

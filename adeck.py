@@ -27,18 +27,20 @@ def processData(data):
     newData = []
     for x in range(len(data)):
         data[x] = strip(data[x].split(','))
-        if data[x][11] == '34':
-            if data[x][6][-1] == 'N':
-                data[x][6] = round(float(data[x][6][:-1]) * .1, 1)
-            else:
-                data[x][6] = round(float(data[x][6][:-1]) * -.1, 1)
+        try:
+            if data[x][11] == '34':
+                if data[x][6][-1] == 'N':
+                    data[x][6] = round(float(data[x][6][:-1]) * .1, 1)
+                else:
+                    data[x][6] = round(float(data[x][6][:-1]) * -.1, 1)
 
-            if data[x][7][-1] == 'E':
-                data[x][7] = round(float(data[x][7][:-1]) * .1, 1)
-            else:
-                data[x][7] = round(float(data[x][7][:-1]) * -.1, 1)
-            newData.append(data[x][0:11])
-
+                if data[x][7][-1] == 'E':
+                    data[x][7] = round(float(data[x][7][:-1]) * .1, 1)
+                else:
+                    data[x][7] = round(float(data[x][7][:-1]) * -.1, 1)
+                newData.append(data[x][0:11])
+        except:
+            pass
     return newData
 
 def filterData(storm, date, models, hour):
