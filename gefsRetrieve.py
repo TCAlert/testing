@@ -18,7 +18,7 @@ def url(flag):
             init_hour = '06'
         elif hour < 19:
             init_hour = '12'
-        elif hour < 1:
+        elif hour < 24:
             init_hour = '18'
         else:
             init_hour = '00'
@@ -40,19 +40,19 @@ def url(flag):
 def getData(request, hour):
     try:
         init_hour, mdate, link1, link2 = url(True)
-        dataset = [xr.open_dataset(link1).sel(time = hour), xr.open_dataset(link2).sel(time = hour)]
-        dataset = xr.merge(dataset)
+        dataset1, dataset2 = xr.open_dataset(link1).sel(time = hour), xr.open_dataset(link2).sel(time = hour)
     except:
         init_hour, mdate, link1, link2 = url(False)
-        dataset = [xr.open_dataset(link1).sel(time = hour), xr.open_dataset(link2).sel(time = hour)]
-        dataset = xr.merge(dataset)
-            
+        dataset1, dataset2 = xr.open_dataset(link1).sel(time = hour), xr.open_dataset(link2).sel(time = hour)
+    dataset = xr.merge([dataset1[request], dataset2[request]])
+    print(dataset)
+
     init = f'{mdate[0:4]}-{mdate[4:6]}-{mdate[6:8]} at {init_hour}:00z'
     print("GEFS Initialization: ", init)
 
     data = []
     for x in range(len(request)):
-        data.append((dataset[request[x]]).squeeze())
+        data.append(dataset[request[x]].squeeze())
     dataset.close()
     return data, init
 

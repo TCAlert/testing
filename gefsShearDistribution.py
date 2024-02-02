@@ -50,7 +50,7 @@ def allShear(u, v):
     return grid, np.array(shear).reshape(grid[0].shape), np.array(us).reshape(grid[0].shape), np.array(vs).reshape(grid[0].shape)
 
 # Function to put together the whole plot
-def finalPlot(grid, shear, us, vs, init, title):
+def finalPlot(grid, shear, init, title, us = None, vs = None):
     # Creates the plot
     fig = plt.figure(figsize=(15, 12))
     ax = plt.axes()
@@ -60,11 +60,17 @@ def finalPlot(grid, shear, us, vs, init, title):
     ax.set_xlabel('Pressure (Lower Bound)')
     ax.grid()
 
-    # Plots the data using the pressure level grid created before
-    # Note that the vectors in the plot are normalized by the magnitude of the shear
-    c = ax.contourf(grid[0], grid[1], shear, cmap = cmap.shear(), levels = np.arange(0, 80, .1), extend = 'max')
-    ax.quiver(grid[0], grid[1], us / (2.5 * shear), vs / (2.5 * shear), pivot = 'middle', scale = 15, minshaft = 2, minlength=0, headaxislength = 3, headlength = 3, color = 'black', zorder = 20, path_effects = [patheffects.withStroke(linewidth=1.25, foreground="white")])
-
+    if us == None:
+        c = ax.pcolormesh(grid[0], grid[1], shear, cmap = cmap.probs(), vmin = 0, vmax = 100)
+        cb = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
+        cb.set_ticks(range(0, 105, 5))
+    else:    
+        # Plots the data using the pressure level grid created before
+        # Note that the vectors in the plot are normalized by the magnitude of the shear
+        c = ax.contourf(grid[0], grid[1], shear, cmap = cmap.shear(), levels = np.arange(0, 80, .1), extend = 'max')
+        ax.quiver(grid[0], grid[1], us / (2.5 * shear), vs / (2.5 * shear), pivot = 'middle', scale = 15, minshaft = 2, minlength=0, headaxislength = 3, headlength = 3, color = 'black', zorder = 20, path_effects = [patheffects.withStroke(linewidth=1.25, foreground="white")])
+        cb = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
+        cb.set_ticks(range(0, 85, 5))
     time = (str(data[0].time.values)).split('T')
     time = f'{time[0]} at {(time[1][:5])}z'
 
@@ -76,8 +82,7 @@ def finalPlot(grid, shear, us, vs, init, title):
                   loc=4)
     at.patch.set_alpha(.1)
     ax.add_artist(at)
-    cb = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
-    cb.set_ticks(range(0, 85, 5))
+
     plt.savefig(r"C:\Users\deela\Downloads\shearDiagnostics.png", dpi = 400, bbox_inches = 'tight')
     plt.show() 
 
@@ -87,16 +92,14 @@ year = t.year
 month = t.month
 day = t.day
 hr = 18
-hour = xr.Dataset({"time": datetime(year, month, day, hr)})['time'].values
-lat = 35.64
-lon = 360 - 48.11
-
+fcastHour = 48
 storm = 'sh09'
-title = 'Maximum Shear in Ensemble Suite'
-print([f'{year}{str(month).zfill(2)}{str(day).zfill(2)}{str(hr).zfill(2)}'])
-adeckDF = adeck.filterData(storm, [f'{year}{str(month).zfill(2)}{str(day).zfill(2)}{str(hr).zfill(2)}'], ['AP01', 'AP02', 'AP03', 'AP04', 'AP05', 'AP06', 'AP07', 'AP08', 'AP09', 'AP10', 'AP11', 'AP12', 'AP13', 'AP14', 'AP15', 'AP16', 'AP17', 'AP18', 'AP19', 'AP20', 'AP21', 'AP22', 'AP23', 'AP24', 'AP25', 'AP26', 'AP27', 'AP28', 'AP29', 'AP30', 'AP31'], [0])
+shearStrength = 15
+title = f'Probability a Layer has the Max Shear Vector'
+
+adeckDF = adeck.filterData(storm, [f'{year}{str(month).zfill(2)}{str(day).zfill(2)}{str(hr).zfill(2)}'], ['AP01', 'AP02', 'AP03', 'AP04', 'AP05', 'AP06', 'AP07', 'AP08', 'AP09', 'AP10', 'AP11', 'AP12', 'AP13', 'AP14', 'AP15', 'AP16', 'AP17', 'AP18', 'AP19', 'AP20', 'AP21', 'AP22', 'AP23', 'AP24', 'AP25', 'AP26', 'AP27', 'AP28', 'AP29', 'AP30', 'AP31'], [fcastHour])
 print(adeckDF)
-data, init = gefs.getData(['ugrdprs', 'vgrdprs'], hour)
+data, init = gefs.getData(['ugrdprs', 'vgrdprs'], np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hr).zfill(2)}') + np.timedelta64(fcastHour, 'h'))
 shears = []
 us = []
 vs = []
@@ -123,6 +126,13 @@ elif title == 'Minimum Shear in Ensemble Suite':
     vs = sum(vs) / len(vs)
 elif title == 'Probability a Layer has the Max Shear Vector':
     for x in range(len(shears)):
-        shears[x] = np.where(shears[x] == np.nanmax(shears[x]))
-    shears = np.sum(shears, axis = 0) / len(shears)
-finalPlot(grid, shears, us, vs, init, title)
+        shears[x] = np.where(shears[x] == np.nanmax(shears[x]), 1, 0)
+    shears = (np.sum(shears, axis = 0) / len(shears)) * 100
+    us = vs = None
+elif title == f'Percent of Members with Shear >{shearStrength}kt':
+    for x in range(len(shears)):
+        shears[x] = np.where(shears[x] > shearStrength, 1, 0)
+    shears = (np.sum(shears, axis = 0) / len(shears)) * 100
+    us = vs = None    
+
+finalPlot(grid, shears, init, title, us, vs)

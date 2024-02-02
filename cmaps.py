@@ -41,6 +41,18 @@ def pwat():
 
     return newcmp
 
+def probs():
+    newcmp = LinearSegmentedColormap.from_list("",[
+    (0/100, "#FFFFFF"),
+    (10/100, "#7da1a2"),
+    (25/100, "#3f9349"),
+    (50/100, "#e2c657"),
+    (75/100, "#f7843c"),
+    (90/100, "#fc4226"),
+    (100/100, "#f19582")])
+
+    return newcmp
+
 def tempAnoms():
     newcmp = LinearSegmentedColormap.from_list("", [
     (0/20, "#f2b3b3"),
