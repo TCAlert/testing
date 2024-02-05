@@ -22,6 +22,32 @@ def calcShear(u, v, top, bot):
 def shearMag(u, v):
     return float(((u**2 + v**2)**0.5).values)
 
+def percentile(data, num):
+    f = open(r"C:\Users\deela\Downloads\test.txt", "a")
+    f.write(str(data))
+    f.close()
+    dim1 = len(data)
+    dim2 = len(data[0])
+    dim3 = len(data[0][0])
+    num = int(num / 100 * len(data))
+    print(num)
+
+    listOfListOfColumns = []
+    for z in range(dim3):
+        listOfColumns = []
+        for y in range(dim2):
+            columns = []
+            for x in range(dim1):
+                columns.append(data[x][z][y])
+            if num % 2 == 0:
+                listOfColumns.append((sorted(columns)[num] + sorted(columns)[num - 1]) / 2)
+            else:
+                listOfColumns.append(sorted(columns)[num])
+        listOfListOfColumns.append(listOfColumns)
+    print(listOfListOfColumns)
+
+    return listOfListOfColumns
+
 # Calculates all the possible shear layers
 def allShear(u, v):
     # Define Levels to be used: intervals of 50 between bounds of classic deep shear level
@@ -60,21 +86,23 @@ def finalPlot(grid, shear, init, title, us = None, vs = None):
     ax.set_xlabel('Pressure (Lower Bound)')
     ax.grid()
 
-    if us == None:
-        c = ax.pcolormesh(grid[0], grid[1], shear, cmap = cmap.probs(), vmin = 0, vmax = 100)
-        cb = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
-        cb.set_ticks(range(0, 105, 5))
-    else:    
+    try:
+        if us == None:
+            c = ax.pcolormesh(grid[0], grid[1], shear, cmap = cmap.probs(), vmin = 0, vmax = 100)
+            cb = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
+            cb.set_ticks(range(0, 105, 5))
+    except:    
         # Plots the data using the pressure level grid created before
         # Note that the vectors in the plot are normalized by the magnitude of the shear
+        mag = (2.5 * (us**2 + vs**2)**0.5)
         c = ax.contourf(grid[0], grid[1], shear, cmap = cmap.shear(), levels = np.arange(0, 80, .1), extend = 'max')
-        ax.quiver(grid[0], grid[1], us / (2.5 * shear), vs / (2.5 * shear), pivot = 'middle', scale = 15, minshaft = 2, minlength=0, headaxislength = 3, headlength = 3, color = 'black', zorder = 20, path_effects = [patheffects.withStroke(linewidth=1.25, foreground="white")])
+        ax.quiver(grid[0], grid[1], us / mag, vs / mag, pivot = 'middle', scale = 15, minshaft = 2, minlength=0, headaxislength = 3, headlength = 3, color = 'black', zorder = 20, path_effects = [patheffects.withStroke(linewidth=1.25, foreground="white")])
         cb = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
         cb.set_ticks(range(0, 85, 5))
     time = (str(data[0].time.values)).split('T')
     time = f'{time[0]} at {(time[1][:5])}z'
 
-    ax.set_title(f'GEFS Vertical Wind Shear Distribution: SH09\nInitialization: {init}', fontweight='bold', fontsize=10, loc='left')
+    ax.set_title(f'GEFS Vertical Wind Shear Distribution: SH95\nInitialization: {init}', fontweight='bold', fontsize=10, loc='left')
     ax.set_title(f'Forecast Hour: {time}', fontsize = 10, loc = 'center')
     ax.set_title(f'{title}\nDeelan Jariwala | cyclonicwx.com', fontsize=10, loc='right') 
     at = AnchoredText("Inspired by Michael Fischer",
@@ -83,7 +111,7 @@ def finalPlot(grid, shear, init, title, us = None, vs = None):
     at.patch.set_alpha(.1)
     ax.add_artist(at)
 
-    plt.savefig(r"C:\Users\deela\Downloads\shearDiagnostics.png", dpi = 400, bbox_inches = 'tight')
+    plt.savefig(r"C:\Users\deela\Downloads\shearDiagnostics_" + title + ".png", dpi = 400, bbox_inches = 'tight')
     plt.show() 
 
 # Sample usage
@@ -92,10 +120,11 @@ year = t.year
 month = t.month
 day = t.day
 hr = 18
-fcastHour = 48
-storm = 'sh09'
+fcastHour = 36
+storm = 'sh95'
 shearStrength = 15
-title = f'Probability a Layer has the Max Shear Vector'
+p = 25
+title = f'{p}th Percentile of Wind Shears'
 
 adeckDF = adeck.filterData(storm, [f'{year}{str(month).zfill(2)}{str(day).zfill(2)}{str(hr).zfill(2)}'], ['AP01', 'AP02', 'AP03', 'AP04', 'AP05', 'AP06', 'AP07', 'AP08', 'AP09', 'AP10', 'AP11', 'AP12', 'AP13', 'AP14', 'AP15', 'AP16', 'AP17', 'AP18', 'AP19', 'AP20', 'AP21', 'AP22', 'AP23', 'AP24', 'AP25', 'AP26', 'AP27', 'AP28', 'AP29', 'AP30', 'AP31'], [fcastHour])
 print(adeckDF)
@@ -107,6 +136,8 @@ for x in range(1, 31):
     member = adeckDF.iloc[x - 1]
     uData, vData = data[0].sel(ens = x + 1), data[1].sel(ens = x + 1)
     lon, lat = member[7], member[6]
+    if lon < 0:
+        lon = lon + 360
     grid, shear, u, v = allShear(uData.sel(lon = slice(lon - 2.5, lon + 2.5), lat = slice(lat - 2.5, lat + 2.5)).mean(['lat', 'lon']) * 1.9438, vData.sel(lon = slice(lon - 2.5, lon + 2.5), lat = slice(lat - 2.5, lat + 2.5)).mean(['lat', 'lon']) * 1.9438)
     shears.append(shear)
     us.append(u)
@@ -134,5 +165,8 @@ elif title == f'Percent of Members with Shear >{shearStrength}kt':
         shears[x] = np.where(shears[x] > shearStrength, 1, 0)
     shears = (np.sum(shears, axis = 0) / len(shears)) * 100
     us = vs = None    
-
+elif title == f'{p}th Percentile of Wind Shears':
+    shears = percentile(shears, p)
+    us = sum(us) / len(us)
+    vs = sum(vs) / len(vs)
 finalPlot(grid, shears, init, title, us, vs)
