@@ -70,11 +70,11 @@ def anomalies(month, years, sd = False):
 
     plt.contourf(data.lon, data.lat, allData, origin='lower', levels = np.arange(-5, 5, .1), cmap = cmap.tempAnoms(), extend = 'both', transform=ccrs.PlateCarree(central_longitude=0))
     plt.title(f'ERSSTv5 {title}\n30-Year Sliding Climatology' , fontweight='bold', fontsize=labelsize, loc='left')
-    plt.title(f'{helper.numToMonth(month)} of years with a Hyperactive Atlantic', fontsize = labelsize, loc = 'center')
+    plt.title(f'{helper.numToMonth(month)} {str(years)}', fontsize = labelsize, loc = 'center')
     plt.title('Deelan Jariwala', fontsize=labelsize, loc='right')  
     cbar = plt.colorbar(orientation = 'vertical', aspect = 50, pad = .02)
     cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
-    plt.savefig(r"C:\Users\deela\Downloads\ersst.png", dpi = 400, bbox_inches = 'tight')
+    plt.savefig(r"C:\Users\deela\Downloads\ersstComposite.png", dpi = 400, bbox_inches = 'tight')
     plt.show()
 
-anomalies('9', [1878, 1886, 1887, 1893, 1906, 1926, 1932, 1933, 1950, 1961, 1969, 1995, 1996, 1998, 1999, 2003, 2004, 2005, 2010, 2017, 2020])
+anomalies('9', [1941, 1942, 1943, 1944, 1945])

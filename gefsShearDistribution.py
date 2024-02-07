@@ -23,9 +23,6 @@ def shearMag(u, v):
     return float(((u**2 + v**2)**0.5).values)
 
 def percentile(data, num):
-    f = open(r"C:\Users\deela\Downloads\test.txt", "a")
-    f.write(str(data))
-    f.close()
     dim1 = len(data)
     dim2 = len(data[0])
     dim3 = len(data[0][0])
@@ -120,11 +117,15 @@ year = t.year
 month = t.month
 day = t.day
 hr = 18
-fcastHour = 36
-storm = 'sh95'
+fcastHour = 120
+storm = 'sh94'
 shearStrength = 15
-p = 25
-title = f'{p}th Percentile of Wind Shears'
+p = 10
+#title = f'Percent of Members with Shear >{shearStrength}kt'
+#title = 'Minimum Shear in Ensemble Suite'
+#title = 'Interquartile Range'
+title = 'Probability a Layer has the Max Shear Vector'
+#title = f'{p}th Percentile of Wind Shears'
 
 adeckDF = adeck.filterData(storm, [f'{year}{str(month).zfill(2)}{str(day).zfill(2)}{str(hr).zfill(2)}'], ['AP01', 'AP02', 'AP03', 'AP04', 'AP05', 'AP06', 'AP07', 'AP08', 'AP09', 'AP10', 'AP11', 'AP12', 'AP13', 'AP14', 'AP15', 'AP16', 'AP17', 'AP18', 'AP19', 'AP20', 'AP21', 'AP22', 'AP23', 'AP24', 'AP25', 'AP26', 'AP27', 'AP28', 'AP29', 'AP30', 'AP31'], [fcastHour])
 print(adeckDF)
@@ -167,6 +168,10 @@ elif title == f'Percent of Members with Shear >{shearStrength}kt':
     us = vs = None    
 elif title == f'{p}th Percentile of Wind Shears':
     shears = percentile(shears, p)
+    us = sum(us) / len(us)
+    vs = sum(vs) / len(vs)
+elif title == f'Interquartile Range':
+    shears = np.array(percentile(shears, 75)) - np.array(percentile(shears, 25))
     us = sum(us) / len(us)
     vs = sum(vs) / len(vs)
 finalPlot(grid, shears, init, title, us, vs)

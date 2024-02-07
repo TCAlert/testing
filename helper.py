@@ -36,9 +36,11 @@ def greatCircle(lat1, lon1, lat2, lon2):
     lat1, lon1, lat2, lon2 = lat1 * RADCONV, lon1 * RADCONV, lat2 * RADCONV, lon2 * RADCONV 
     return RADIUSOFEARTH * np.arccos(np.cos(lat1) * np.cos(lat2) * np.cos(lon1 - lon2) + (np.sin(lat1) * np.sin(lat2)))
 
+def dirSpdToUV(direction, magnitude):
+    return magnitude * np.cos(np.deg2rad(direction)), magnitude * np.sin(np.deg2rad(direction))
+
 def strip(l):
     l = [x.strip() for x in l]
-     
 
     return l 
 
