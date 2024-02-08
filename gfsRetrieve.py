@@ -3,6 +3,8 @@ import cartopy, cartopy.crs as ccrs  # Plot maps
 import xarray as xr 
 from datetime import datetime, timedelta
 import cartopy.feature as cfeature
+import numpy as np 
+import cmaps as cmap 
 
 # Generate a URL that you will use to retrieve the data
 def url(flag):
@@ -68,3 +70,8 @@ def map(n, s, e, w):
     gl = ax.gridlines(crs=ccrs.PlateCarree(central_longitude=180), zorder = 9, draw_labels = True, linewidth = 0.5, color='white', alpha=0.5, linestyle='--', transform = ccrs.PlateCarree(central_longitude=180))
     gl.xlabels_top = gl.ylabels_right = False 
     return n, s, e, w
+
+#data, init = getData(['ugrdprs', 'vgrdprs'], np.datetime64('2024-02-08T18'))
+#data = (data[0]**2 + data[1]**2)**0.5
+#plt.imshow(data.sel(lev = 200) - data.sel(lev = 850), cmap = cmap.shear2(), vmin = 0, vmax = 80)
+#plt.show()

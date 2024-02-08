@@ -22,28 +22,33 @@ def calcShear(u, v, top, bot):
 def shearMag(u, v):
     return float(((u**2 + v**2)**0.5).values)
 
+# Calculates percentiles
+# `data` is a 3D array containing the computed wind shears from each member of the GEFS 
+# `num` is the desired percentile (Ex: 10, 25, 50, 75, 90)
 def percentile(data, num):
-    dim1 = len(data)
-    dim2 = len(data[0])
-    dim3 = len(data[0][0])
-    num = int(num / 100 * len(data))
-    print(num)
-
-    listOfListOfColumns = []
-    for z in range(dim3):
-        listOfColumns = []
-        for y in range(dim2):
-            columns = []
-            for x in range(dim1):
-                columns.append(data[x][z][y])
+    # Extracts dimensions of data and calculates the numeric value that the percentile best corresponds to
+    depth = len(data)
+    rows = len(data[0])
+    cols = len(data[0][0])
+    num = int(num / 100 * depth)
+       
+    listOfListOfDepths = []
+    for z in range(cols):
+        listOfDepths = []
+        for y in range(rows):
+            depths = []
+            for x in range(depth):
+                # Appends all data that belongs to a given depth slice to a list (`depths`) 
+                depths.append(data[x][z][y])
+            # Sorts each depth slice and selects the value that best corresponds to the given percentile
             if num % 2 == 0:
-                listOfColumns.append((sorted(columns)[num] + sorted(columns)[num - 1]) / 2)
+                listOfDepths.append((sorted(depths)[num] + sorted(depths)[num - 1]) / 2)
             else:
-                listOfColumns.append(sorted(columns)[num])
-        listOfListOfColumns.append(listOfColumns)
-    print(listOfListOfColumns)
+                listOfDepths.append(sorted(depths)[num])
+        listOfListOfDepths.append(listOfDepths)
+        # Remainder of loop reconstructs the 2D array (`rows` x `cols`), now containing percentile data
 
-    return listOfListOfColumns
+    return listOfListOfDepths
 
 # Calculates all the possible shear layers
 def allShear(u, v):
@@ -84,6 +89,8 @@ def finalPlot(grid, shear, init, title, us = None, vs = None):
     ax.grid()
 
     try:
+        # Plots the data using the pressure level grid created before
+        # This section plots probabilistic data
         if us == None:
             c = ax.pcolormesh(grid[0], grid[1], shear, cmap = cmap.probs(), vmin = 0, vmax = 100)
             cb = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
@@ -92,16 +99,17 @@ def finalPlot(grid, shear, init, title, us = None, vs = None):
         # Plots the data using the pressure level grid created before
         # Note that the vectors in the plot are normalized by the magnitude of the shear
         mag = (2.5 * (us**2 + vs**2)**0.5)
-        c = ax.contourf(grid[0], grid[1], shear, cmap = cmap.shear(), levels = np.arange(0, 80, .1), extend = 'max')
+        c = ax.contourf(grid[0], grid[1], shear, cmap = cmap.shear(), levels = np.arange(0, 80.1, .1), extend = 'max')
         ax.quiver(grid[0], grid[1], us / mag, vs / mag, pivot = 'middle', scale = 15, minshaft = 2, minlength=0, headaxislength = 3, headlength = 3, color = 'black', zorder = 20, path_effects = [patheffects.withStroke(linewidth=1.25, foreground="white")])
         cb = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
         cb.set_ticks(range(0, 85, 5))
+
     time = (str(data[0].time.values)).split('T')
     time = f'{time[0]} at {(time[1][:5])}z'
 
     ax.set_title(f'GEFS Vertical Wind Shear Distribution: SH95\nInitialization: {init}', fontweight='bold', fontsize=10, loc='left')
     ax.set_title(f'Forecast Hour: {time}', fontsize = 10, loc = 'center')
-    ax.set_title(f'{title}\nDeelan Jariwala | cyclonicwx.com', fontsize=10, loc='right') 
+    ax.set_title(f'{title}\nDeelan Jariwala', fontsize=10, loc='right') 
     at = AnchoredText("Inspired by Michael Fischer",
                   prop=dict(size=8, color = 'gray'), frameon=False,
                   loc=4)
@@ -116,62 +124,86 @@ t = datetime.now()
 year = t.year
 month = t.month
 day = t.day
-hr = 18
-fcastHour = 120
-storm = 'sh94'
+hr = 12
+fcastHour = 72
+storm = 'sh11'
 shearStrength = 15
 p = 10
-#title = f'Percent of Members with Shear >{shearStrength}kt'
+title = f'Percent of Members with Shear Exceeding {shearStrength}kt'
 #title = 'Minimum Shear in Ensemble Suite'
 #title = 'Interquartile Range'
-title = 'Probability a Layer has the Max Shear Vector'
+#title = 'Probability a Layer has the Max Shear Vector'
 #title = f'{p}th Percentile of Wind Shears'
+#title = 'Ensemble Mean'
 
+# Collects requisite information from the A-Deck regarding the given storm for the specified hour and models
+# Additionally retrieves the U and V wind data for the GEFS corresponding to the same time and run
 adeckDF = adeck.filterData(storm, [f'{year}{str(month).zfill(2)}{str(day).zfill(2)}{str(hr).zfill(2)}'], ['AP01', 'AP02', 'AP03', 'AP04', 'AP05', 'AP06', 'AP07', 'AP08', 'AP09', 'AP10', 'AP11', 'AP12', 'AP13', 'AP14', 'AP15', 'AP16', 'AP17', 'AP18', 'AP19', 'AP20', 'AP21', 'AP22', 'AP23', 'AP24', 'AP25', 'AP26', 'AP27', 'AP28', 'AP29', 'AP30', 'AP31'], [fcastHour])
-print(adeckDF)
 data, init = gefs.getData(['ugrdprs', 'vgrdprs'], np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hr).zfill(2)}') + np.timedelta64(fcastHour, 'h'))
+print(adeckDF)
+
+# Calculate wind shears for each member of the GEFS
 shears = []
 us = []
 vs = []
 for x in range(1, 31):
+    # Selects GEFS member from the A-Deck and retrieves latitudes and longitudes 
     member = adeckDF.iloc[x - 1]
     uData, vData = data[0].sel(ens = x + 1), data[1].sel(ens = x + 1)
     lon, lat = member[7], member[6]
     if lon < 0:
         lon = lon + 360
+    
+    # Subsets a 5x5 degree box centered on the storm and computes the average for all pressure levels
+    # This data (both the zonal and meridional component of the wind vector) is then passed to the function to compute wind shears throughout the column
+    # The values returned are then appended to lists to form the 3D matrices     
     grid, shear, u, v = allShear(uData.sel(lon = slice(lon - 2.5, lon + 2.5), lat = slice(lat - 2.5, lat + 2.5)).mean(['lat', 'lon']) * 1.9438, vData.sel(lon = slice(lon - 2.5, lon + 2.5), lat = slice(lat - 2.5, lat + 2.5)).mean(['lat', 'lon']) * 1.9438)
     shears.append(shear)
     us.append(u)
     vs.append(v)
 
+# Simple average of all ensemble members
 if title == 'Ensemble Mean':
     shears = sum(shears) / len(shears)
     us = sum(us) / len(us)
     vs = sum(vs) / len(vs)
+# Flattens the 3D list into a 2D one where each value is the maximum of each `depth` column
+# Note that this additionally plots the ensemble mean shear vectors; in the future this could change    
 elif title == 'Maximum Shear in Ensemble Suite':
     shears = np.nanmax(shears, axis = 0)
     us = sum(us) / len(us)
     vs = sum(vs) / len(vs)
+# Flattens the 3D list into a 2D one where each value is the minimum of each `depth` column
+# Note that this additionally plots the ensemble mean shear vectors; in the future this could change
 elif title == 'Minimum Shear in Ensemble Suite':
     shears = np.nanmin(shears, axis = 0)
     us = sum(us) / len(us)
     vs = sum(vs) / len(vs)
+# Largely self-explanatory, returns a 2D list containing probabilities
+# Should sum up to 100%
 elif title == 'Probability a Layer has the Max Shear Vector':
     for x in range(len(shears)):
         shears[x] = np.where(shears[x] == np.nanmax(shears[x]), 1, 0)
     shears = (np.sum(shears, axis = 0) / len(shears)) * 100
     us = vs = None
-elif title == f'Percent of Members with Shear >{shearStrength}kt':
+# Largely self explanatory, returns a 2D list containing probabilities of exceedance
+elif title == f'Percent of Members with Shear Exceeding {shearStrength}kt':
     for x in range(len(shears)):
         shears[x] = np.where(shears[x] > shearStrength, 1, 0)
     shears = (np.sum(shears, axis = 0) / len(shears)) * 100
     us = vs = None    
+# Flattens the 3D list into a 2D one where each value corresponds to a given percentile of each `depth` column
+# Note that this additionally plots the ensemble mean shear vectors; in the future this could change
 elif title == f'{p}th Percentile of Wind Shears':
     shears = percentile(shears, p)
     us = sum(us) / len(us)
     vs = sum(vs) / len(vs)
+# Calculates the interquartile range of all wind shears in the column. Intended as a metric of spread.
+# Note that this additionally plots the ensemble mean shear vectors; in the future this could change
 elif title == f'Interquartile Range':
     shears = np.array(percentile(shears, 75)) - np.array(percentile(shears, 25))
     us = sum(us) / len(us)
     vs = sum(vs) / len(vs)
+
+# Runs program
 finalPlot(grid, shears, init, title, us, vs)

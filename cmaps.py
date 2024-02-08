@@ -152,6 +152,24 @@ def shear():
     
     return newcmp
 
+def shear2():
+    newcmp = LinearSegmentedColormap.from_list("", [ 
+    (0/80, "#f5f5f5"),
+    (10/80, "#4245a6"),
+    (10/80, "#77a6af"),
+    (15/80, "#92c37d"),
+    (15/80, "#fed865"),
+    (25/80, "#cc0101"),
+    (25/80, "#9b0404"),
+    #(35/80, "#cc3333"),
+    (50/80, "#e99696"),
+    (80/80, "#ff549a")])
+
+    vmin = 0
+    vmax = 80
+    
+    return newcmp
+
 # Shortwave Infrared
 def swir():
     num1 = 15
