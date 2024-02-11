@@ -1,12 +1,18 @@
+# Project 1: Simple Pokemon Game
+# Deelan Jariwala
+
 import random
 
+# Declare two dictionaries containing the HP and accurancy of both Bulbasaur and Pikachu 
 pikaStats = {'hp': 100, 'acc' : 100}
 bulbStats = {'hp': 100, 'acc' : 100}
 
+# Function to be called to end the game
 def run():
   print("Goodbye!")
   return
 
+# Moveset for Bulbasaur (tackle and sand attack)
 def attackBulba(move):
   if move.lower() == 'tackle':
     print(f'Bulbasaur used {move.lower()}!')
@@ -20,9 +26,12 @@ def attackBulba(move):
     if random.random() * 100 < bulbStats['acc']:
       print('Swoosh!')
       pikaStats['acc'] = pikaStats['acc'] - 10
+      if pikaStats['acc'] < 0:
+        pikaStats['acc'] = 0
     else:
       print('But it missed!')
 
+# Moveset for Pikachu (tackle, sand attack, and catch)
 def attackPika(move):
   num = 0
   if move.lower() == 'tackle':
@@ -31,12 +40,14 @@ def attackPika(move):
       print('Bam!')
       bulbStats['hp'] = bulbStats['hp'] - 10
     else:
-      print('But t missed!')
+      print('But it missed!')
   elif move.lower() == 'sand attack':
     print(f'Pikachu used {move}!')
     if random.random() * 100 < pikaStats['acc']:
       print('Swoosh!')
       bulbStats['acc'] = bulbStats['acc'] - 10
+      if bulbStats['acc'] < 0:
+        bulbStats['acc'] = 0
     else:
       print('But it missed!')
   elif move.lower() == 'catch':
@@ -46,9 +57,10 @@ def attackPika(move):
     else:
       print('Congratulations!')
       num = 1
-    
+
   return num
 
+# Randomly chooses a move for Bulbasaur
 def bulbasaurMoves():
   if random.random() > 0.5:
     move = 'tackle'
@@ -56,6 +68,8 @@ def bulbasaurMoves():
     move = 'sand attack'
   attackBulba(move)
 
+# User inputted move for Pikachu (1, 2, or 3)
+# Returns the name of the move and a potential end condition 
 def pikachuMoves(choice):
   if choice == '1':
     move = 'tackle'
@@ -69,9 +83,12 @@ def pikachuMoves(choice):
 
   return move, end
 
+# Function containing the rest of the battle
 def battle():
   print("Pikachu! I choose you!")
 
+  # Terminates game when either pokemon's HP is less than zero 
+  # Otherwise, play the game in the loop
   while pikaStats['hp'] > 0 or bulbStats['hp'] > 0:
     print(f"Pikachu\n  HP: {pikaStats['hp']}  Acc: {pikaStats['acc']}")
     print(f"Bulbasaur\n  HP: {bulbStats['hp']}  Acc: {bulbStats['acc']}")
@@ -79,7 +96,7 @@ def battle():
     bulbasaurMoves()
     if pikaStats['hp'] <= 0:
       print('You lost...')
-      break    
+      break
     else:
       input("Press enter to continue\n")
 
@@ -104,9 +121,9 @@ def battle():
     if bulbStats['hp'] <= 0:
       print('The Bulbasaur fainted. You won!')
       break
-
   run()
 
+# Takes input from the user to battle or run away 
 def startGame():
   print("\nWhat do you want to do?\n1. Battle\n2. Run away!")
   choice = input()
