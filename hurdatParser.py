@@ -305,10 +305,10 @@ def retrieveStorm(dataset, storm = None, ID = None):
 # Sample Usage:
 # Pass processed database to retrieveStorm function with necessary inputs
 # Returns dictionary with storm information and a few basic charts
-hurdat2 = database()
+#hurdat2 = database()
 
-storm = retrieveStorm(hurdat2, ['Irma', '2017'])
-storm['ratio'](storm)
+#storm = retrieveStorm(hurdat2, ['Irma', '2017'])
+#storm['ratio'](storm)
 
-plt.show()
-plt.chose()
+#plt.show()
+#plt.close()
