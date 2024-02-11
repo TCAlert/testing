@@ -1,14 +1,9 @@
 import matplotlib.pyplot as plt  # Plotting library
 import numpy as np
-import xarray as xr 
 from datetime import datetime 
 import gefsRetrieve as gefs
-import cmaps as cmaps 
-import cartopy, cartopy.crs as ccrs  # Plot maps
-import cartopy.feature as cfeature
 import cmaps as cmap 
 from matplotlib import patheffects
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from matplotlib.offsetbox import AnchoredText
 import adeck 
 
@@ -124,23 +119,24 @@ t = datetime.now()
 year = t.year
 month = t.month
 day = t.day
-hr = 12
-fcastHour = 72
-storm = 'sh11'
+hr = 6
+fcastHour = 0
+storm = 'sh12'
 shearStrength = 15
 p = 10
-title = f'Percent of Members with Shear Exceeding {shearStrength}kt'
+#title = f'Percent of Members with Shear Exceeding {shearStrength}kt'
 #title = 'Minimum Shear in Ensemble Suite'
 #title = 'Interquartile Range'
 #title = 'Probability a Layer has the Max Shear Vector'
 #title = f'{p}th Percentile of Wind Shears'
 #title = 'Ensemble Mean'
+title = 'Quartile Coefficient of Dispersion'
 
 # Collects requisite information from the A-Deck regarding the given storm for the specified hour and models
 # Additionally retrieves the U and V wind data for the GEFS corresponding to the same time and run
 adeckDF = adeck.filterData(storm, [f'{year}{str(month).zfill(2)}{str(day).zfill(2)}{str(hr).zfill(2)}'], ['AP01', 'AP02', 'AP03', 'AP04', 'AP05', 'AP06', 'AP07', 'AP08', 'AP09', 'AP10', 'AP11', 'AP12', 'AP13', 'AP14', 'AP15', 'AP16', 'AP17', 'AP18', 'AP19', 'AP20', 'AP21', 'AP22', 'AP23', 'AP24', 'AP25', 'AP26', 'AP27', 'AP28', 'AP29', 'AP30', 'AP31'], [fcastHour])
-data, init = gefs.getData(['ugrdprs', 'vgrdprs'], np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hr).zfill(2)}') + np.timedelta64(fcastHour, 'h'))
 print(adeckDF)
+data, init = gefs.getData(['ugrdprs', 'vgrdprs'], np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hr).zfill(2)}') + np.timedelta64(fcastHour, 'h'))
 
 # Calculate wind shears for each member of the GEFS
 shears = []
@@ -200,10 +196,13 @@ elif title == f'{p}th Percentile of Wind Shears':
     vs = sum(vs) / len(vs)
 # Calculates the interquartile range of all wind shears in the column. Intended as a metric of spread.
 # Note that this additionally plots the ensemble mean shear vectors; in the future this could change
-elif title == f'Interquartile Range':
+elif title == 'Interquartile Range':
     shears = np.array(percentile(shears, 75)) - np.array(percentile(shears, 25))
     us = sum(us) / len(us)
     vs = sum(vs) / len(vs)
+elif title == 'Quartile Coefficient of Dispersion':
+    shears = (np.array(percentile(shears, 75)) - np.array(percentile(shears, 25))) / (np.array(percentile(shears, 75)) + np.array(percentile(shears, 25)))
+    us = vs = None
 
 # Runs program
 finalPlot(grid, shears, init, title, us, vs)

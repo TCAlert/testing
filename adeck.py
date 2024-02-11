@@ -4,7 +4,7 @@ from helper import strip
 from datetime import datetime 
 import urllib.request as urllib
 
-# Retrieve most recent fix in the NHC or JTWC Best Track for a given storm
+# Retrieve most the A-Deck text file from SSD for the requested storm and open it in Python
 def getData(storm):
     year = str(datetime.now().year)
     if ('al' in storm.lower() or 'ep' in storm.lower() or 'cp' in storm.lower()):
@@ -20,7 +20,9 @@ def getData(storm):
             file = urllib.urlopen(link).read().decode('utf-8')           
     print(link)
     return file
-         
+
+# Takes the data and converts it into a format that is easier to work with, at least for these purposes
+# Could be refined further in the future
 def processData(data):
     data = strip(data.split('\n'))[:-1]
 
@@ -43,6 +45,8 @@ def processData(data):
             pass
     return newData
 
+# Filter data based on the requested date, models, and forecast hour
+# Should be improved in the future in order to make this more modular, but this is sufficient for now
 def filterData(storm, date, models, hour):
     data = processData(getData(storm))
 
