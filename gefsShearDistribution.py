@@ -119,7 +119,7 @@ t = datetime.now()
 year = t.year
 month = t.month
 day = t.day
-hr = 6
+hr = 12
 fcastHour = 0
 storm = 'sh12'
 shearStrength = 15
@@ -200,6 +200,8 @@ elif title == 'Interquartile Range':
     shears = np.array(percentile(shears, 75)) - np.array(percentile(shears, 25))
     us = sum(us) / len(us)
     vs = sum(vs) / len(vs)
+# Calculates the Quartile Coefficient of Dispersion [Defined as IQR / (Q1 + Q3)]
+# Relative metric of spread scaled between 0 and 1
 elif title == 'Quartile Coefficient of Dispersion':
     shears = (np.array(percentile(shears, 75)) - np.array(percentile(shears, 25))) / (np.array(percentile(shears, 75)) + np.array(percentile(shears, 25)))
     us = vs = None
