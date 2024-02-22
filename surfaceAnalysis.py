@@ -11,6 +11,19 @@ import matplotlib.patheffects as pe
 import psl 
 import hurdatParser 
 
+def Gradient2D(data):
+    # Define gradient vector as <fx, fy>
+    # Compute the derivative of the dataset, A, in x and y directions, accounting for dimensional changes due to centered differencing
+    dAx = data.diff('lon')[1:, :]
+    dAy = data.diff('lat')[:, 1:]
+
+    # Compute the derivative of both the x and y coordinates
+    dx = data['lon'].diff('lon') * np.cos(data['lat'] * (np.pi / 180)) 
+    dy = data['lat'].diff('lat')
+
+    # Return dA/dx and dA/dy, where A is the original dataset
+    return dAx / dx, dAy / dy
+
 # Create a map using Cartopy
 def map(interval, labelsize):
     fig = plt.figure(figsize=(18, 9))
@@ -42,7 +55,7 @@ def stationPlot(ax, lat, lon, u, v, slp = None, temp = None, dews = None):
         except:
             pass
 
-def plot(data, year, month, day, hour, name = None):
+def plot(data, year, month, day, hour, name = None, t = 'wind'):
     stormData = hurdatParser.retrieveStorm(hurdatParser.database(), [name, str(year)])['Storm Data']
     stormData = stormData[(stormData['Time'] == np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hour).zfill(2)}'))]
     lat, lon = stormData['Latitude'].values[0], stormData['Longitude'].values[0]
@@ -66,23 +79,52 @@ def plot(data, year, month, day, hour, name = None):
     stationPlot(ax, obsLats, obsLons, u, v, seaLevP, airTemp, dewTemp)    
     ax.text(lon, lat, 'L', size = 30, color = '#bf3030', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center', transform = ccrs.PlateCarree(central_longitude = 0))
     
-    level = '200'
-    uwnd, vwnd = psl.getHourlyData(year, month, day, hour, 'uwnd', level), psl.getHourlyData(year, month, day, hour, 'vwnd', level)#, psl.getHourlyData(year, month, day, hour, 'slp', 'surface') / 100
-    mag = (((uwnd.squeeze()).values)**2 + ((vwnd.squeeze()).values)**2)**0.5 * 1.94384
 
-    c = ax.contourf(uwnd.lon, vwnd.lat, mag, levels = np.arange(0, 161, 1), cmap = cmap.wind2())
-    #s = ax.contour(slp.lon, slp.lat, slp.values, alpha = 0.5, colors = ['black'], levels = np.arange(900, 1100, 4))
-    #ax.clabel(s, inline=True)
-    
-    ax.streamplot(uwnd.lon - 180, vwnd.lat, uwnd.values, vwnd.values, linewidth = 1, density = 1, color = '#404040', transform = ccrs.PlateCarree(central_longitude=180))
-    plt.title(f'ICOADS Ship Observations (Winds and SLP Plotted)\nDate: {str(year)}-{str(month).zfill(2)}-{str(day).zfill(2)} at {str(hour).zfill(2)}00z' , fontweight='bold', fontsize=labelsize + 1, loc='left')
+    if t.lower() == 'wind':
+        level = 'Surface'
+        uwnd, vwnd = psl.getHourlyData(year, month, day, hour, 'uwnd', level), psl.getHourlyData(year, month, day, hour, 'vwnd', level)#, psl.getHourlyData(year, month, day, hour, 'slp', 'surface') / 100
+        mag = (((uwnd.squeeze()).values)**2 + ((vwnd.squeeze()).values)**2)**0.5 * 1.94384
+        c = ax.contourf(uwnd.lon, vwnd.lat, mag, levels = np.arange(0, 161, 1), cmap = cmap.wind2())
+        ax.streamplot(uwnd.lon - 180, vwnd.lat, uwnd.values, vwnd.values, linewidth = 1, density = 1, color = '#404040', transform = ccrs.PlateCarree(central_longitude=180))
+        title = f'{level}mb Wind Speed (kt)'
+    elif t.lower() == 'temp':
+        level = 'Surface'
+        temp = psl.getHourlyData(year, month, day, hour, 'air', level)
+        temp = ((temp - 273.15) * (9 / 5)) + 32
+        c = ax.contourf(temp.lon, temp.lat, temp, levels = np.arange(-100, 101, 1), cmap = cmap.temperature())
+        title = f'{level}mb Air Temperature (F)'
+    elif t.lower() == 'rhum':
+        level = 1000
+        temp = psl.getHourlyData(year, month, day, hour, 'rhum', level)
+        c = ax.contourf(temp.lon, temp.lat, temp, levels = np.arange(0, 101, 1), cmap = cmap.pwat())
+        title = f'{level}mb Relative Humidity'
+    elif t.lower() == 'tempadv':
+        level = 'Surface'
+        temp, uwnd, vwnd = psl.getHourlyData(year, month, day, hour, 'air', level), psl.getHourlyData(year, month, day, hour, 'uwnd', level) * 1.94384, psl.getHourlyData(year, month, day, hour, 'vwnd', level) * 1.94384
+        temp = temp - 273.15
+        dx, dy = Gradient2D(temp)
+        c = ax.contourf(dx.lon, dy.lat, (uwnd[1:, 1:] * dx + vwnd[1:, 1:] * dy) * -1, levels = np.arange(-10, 10.1, .1), cmap = cmap.tempAnoms(), extend = 'both')
+        ax.streamplot(uwnd.lon - 180, vwnd.lat, uwnd.values, vwnd.values, linewidth = 1, density = 1, color = '#404040', transform = ccrs.PlateCarree(central_longitude=180))
+        title = f'{level} Temperature Advection (C)'
+
+    plt.title(f'ICOADS Ship Observations\nDate: {str(year)}-{str(month).zfill(2)}-{str(day).zfill(2)} at {str(hour).zfill(2)}00z' , fontweight='bold', fontsize=labelsize + 1, loc='left')
     plt.title(f'{str(name).upper()}', fontsize = labelsize + 1, loc = 'center')
-    plt.title(f'Deelan Jariwala\nNCEP/NCAR R1 {level}mb Wind Speed (kt)', fontsize=labelsize + 1, loc='right')  
+    plt.title(f'Deelan Jariwala\nNCEP/NCAR R1 {title}', fontsize=labelsize + 1, loc='right')  
     cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
     cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
-    plt.savefig(r"C:\Users\deela\Downloads\sfcMap.png", dpi = 400, bbox_inches = 'tight')
-    plt.show()
+    plt.savefig(r"C:\Users\deela\Downloads\ " + name + title + ".png", dpi = 400, bbox_inches = 'tight')
+    
+# data = pd.read_csv(r"C:\Users\deela\Downloads\GILDA ICOADS Set #2 - ICOADS_R3.0_Rqst717076_19731023-19731027.csv")
+data = pd.read_csv(r"C:\Users\deela\Downloads\GILDA ICOADS Set #1 - ICOADS_R3.0_Rqst717075_19731015-19731022.csv")
 
-data = pd.read_csv(r"C:\Users\deela\Downloads\GILDA ICOADS Set #2 - ICOADS_R3.0_Rqst717076_19731023-19731027.csv")
+year, month, day, hour = 1973, 10, 23, 00
 
-plot(data, 1973, 10, 25, 18, 'Gilda')
+plot(data, year, month, day, hour, 'Gilda', 'wind')
+print('Wind done')
+plot(data, year, month, day, hour, 'Gilda', 'temp')
+print('Temp done')
+plot(data, year, month, day, hour, 'Gilda', 'rhum')
+print('RH done')
+plot(data, year, month, day, hour, 'Gilda', 'tempAdv')
+print('Advection done')
+plt.show()
