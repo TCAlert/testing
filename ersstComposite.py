@@ -6,6 +6,7 @@ import cartopy.feature as cfeature
 import cmaps as cmap 
 import numpy as np 
 import helper 
+import pandas as pd 
 
 # Create a map using Cartopy
 def map(interval, labelsize):
@@ -77,4 +78,21 @@ def anomalies(month, years, sd = False):
     plt.savefig(r"C:\Users\deela\Downloads\ersstComposite.png", dpi = 400, bbox_inches = 'tight')
     plt.show()
 
-anomalies('9', [1941, 1942, 1943, 1944, 1945])
+ens = pd.read_csv(r"C:\Users\deela\Downloads\ensoni - Sheet 1.csv")
+aso, ndj, y = ens['ASO'], ens['NDJ'], ens['Year']
+ninos = []
+ninas = []
+warmn = []
+cooln = []
+for x in range(len(aso)):
+    if aso[x] > 0.5 and ndj[x] > 0.5:
+        ninos.append(y[x])
+    elif aso[x] < -0.5 and ndj[x] < -0.5:
+        ninas.append(y[x])
+    elif (aso[x] > 0 and aso[x] < 0.5) and (ndj[x] > 0 and ndj[x] < 0.5):
+        warmn.append(y[x])
+    elif (aso[x] < 0 and aso[x] > -0.5) and (ndj[x] < 0 and ndj[x] > -0.5):
+        cooln.append(y[x])
+print('El Nino', ninos, '\nWarm Neutral', warmn, '\nCool Neutral', cooln, '\nLa Nina', ninas)
+
+anomalies('9', ninas)#[2010, 1999, 2020, 1995, 1955, 2017, 2022, 2021, 1988, 1942, 1889, 1856, 1998])

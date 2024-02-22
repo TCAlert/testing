@@ -30,12 +30,12 @@ def map(interval, labelsize):
     return ax 
 
 labelsize = 9
-spacing = 1
+spacing = .5
 year = 2024
-month = 1
-day = 26
-hour = 19
-extent = [-85, -70, 35, 45]
+month = 2
+day = 13
+hour = 13
+extent = [-77.5, -70, 37.5, 42.5]
 data = xr.open_dataset(f'http://nomads.ncep.noaa.gov:80/dods/rtma2p5/rtma2p5{str(year)}{str(month).zfill(2)}{str(day).zfill(2)}/rtma2p5_anl_{str(hour).zfill(2)}z')
 data = data['tmp2m'].squeeze()
 data.values = ((data.values - 273.15) * (9/5)) + 32
