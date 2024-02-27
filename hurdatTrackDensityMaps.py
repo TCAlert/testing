@@ -30,9 +30,13 @@ rcParams['font.family'] = 'Courier New'
 
 hyperactive = [1995, 1996, 1998, 1999, 2003, 2004, 2005, 2010, 2017, 2020]
 belowNormal = [1991, 1993, 1994, 1997, 2002, 2009, 2013, 2014, 2015]
-years = [1877, 1888, 1972, 1982, 1997, 2015]
+years = [1914]#[1878, 1915, 1926, 1933, 1942, 1995, 1998, 2005, 2010, 2020]
 months = ['08', '09', '10']
 interval = 3
+#dataType = 'RI'
+#dataType = 'track'
+#dataType = '24hrChange'
+dataType = 'ACE'
 
 def map(interval, labelsize):
     fig = plt.figure(figsize=(18, 9))
@@ -91,21 +95,22 @@ def getData(data, years, months):
 
     return data
 
-data = xr.open_dataset(r"C:\Users\deela\Downloads\trackDensity.nc")
+data = xr.open_dataset(r"C:\Users\deela\Downloads\\" + dataType + "Density.nc")
 lons = data['longitude']
 lats = data['latitude']
-data = data['trackDensity']
+data = data[f'{dataType}Density']
 
-data = getData(data, years, months)# - getData(data, hyperactive, months)
+data = getData(data, years, months)# - getData(data, ninos, months)
 
 ax = map(interval * 2, 9)
 ax.set_extent([-120, 0, 0, 60])
-c = plt.contourf(lons, lats, data, cmap = cmap.tempAnoms(), levels = np.arange(-.25, .25, .001), extend = 'both')
-ax.set_title(f'HURDAT2 Track Density Anomaly\n30-Year Sliding Climatology', fontweight='bold', fontsize=9, loc='left')
+c = plt.contourf(lons, lats, data, cmap = cmap.tempAnoms(), levels = np.arange(-.10, .10, .0001), extend = 'both')
+#c = plt.pcolormesh(lons, lats, data, cmap = cmap.tempAnoms(), vmin = -0.1, vmax = 0.1)
+ax.set_title(f'HURDAT2 {dataType.upper()} Density Anomaly\n30-Year Sliding Climatology', fontweight='bold', fontsize=9, loc='left')
 #ax.set_title(f'{numToMonth(int(month))} {years}', fontsize=9, loc='center') 
 ax.set_title(f'ASO {years}', fontsize=9, loc='center') 
 ax.set_title(f'{interval}\u00b0x{interval}\u00b0\nDeelan Jariwala', fontsize=9, loc='right') 
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
-plt.savefig(r"C:\Users\deela\Downloads\hurdatDensity.png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\hurdatDensity" + dataType + ".png", dpi = 400, bbox_inches = 'tight')
 plt.show()

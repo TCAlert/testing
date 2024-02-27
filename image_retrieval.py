@@ -13,7 +13,7 @@ def getDataGridsatGOES(satellite, year, month, day, hour):
     url = f'https://www.ncei.noaa.gov/data/gridsat-goes/access/goes/{str(year)}/{str(month).zfill(2)}/{filename}'
 
     # Download data using urllib as a file called gridsatgoesfile.nc
-    urllib.request.urlretrieve(url, r"C:\Users\Username\Downloads\gridsatgoesfile.nc")
+    urllib.request.urlretrieve(url, r"C:\Users\deela\Downloads\gridsatgoesfile.nc")
     return filename
 
 # GRIDSAT-B1 Data Retrieval Function
@@ -26,11 +26,11 @@ def getDataGridsatB1(year, month, day, hour):
     url = f'https://www.ncei.noaa.gov/data/geostationary-ir-channel-brightness-temperature-gridsat-b1/access/{str(year)}/{filename}'
 
     # Download data using urllib as a file called gridsatb1file.nc
-    urllib.request.urlretrieve(url, r"C:\Users\Username\Downloads\gridsatb1file.nc")
+    urllib.request.urlretrieve(url, r"C:\Users\deela\Downloads\gridsatb1file.nc")
     return filename
 
 # GOES-R Data Retrieval Function
-# Sample usage: getData(16, 2020, 11, 16, '0900', '13')
+# Sample usage: getDataGOES(16, 2020, 11, 16, '0900', '13')
 # This retrieves GOES-16 Channel 13 infrared data on 11/16/2020 at 0900z
 def getDataGOES(satellite, year, month, day, time, band):
     # Log into AWS server using anonymous credentials
@@ -55,7 +55,7 @@ def getDataGOES(satellite, year, month, day, time, band):
             file = l[x]
 
     # Download the file, and rename it to goesfile.nc
-    fs.get(file, r"C:\Users\Username\Downloads\goesfile.nc")
+    fs.get(file, r"C:\Users\deela\Downloads\goesfile.nc")
     print(f'GOES-{satellite} data downloaded for {month}/{day}/{year} at {time}z')
 
 # Each function here downloads a netCDF file that can easily be opened with packages like xarray or netCDF4. 

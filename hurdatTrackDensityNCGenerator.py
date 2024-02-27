@@ -18,7 +18,7 @@ basin = 'AL'
 climoYears = np.arange(1851, 2024)
 months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 bounds = [-120, 0, 0, 70]
-interval = 1
+interval = 3
 
 if basin == 'EP':
     link = 'https://www.aoml.noaa.gov/hrd/hurdat/hurdat2-nepac.html'
@@ -54,7 +54,7 @@ class helper():
                 total.append(round(ace, 2))
             else:
                 total.append(0)
-        return np.cumsum(total) 
+        return total#np.cumsum(total) 
 
 # Loop through HURDAT2 and separate it into a list of lists containing storm data
 def getData(year):
@@ -125,7 +125,7 @@ def stormObjects(l):
             if (y - 4) >= 0:
                 change.append(l[x]['Wind'][y] - l[x]['Wind'][y - 4])
             else:
-                change.append(np.nan)
+                change.append(0)
             #except:
             #    speed.append(np.nan)
             #    change.append(0)
@@ -166,7 +166,11 @@ def gridData(data, bounds):
                 for w in range(len(temp)):
                     try:
                         if temp['Latitude'][w] > lats[y] and temp['Latitude'][w] < lats[y + 1] and temp['Longitude'][w] > lons[x] and temp['Longitude'][w] < lons[x + 1]:
-                            binStorm += 1
+                            #binStorm += temp['ACE'][w]
+                            #binStorm += 1
+                            #if temp['RI'][w] == True:
+                            #    binStorm += 1            
+                            binStorm += temp['24hrChange'][w]
                         else:
                             binStorm += 0
                     except:
@@ -223,7 +227,7 @@ for x in range(len(climoYears)):
 print(np.array(dataset).shape)
 ds = xr.DataArray(dataset,coords={"time": times, "latitude": (["x","y"], grid[0]),
                           "longitude": (["x","y"], grid[1])},
-                  dims=["time", "x","y"], name = 'trackDensity')
+                  dims=["time", "x","y"], name = '24hrChangeDensity')
 
-ds.to_netcdf(r"C:\Users\deela\Downloads\trackDensity1x1.nc")
+ds.to_netcdf(r"C:\Users\deela\Downloads\\24hrChangeDensity.nc")
 

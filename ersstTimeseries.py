@@ -31,7 +31,7 @@ def std(dataset, average):
     return stddev
 
 def timeseries(month, years, sd = False):
-    dataset = ((xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')['sst']).sel(lat = slice(5, -5), lon = slice(190, 240))).mean(['lat', 'lon'])
+    dataset = ((xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')['sst']).sel(lat = slice(20, 10), lon = slice(275, 345))).mean(['lat', 'lon'])
     print(dataset)
     allData = []
     anomalies = []
@@ -39,11 +39,10 @@ def timeseries(month, years, sd = False):
     sst = []
     for year in years:
         climo = computeClimo(dataset, month, int(year))
-        anomalies.append((dataset.sel(time = np.datetime64(f'{year}-{month.zfill(2)}-01')) - climo.mean(['time'])).values)
+        anomalies.append(float((dataset.sel(time = np.datetime64(f'{year}-{month.zfill(2)}-01')) - climo.mean(['time'])).values))
         climos.append((climo.mean(['time'])).values)
         sst.append(dataset.sel(time = np.datetime64(f'{year}-{month.zfill(2)}-01')).values)
         print(year, f"{(dataset.sel(time = np.datetime64(f'{year}-{month.zfill(2)}-01')) - climo.mean(['time'])).values}", dataset.sel(time = np.datetime64(f'{year}-{month.zfill(2)}-01')).values)
-    e
     fig = plt.figure(figsize=(16, 8))
 
     # Add the map and set the extent
@@ -63,11 +62,11 @@ def timeseries(month, years, sd = False):
 
     plt.legend()
 
-    plt.title(f'ERSSTv5 Sea Surface Temperatures\n-5S to 5N, 170 to 120W' , fontweight='bold', fontsize=10, loc='left')
+    plt.title(f'ERSSTv5 Sea Surface Temperatures\n10N to 20N, 85W to 15W' , fontweight='bold', fontsize=10, loc='left')
     plt.title(f'{helper.numToMonth(month)}', fontsize = 10, loc = 'center')
     plt.title('Deelan Jariwala', fontsize=10, loc='right')  
     plt.savefig(r"C:\Users\deela\Downloads\ersstlineplot.png", dpi = 400, bbox_inches = 'tight')
 
     plt.show()
 
-timeseries(month='2', years=range(1854, 2024))
+timeseries(month='9', years=range(1854, 2024))
