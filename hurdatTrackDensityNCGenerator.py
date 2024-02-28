@@ -170,7 +170,7 @@ def gridData(data, bounds):
                             #binStorm += 1
                             #if temp['RI'][w] == True:
                             #    binStorm += 1            
-                            binStorm += temp['24hrChange'][w]
+                            binStorm += temp['Wind'][w]
                         else:
                             binStorm += 0
                     except:
@@ -227,7 +227,7 @@ for x in range(len(climoYears)):
 print(np.array(dataset).shape)
 ds = xr.DataArray(dataset,coords={"time": times, "latitude": (["x","y"], grid[0]),
                           "longitude": (["x","y"], grid[1])},
-                  dims=["time", "x","y"], name = '24hrChangeDensity')
+                  dims=["time", "x","y"], name = 'Wind')
 
-ds.to_netcdf(r"C:\Users\deela\Downloads\\24hrChangeDensity.nc")
+ds.to_netcdf(r"C:\Users\deela\Downloads\windDensity.nc")
 

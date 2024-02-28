@@ -8,6 +8,7 @@ import cmaps as cmap
 import cartopy.mpl.ticker as cticker
 import cartopy.feature as cfeature
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+from matplotlib import patheffects
 np.set_printoptions(suppress=True)
 
 # Create a map using Cartopy
@@ -70,11 +71,12 @@ def get_zscores(data, months):
     return all_zscores
 
 labelsize = 9
-months = [7, 8, 9]
-startYear = 2000
-endYear = 2020
-numOfEOFS = 10 
-extent = [0, 70, 240, 360]
+months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+title = 'Full Year'
+startYear = 1951
+endYear = 2023
+numOfEOFS = 4
+extent = [-30, 30, 155, 285]
 
 for x in range(len(months)):
     months[x] = [np.datetime64(f'{y}-{str(months[x]).zfill(2)}-01') for y in range(startYear, endYear + 1)]
@@ -84,7 +86,9 @@ fMonths = np.array(months).flatten()
 dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
 data = dataset['sst'].sel(time = fMonths, lat=slice(extent[1], extent[0]), lon=slice(extent[2], extent[3]))
 detrendedData = detrend_data(data)
+print('Data detrended')
 zscoreData = get_zscores(detrendedData, months)
+print('Z-scores calculated')
 zscores = np.nan_to_num(zscoreData.to_numpy())
 print(f"Initial shape: {zscores.shape}")
 
@@ -108,24 +112,26 @@ explained_variance = pca.explained_variance_ratio_
 print(f"Explained variance: {explained_variance}")
 
 # Creates the plot
-fig = plt.figure(figsize=(17, 9))
+fig = plt.figure(figsize=(12, 5.75))
 gs = fig.add_gridspec(2, 2, wspace = 0, hspace = 0)
 axes = [fig.add_subplot(1, 1, 1),
         fig.add_subplot(gs[0, 0], projection = ccrs.PlateCarree(central_longitude=180)),
         fig.add_subplot(gs[0, 1], projection = ccrs.PlateCarree(central_longitude=180)),
         fig.add_subplot(gs[1, 0], projection = ccrs.PlateCarree(central_longitude=180)),
         fig.add_subplot(gs[1, 1], projection = ccrs.PlateCarree(central_longitude=180))]
+
 axes[0].set_xticks([])
 axes[0].set_yticks([])
 
 for x in range(len(axes[1:])):
-    axes[x + 1] = map(axes[x + 1], 10, 9)
+    axes[x + 1] = map(axes[x + 1], 15, 9)
     c = axes[x + 1].contourf(zscoreData.longitude, zscoreData.latitude, EOFs[x], np.arange(-0.1, 0.101, 0.001), extend='both', transform=ccrs.PlateCarree(), cmap=cmap.tempAnoms())
+    axes[x + 1].text((extent[2] + 5) - 360, extent[1] - 5, f'Variance Explained: {round(float(explained_variance[x]) * 100, 1)}%', color = 'red', fontsize = 9, fontweight = 'bold', path_effects = [patheffects.withStroke(linewidth=1.25, foreground="white")], zorder = 20, transform = ccrs.PlateCarree(central_longitude = 360))
 
-axes[0].set_title(f'ERSSTv5 EOF{i + 1} (Detrended and Normalized)\nExplained variance: {round(float(explained_variance[i]), 3)}' , fontweight='bold', fontsize=labelsize, loc='left')
-axes[0].set_title(f'JAS', fontsize = labelsize, loc = 'center')
+axes[0].set_title(f'ERSSTv5 EOF Analysis (Data Detrended and Normalized)\nFirst 4 Modes Displayed' , fontweight='bold', fontsize=labelsize, loc='left')
+axes[0].set_title(f'{title}', fontsize = labelsize, loc = 'center')
 axes[0].set_title(f'{startYear}-{endYear}\nDeelan Jariwala', fontsize=labelsize, loc='right')  
-cax = inset_axes(axes[0], width="1%", height="100%", loc='upper left', bbox_to_anchor=(1.1, 0, 1, 1), bbox_transform=axes[0].transAxes, borderpad = .02)
+cax = inset_axes(axes[0], width="1%", height="100%", loc='upper left', bbox_to_anchor=(1.01, 0, 1, 1), bbox_transform=axes[0].transAxes, borderpad = .02)
 cbar = fig.colorbar(c, cax=cax, orientation="vertical")    
 cbar.set_ticks(np.arange(-0.1, 0.12, 0.02))
 plt.savefig(r"C:\Users\deela\Downloads\EOFPanelPlot.png", dpi = 400, bbox_inches = 'tight')
