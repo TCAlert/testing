@@ -44,7 +44,9 @@ def getData(request, hour):
     except:
         init_hour, mdate, link1, link2 = url(False)
         dataset1, dataset2 = xr.open_dataset(link1).sel(time = hour), xr.open_dataset(link2).sel(time = hour)
-    dataset = xr.merge([dataset1[request], dataset2[request]])
+    dataset1, dataset2 = dataset1[request], dataset2[request]
+    print(dataset1)
+    dataset = xr.merge([dataset1, dataset2])
     print(dataset)
 
     init = f'{mdate[0:4]}-{mdate[4:6]}-{mdate[6:8]} at {init_hour}:00z'
@@ -71,3 +73,5 @@ def map(n, s, e, w):
     gl = ax.gridlines(crs=ccrs.PlateCarree(central_longitude=180), zorder = 9, draw_labels = True, linewidth = 0.5, color='white', alpha=0.5, linestyle='--', transform = ccrs.PlateCarree(central_longitude=180))
     gl.xlabels_top = gl.ylabels_right = False 
     return n, s, e, w
+
+#getData(['ugrdprs', 'vgrdprs'], np.datetime64('2024-03-12T12'))
