@@ -2,15 +2,16 @@ import numpy as np
 from datetime import datetime 
 from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-import cgfs as gfs
+import gfsRetrieve as gfs
 import bdeck as bdeck 
+import xarray as xr 
 
 # Retrieve relevant GFS Data
 def getGFSData(storm):
     requests = ['tmpprs', 'tmptrop']
     t = datetime.utcnow()
     hour = xr.Dataset({"time": datetime(t.year, t.month, t.day, t.hour)})['time'].values
-    dat = gfs.data(requests, hour)
+    dat, init = gfs.getData(requests, hour)
     time = dat[0].time.values
 
     lat, lon = bdeck.latlon(storm)
