@@ -1028,6 +1028,94 @@ def ira():
 
     return newcmp.reversed(), vmax, vmin
 
+def test():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/150, "#7d3025"),
+    (25/150, "#1a1a1a"),
+    (75/150, "#ffffff"),
+    (90/150, "#804080"),
+    (100/150, "#61203f"),
+    (110/150, "#bf3030"),
+    (120/150, "#261919"),
+    (135/150, "#e6e6f2"),
+    (150/150, "#308fbf")])
+
+    vmax = 50
+    vmin = -100
+
+    return newcmp.reversed(), vmax, vmin
+
+def irl():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/130, "#ad4747"),
+    (15/130, "#604642"),
+    (25/130, "#162c36"),
+    (70/130, "#a3becc"),
+    (75/130, "#FFFFFF"),
+    (80/130, "#dae6cf"),
+    (100/130, "#085024"),
+    (110/130, "#bf9b30"),
+    (115/130, "#cc1414"),
+    (120/130, "#e65c5c"),
+    (130/130, "#FFFFFF")])
+
+    vmax = 40
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin
+
+def irm():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/140, "#ad4747"),
+    (15/140, "#604642"),
+    (25/140, "#162c36"),
+    (70/140, "#a3becc"),
+    (75/140, "#FFFFFF"),
+    (80/140, "#dae6cf"),
+    (95/140, "#085024"),
+    (105/140, "#bf9b30"),
+    (110/140, "#cc1414"),
+    (115/140, "#e65c5c"),
+    (120/140, "#FFFFFF"),
+    (130/140, "#323ca8"),
+    (140/140, "#1a1a1a")])
+
+    vmax = 40
+    vmin = -100
+
+    return newcmp.reversed(), vmax, vmin
+
+def nws():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/160, "#74d7ff"),
+    (10/160, "#aefeff"),
+    (20/160, "#32cec1"),
+    (30/160, "#009996"),
+    (40/160, "#115757"),
+    (50/160, "#076d2c"),
+    (60/160, "#30a355"),
+    (70/160, "#73c475"),
+    (80/160, "#a1d99a"),
+    (90/160, "#d2ffbe"),
+    (100/160, "#feffb3"),
+    (105/160, "#8b2800"),
+    (110/160, "#510100"),
+    (115/160, "#cd313e"),
+    (120/160, "#ff6669"),
+    (125/160, "#eea8a7"),
+    (130/160, "#f892d3"),
+    (135/160, "#cf5caa"),
+    (140/160, "#8c3b8a"),
+    (145/160, "#5e2665"),
+    (150/160, "#2d0041"),
+    (155/160, "#01004c"),
+    (160/160, "#74d7ff")])
+
+    vmax = 50
+    vmin = -110
+
+    return newcmp.reversed(), vmax, vmin
+
 def ird():
     color1 = 'twilight'
     num1 = 110
@@ -1324,4 +1412,8 @@ irtables = {
     'iri'     :ca2(),
     'irj'     :irj(),
     'irk'     :irk(),
-    'irca'    :ca()}
+    'irl'     :irl(),
+    'irm'     :irm(),
+    'irca'    :ca(),
+    'test'    :test(),
+    'nws'     :nws()}

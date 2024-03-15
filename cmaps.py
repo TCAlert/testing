@@ -68,6 +68,25 @@ def tempAnoms():
 
     return newcmp.reversed()
 
+def sshws():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/140, "#5ebaff"),
+    (34/140, "#5ebaff"),
+    (34/140, "#00faf4"),
+    (64/140, "#00faf4"),
+    (64/140, "#ffffcc"),
+    (83/140, "#ffffcc"),
+    (83/140, "#ffe775"),
+    (96/140, "#ffe775"),
+    (96/140, "#ffc140"),
+    (113/140, "#ffc140"),
+    (113/140, "#ff8f20"),
+    (137/140, "#ff8f20"),
+    (137/140, "#ff6060"),
+    (140/140, "#ff6060")])
+
+    return newcmp 
+
 def crw():
     newcmp = LinearSegmentedColormap.from_list("", [
     (0/12, "#000000"),
