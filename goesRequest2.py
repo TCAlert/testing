@@ -31,8 +31,8 @@ def getData(satellite, band):
         if f'M6C{band.zfill(2)}' in files[x]:
             l.append(files[x])
     
-    fs.get(l[-1], r"C:\Users\Username\Downloads\goesfile.nc")
-    data = xr.open_dataset(r"C:\Users\Username\Downloads\goesfile.nc")
+    fs.get(l[-1], r"C:\Users\deela\Downloads\goesfile.nc")
+    data = xr.open_dataset(r"C:\Users\deela\Downloads\goesfile.nc")
     
     dat = data['CMI']
     center = data['geospatial_lat_lon_extent'].geospatial_lon_center

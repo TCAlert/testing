@@ -10,6 +10,8 @@ import helper
 import matplotlib.patheffects as pe
 import psl 
 import hurdatParser 
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def Gradient2D(data):
     # Define gradient vector as <fx, fy>
@@ -117,7 +119,7 @@ def plot(data, year, month, day, hour, name = None, t = 'wind'):
 data = pd.read_csv(r"C:\Users\deela\Downloads\GILDA ICOADS Set #2 - ICOADS_R3.0_Rqst717076_19731023-19731027.csv")
 #data = pd.read_csv(r"C:\Users\deela\Downloads\GILDA ICOADS Set #1 - ICOADS_R3.0_Rqst717075_19731015-19731022.csv")
 
-year, month, day, hour = 1973, 10, 25, 12
+year, month, day, hour = 1973, 10, 27, 6
 
 plot(data, year, month, day, hour, 'Gilda', 'wind')
 print('Wind done')

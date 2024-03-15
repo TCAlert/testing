@@ -11,11 +11,13 @@ import cartopy.mpl.ticker as cticker
 import cmaps as cmap 
 import xarray as xr 
 from helper import numToMonth
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 pd.options.mode.chained_assignment = None
 
 basin = 'AL'
-climoYears = np.arange(1851, 2024)
+climoYears = np.arange(2020, 2024)
 months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 bounds = [-120, 0, 0, 70]
 interval = 3
@@ -167,10 +169,10 @@ def gridData(data, bounds):
                     try:
                         if temp['Latitude'][w] > lats[y] and temp['Latitude'][w] < lats[y + 1] and temp['Longitude'][w] > lons[x] and temp['Longitude'][w] < lons[x + 1]:
                             #binStorm += temp['ACE'][w]
-                            #binStorm += 1
+                            binStorm += 1
                             #if temp['RI'][w] == True:
                             #    binStorm += 1            
-                            binStorm += temp['Wind'][w]
+                            #binStorm += temp['Wind'][w]
                         else:
                             binStorm += 0
                     except:
@@ -226,8 +228,9 @@ for x in range(len(climoYears)):
 
 print(np.array(dataset).shape)
 ds = xr.DataArray(dataset,coords={"time": times, "latitude": (["x","y"], grid[0]),
-                          "longitude": (["x","y"], grid[1])},
-                  dims=["time", "x","y"], name = 'Wind')
+                           "longitude": (["x","y"], grid[1])},
+                   dims=["time", "x","y"], name = 'trackDensity')
 
-ds.to_netcdf(r"C:\Users\deela\Downloads\windDensity.nc")
+print(ds)
+ds.to_netcdf(r"C:\Users\deela\Downloads\trackDensity.nc")
 

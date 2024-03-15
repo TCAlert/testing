@@ -26,31 +26,43 @@ def dist(realMean, fakeMean, data):
         else:
             cf2.append(1)
 
-    return cf
+    return cf2
  
-def plot(param1, param2, cf, cf2):
-    fig = plt.figure(figsize=(16, 8))
+def plot(param1, param2, cf, cf2, realMean, fakeMean):
+    name1, param1 = param1
+    name2, param2 = param2
+    fig = plt.figure(figsize=(15, 9))
 
     # Add the map and set the extent
     ax = plt.axes()
-    ax.set_frame_on(False)
-
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    
     # Add state boundaries to plot
     ax.tick_params(axis='both', labelsize=8, left = False, bottom = False)
     ax.grid(linestyle = '--', alpha = 0.5, color = 'black', linewidth = 0.5, zorder = 9)
-    ax.set_ylabel('Temperature (\u00b0C)', weight = 'bold', size = 9)
-    ax.set_xlabel('Year', weight = 'bold', size = 9)
+    ax.set_ylabel(name2, weight = 'bold', size = 9)
+    ax.set_xlabel(name1, weight = 'bold', size = 9)
 
     for x in range(len(cf)):
-        ax.scatter(param1[x], param2[x], cf[x], color = 'black', zorder = 10)
-    #ax.text(years[-1] + 5, sst[-1], f'{round(float(sst[-1]), 1)}C', size=10, color='#404040', horizontalalignment = 'center', verticalalignment = 'center', path_effects=[pe.withStroke(linewidth=1.5, foreground="white")])
+        if cf[x] == 1 and cf2[x] == 1:
+            ax.scatter(param1[x], param2[x], color = '#ff8888', zorder = 10)
+        elif cf[x] == 1 and cf2[x] == 0:
+            ax.scatter(param1[x], param2[x], color = '#ffcccc', zorder = 10)
+        elif cf[x] == 0 and cf2[x] == 1:
+            ax.scatter(param1[x], param2[x], color = '#ccccff', zorder = 10)
+        elif cf[x] == 0 and cf2[x] == 0:
+            ax.scatter(param1[x], param2[x], color = '#8888ff', zorder = 10)
+    ax.text(realMean[0], realMean[1] - 0.25, f'Real', size=14, color='black', horizontalalignment = 'center', verticalalignment = 'top', path_effects=[pe.withStroke(linewidth=1.5, foreground="white")], zorder = 100)
+    ax.scatter(realMean[0], realMean[1], s = 60, c = 'black', marker = 'x', path_effects=[pe.withStroke(linewidth=1.5, foreground="white")], zorder = 100)
+    ax.text(fakeMean[0], fakeMean[1] - 0.25, f'Counterfeit', size=14, color='black', horizontalalignment = 'center', verticalalignment = 'top', path_effects=[pe.withStroke(linewidth=1.5, foreground="white")], zorder = 100)
+    ax.scatter(fakeMean[0], fakeMean[1], s = 60, c = 'black', marker = 'x', path_effects=[pe.withStroke(linewidth=1.5, foreground="white")], zorder = 100)
 
-    plt.title(f'ERSSTv5 Sea Surface Temperatures\n-5S to 5N, 170 to 120W' , fontweight='bold', fontsize=10, loc='left')
-    #plt.title(f'{helper.numToMonth(month)}', fontsize = 10, loc = 'center')
+    plt.title(f'{name1} vs. {name2}\nAccuracy: 70.70%' , fontweight='bold', fontsize=10, loc='left')
     plt.title('Deelan Jariwala', fontsize=10, loc='right')  
-    #plt.savefig(r"C:\Users\deela\Downloads\ersstlineplot.png", dpi = 400, bbox_inches = 'tight')
+    plt.savefig(r"C:\Users\deela\Downloads\\" + name1 + name2 + ".png", dpi = 400, bbox_inches = 'tight')
 
-    plt.show()
+    #plt.show()
 
 data = pd.read_csv(r"C:\Users\deela\Downloads\data_banknote_authentication.csv")
 vari, skew, kurt, entr, cf = data['variance'], data['skewness'], data['kurtosis'], data['entropy'], data['counterfeit']
@@ -69,7 +81,14 @@ for x in range(len(cf)):
         fake[2].append(kurt[x])
         fake[3].append(entr[x])
 
-cf2 = dist(np.array(fake).mean(axis = 1), np.array(fake).mean(axis = 1), [vari, skew, kurt, entr])
-print(cf2)
+realMean, fakeMean = np.array(real).mean(axis = 1), np.array(fake).mean(axis = 1)
+cf2 = dist(realMean, fakeMean, [vari, skew, kurt, entr])
 
-plot(vari, skew, cf)
+plot(('Variance', vari), ('Skewness', skew), cf, cf2, [realMean[0], realMean[1]], [fakeMean[0], fakeMean[1]])
+plot(('Variance', vari), ('Kurtosis', kurt), cf, cf2, [realMean[0], realMean[2]], [fakeMean[0], fakeMean[2]])
+plot(('Variance', vari), ('Entropy', entr), cf, cf2, [realMean[0], realMean[3]], [fakeMean[0], fakeMean[3]])
+plot(('Skewness', skew), ('Kurtosis', kurt), cf, cf2, [realMean[1], realMean[2]], [fakeMean[1], fakeMean[2]])
+plot(('Skewness', skew), ('Entropy', entr), cf, cf2, [realMean[1], realMean[3]], [fakeMean[1], fakeMean[3]])
+plot(('Kurtosis', kurt), ('Entropy', entr), cf, cf2, [realMean[2], realMean[3]], [fakeMean[2], fakeMean[3]])
+
+plt.show()
