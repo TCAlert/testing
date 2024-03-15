@@ -34,18 +34,17 @@ def detrend_data(data):
     :return: the detrended variable DataArray
     """
     data = data.fillna(0)
-    print(data)
-    reshaped = data.stack(combined=('lat', 'lon'))
+    reshaped = data.stack(combined=('longitude', 'latitude'))
     detrended = detrend(reshaped, axis=0)
 
     newData = detrended.reshape(data.shape)
     newData = xr.DataArray(
         data=newData,
-        dims=('time', 'latitude', 'longitude'),
+        dims=('time', 'longitude', 'latitude'),
         coords=dict(
             time=(["time"], data.time.values),
-            latitude=(["latitude"], data.lat.values),
-            longitude=(["longitude"], data.lon.values)
+            longitude=(["longitude"], data.longitude.values),
+            latitude=(["latitude"], data.latitude.values)
         ))
     return newData
 
@@ -61,7 +60,7 @@ def get_zscores(data, months):
 
     all_zscores = xr.DataArray(
         data=all_zscores,
-        dims=('time', 'latitude', 'longitude'),
+        dims=('time', 'longitude', 'latitude'),
         coords=dict(
             time=(["time"], data.time.values),
             latitude=(["latitude"], data.latitude.values),
@@ -70,19 +69,19 @@ def get_zscores(data, months):
     return all_zscores
 
 labelsize = 9
-months = [9]#, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-startYear = 1981
+months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+startYear = 1923
 endYear = 2023
-numOfEOFS = 6
-extent = [-45, 45, 0, 360]
+numOfEOFS = 4 
+#extent = [20, 60, 120, 240]
 
 for x in range(len(months)):
     months[x] = [np.datetime64(f'{y}-{str(months[x]).zfill(2)}-01') for y in range(startYear, endYear + 1)]
 fMonths = np.array(months).flatten()
 
 # open variable data
-dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
-data = dataset['sst'].sel(time = fMonths, lat=slice(extent[1], extent[0]), lon=slice(extent[2], extent[3]))
+dataset = xr.open_dataset(r"C:\Users\deela\Downloads\trackDensity.nc")
+data = dataset['trackDensity'].sel(time = fMonths)#, lat=slice(extent[1], extent[0]), lon=slice(extent[2], extent[3]))
 detrendedData = detrend_data(data)
 zscoreData = get_zscores(detrendedData, months)
 zscores = np.nan_to_num(zscoreData.to_numpy())
@@ -127,14 +126,14 @@ for i in range(numOfEOFS):
     axes[0].plot(np.sort(fMonths), PCs[:, i], linewidth = 2.5, color = '#404040', label = f'PC{i + 1} Timeseries')
     axes[0].legend()
 
-    axes[1] = map(axes[1], 30, 9) 
-    c = axes[1].contourf(zscoreData.longitude, zscoreData.latitude, EOF, np.arange(-0.05, 0.05, 0.001), extend='both', transform=ccrs.PlateCarree(), cmap=cmap.tempAnoms())
+    axes[1] = map(axes[1], 10, 9) 
+    c = axes[1].contourf(zscoreData.latitude, zscoreData.longitude, EOF, np.arange(-0.05, 0.05, 0.001), extend='both', transform=ccrs.PlateCarree(), cmap=cmap.tempAnoms())
 
-    plt.title(f'ERSSTv5 EOF{i + 1} (Detrended and Normalized)\nExplained variance: {round(float(explained_variance[i]) * 100, 1)}%' , fontweight='bold', fontsize=labelsize, loc='left')
-    plt.title(f'January {startYear}-{endYear}', fontsize = labelsize, loc = 'center')
+    plt.title(f'HURDAT2 Atlantic Track Density EOF{i + 1} (Detrended and Normalized)\nExplained variance: {round(float(explained_variance[i]) * 100, 1)}%' , fontweight='bold', fontsize=labelsize, loc='left')
+    plt.title(f'Full Year {startYear}-{endYear}', fontsize = labelsize, loc = 'center')
     plt.title(f'Deelan Jariwala\nCredit to Nikhil Trivedi', fontsize=labelsize, loc='right')  
     cbar = plt.colorbar(c, orientation = 'horizontal', aspect = 100, pad = .08)
     cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
     cbar.set_ticks(np.arange(-0.05, 0.06, 0.01))
-    plt.savefig(r"C:\Users\deela\Downloads\ersstEOF" + str(i + 1) + ".png", dpi = 400, bbox_inches = 'tight')
+    plt.savefig(r"C:\Users\deela\Downloads\trackEOF" + str(i + 1) + ".png", dpi = 400, bbox_inches = 'tight')
 plt.show()

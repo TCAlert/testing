@@ -73,10 +73,10 @@ def get_zscores(data, months):
 labelsize = 9
 months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 title = 'Full Year'
-startYear = 1951
+startYear = 1854
 endYear = 2023
-numOfEOFS = 4
-extent = [-30, 30, 155, 285]
+numOfEOFS = 10 
+extent = [0, 70, 275, 360]
 
 for x in range(len(months)):
     months[x] = [np.datetime64(f'{y}-{str(months[x]).zfill(2)}-01') for y in range(startYear, endYear + 1)]
@@ -112,7 +112,7 @@ explained_variance = pca.explained_variance_ratio_
 print(f"Explained variance: {explained_variance}")
 
 # Creates the plot
-fig = plt.figure(figsize=(12, 5.75))
+fig = plt.figure(figsize=(10.5, 9))
 gs = fig.add_gridspec(2, 2, wspace = 0, hspace = 0)
 axes = [fig.add_subplot(1, 1, 1),
         fig.add_subplot(gs[0, 0], projection = ccrs.PlateCarree(central_longitude=180)),
