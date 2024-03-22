@@ -116,17 +116,17 @@ def plot(data, year, month, day, hour, name = None, t = 'wind'):
     cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
     plt.savefig(r"C:\Users\deela\Downloads\ " + name + title + ".png", dpi = 400, bbox_inches = 'tight')
     
-data = pd.read_csv(r"C:\Users\deela\Downloads\GILDA ICOADS Set #2 - ICOADS_R3.0_Rqst717076_19731023-19731027.csv")
-#data = pd.read_csv(r"C:\Users\deela\Downloads\GILDA ICOADS Set #1 - ICOADS_R3.0_Rqst717075_19731015-19731022.csv")
+#data = pd.read_csv(r"C:\Users\deela\Downloads\GILDA ICOADS Set #2 - ICOADS_R3.0_Rqst717076_19731023-19731027.csv")
+data = pd.read_csv(r"C:\Users\deela\Downloads\GILDA ICOADS Set #1 - ICOADS_R3.0_Rqst717075_19731015-19731022.csv")
 
-year, month, day, hour = 1973, 10, 27, 6
+year, month, day, hour = 1973, 10, 16, 6
 
 plot(data, year, month, day, hour, 'Gilda', 'wind')
 print('Wind done')
-plot(data, year, month, day, hour, 'Gilda', 'temp')
-print('Temp done')
-plot(data, year, month, day, hour, 'Gilda', 'rhum')
-print('RH done')
-plot(data, year, month, day, hour, 'Gilda', 'tempAdv')
-print('Advection done')
+#plot(data, year, month, day, hour, 'Gilda', 'temp')
+#print('Temp done')
+#plot(data, year, month, day, hour, 'Gilda', 'rhum')
+#print('RH done')
+#plot(data, year, month, day, hour, 'Gilda', 'tempAdv')
+#print('Advection done')
 plt.show()

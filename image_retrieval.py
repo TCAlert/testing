@@ -55,7 +55,17 @@ def getDataGOES(satellite, year, month, day, time, band):
             file = l[x]
 
     # Download the file, and rename it to goesfile.nc
-    fs.get(file, r"C:\Users\deela\Downloads\goesfile.nc")
+    try:
+        filename = 'goesfile'
+        fs.get(file, r"C:\Users\deela\Downloads\goesfile.nc")
+    except:
+        try:
+            filename = 'goesfile2'
+            fs.get(file, r"C:\Users\deela\Downloads\goesfile2.nc")
+        except:
+            filename = 'goesfile3'
+            fs.get(file, r"C:\Users\deela\Downloads\goesfile3.nc")
     print(f'GOES-{satellite} data downloaded for {month}/{day}/{year} at {time}z')
 
+    return filename
 # Each function here downloads a netCDF file that can easily be opened with packages like xarray or netCDF4. 

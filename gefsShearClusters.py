@@ -1,4 +1,7 @@
 import matplotlib.pyplot as plt  # Plotting library
+import cartopy, cartopy.crs as ccrs
+import cartopy.feature as cfeature
+import cartopy.mpl.ticker as cticker
 import numpy as np
 from datetime import datetime 
 import gefsRetrieve as gefs
@@ -9,6 +12,22 @@ import adeck
 import xarray as xr 
 import matplotlib.patheffects as pe
 from sklearn.cluster import KMeans
+import cartopy.mpl.geoaxes
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+
+def map(ax, interval, labelsize = 9):
+    # Add state boundaries to plot
+    ax.add_feature(cfeature.COASTLINE.with_scale('50m'), linewidth = 0.5)
+    ax.add_feature(cfeature.BORDERS.with_scale('50m'), linewidth = 0.5)
+    ax.add_feature(cfeature.STATES.with_scale('50m'), linewidth = 0.5)
+    ax.set_xticks(np.arange(-180, 181, interval), crs=ccrs.PlateCarree())
+    ax.set_yticks(np.arange(-90, 91, interval), crs=ccrs.PlateCarree())
+    ax.yaxis.set_major_formatter(cticker.LatitudeFormatter())
+    ax.xaxis.set_major_formatter(cticker.LongitudeFormatter())
+    ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
+    ax.grid(linestyle = '--', alpha = 0.5, color = 'black', linewidth = 0.5, zorder = 9)
+
+    return ax 
 
 # Helper function to calculate wind shear, primarily for the maximum wind function
 def calcShear(u, v, top, bot):
@@ -89,15 +108,16 @@ def findClusters(adeck, data, num):
     data = np.reshape(data, (len(data), 1))
     clusters = KMeans(n_clusters = num).fit(data)
     labels = clusters.labels_
+    centroids = clusters.cluster_centers_
 
     clusters = []
     for x in range(num):
         clusters.append(adeck[labels == x])
 
-    return clusters
+    return clusters, centroids
 
 # Function to put together the whole plot
-def finalPlot(grid, shear, init, title, clusterType, us = None, vs = None):
+def finalPlot(grid, shear, init, title, clusterType, clusters, us = None, vs = None):
     # Creates the plot
     fig = plt.figure(figsize=(15, 12))
     ax = plt.axes()
@@ -124,7 +144,7 @@ def finalPlot(grid, shear, init, title, clusterType, us = None, vs = None):
         # Plots the data using the pressure level grid created before
         # Note that the vectors in the plot are normalized by the magnitude of the shear
         mag = (2.5 * (us**2 + vs**2)**0.5)
-        c = ax.contourf(grid[0], grid[1], shear, cmap = cmap.tempAnoms(), levels = np.arange(-5, 5.1, .1), extend = 'max')
+        c = ax.contourf(grid[0], grid[1], shear, cmap = cmap.tempAnoms(), levels = np.arange(-5, 5.1, .1), extend = 'both')
         ax.quiver(grid[0], grid[1], us / mag, vs / mag, pivot = 'middle', scale = 15, minshaft = 2, minlength=0, headaxislength = 3, headlength = 3, color = 'black', zorder = 20, path_effects = [patheffects.withStroke(linewidth=1.25, foreground="white")])
         cb = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
         cb.set_ticks(range(-5, 6, 1))
@@ -139,12 +159,29 @@ def finalPlot(grid, shear, init, title, clusterType, us = None, vs = None):
 
         # plt.legend(loc = 'lower left')
 
+        inset = inset_axes(ax, width = "100%", height= "100%", borderpad = 1, bbox_to_anchor=(0.45, 0.05, 0.65, 0.35), bbox_transform=ax.transAxes, loc="lower right", 
+                   axes_class=cartopy.mpl.geoaxes.GeoAxes, 
+                   axes_kwargs=dict(map_projection=cartopy.crs.PlateCarree()))
+
+        clusters, centroids = clusters
+        lats, lons = [], []
+        for x in range(len(clusters)):
+            #print(f'Cluster {x + 1} Winds: {np.mean(clusters[x][8])}')
+            lats += (list(clusters[x][6]))
+            lons += (list(clusters[x][7]))
+            inset.scatter(clusters[x][7], clusters[x][6], label = f'Cluster {x + 1}: {round(centroids[x][0], 1)}')
+            inset.legend()
+            inset.set_title('Spatial Map of Clusters')
+    extent = np.nanmax([round(np.nanmax(lons) - np.nanmin(lons)), round(np.nanmax(lats) - np.nanmin(lats))]) * 1.5
+    map(inset, extent / 5)
+    inset.set_extent([np.mean(lons) - (extent / 2), np.mean(lons) + (extent / 2), np.mean(lats) - (extent / 2), np.mean(lats) + (extent / 2)])
+
     time = (str(data[0].time.values)).split('T')
     time = f'{time[0]} at {(time[1][:5])}z'
 
-    ax.set_title(f'GEFS Vertical Wind Shear Distribution: SH17\nInitialization: {init}', fontweight='bold', fontsize=10, loc='left')
+    ax.set_title(f'GEFS Vertical Wind Shear Distribution: SH18\nInitialization: {init}', fontweight='bold', fontsize=10, loc='left')
     ax.set_title(f'Forecast Hour: {time}', fontsize = 10, loc = 'center')
-    ax.set_title(f'{title} {clusterType} Cluster Difference\nDeelan Jariwala', fontsize=10, loc='right') 
+    ax.set_title(f'Data split by {clusterType.upper()}: Cluster 1 - 2 Plotted\nDeelan Jariwala', fontsize=10, loc='right') 
     at = AnchoredText("Inspired by Michael Fischer",
                   prop=dict(size=8, color = 'gray'), frameon=False,
                   loc=4)
@@ -158,10 +195,10 @@ def finalPlot(grid, shear, init, title, clusterType, us = None, vs = None):
 t = datetime.now()
 year = t.year
 month = t.month
-day = 12#t.day
-hr = 18
-fcastHour = 24
-storm = 'sh17'
+day = t.day
+hr = 6
+fcastHour = 48
+storm = 'sh18'
 shearStrength = 15
 p = 50
 numClusters = 2
@@ -176,18 +213,18 @@ adeckDF = adeck.filterData(storm, [f'{year}{str(month).zfill(2)}{str(day).zfill(
 print(adeckDF)
 
 if clusterType.lower() == 'intensity':
-    clusters = findClusters(adeckDF, adeckDF[8], numClusters)
+    clusters, centroids = findClusters(adeckDF, adeckDF[8], numClusters)
 elif clusterType.lower() == 'latitude':
-    clusters = findClusters(adeckDF, adeckDF[6], numClusters)
+    clusters, centroids = findClusters(adeckDF, adeckDF[6], numClusters)
 elif clusterType.lower() == 'longitude':
-    clusters = findClusters(adeckDF, adeckDF[7], numClusters)
+    clusters, centroids = findClusters(adeckDF, adeckDF[7], numClusters)
 
-#data, init = gefs.getData(['ugrdprs', 'vgrdprs'], np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hr).zfill(2)}') + np.timedelta64(fcastHour, 'h'))
-init = '2024-03-12 at 18:00z'
+data, init = gefs.getData(['ugrdprs', 'vgrdprs'], np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hr).zfill(2)}') + np.timedelta64(fcastHour, 'h'))
+#init = '2024-03-21 at 06:00z'
 print(init)
-#data[0].to_netcdf(r"C:\Users\deela\Downloads\uData.nc")
-#data[1].to_netcdf(r"C:\Users\deela\Downloads\vData.nc")
-data = [xr.open_dataset(r"C:\Users\deela\Downloads\uData.nc")['ugrdprs'], xr.open_dataset(r"C:\Users\deela\Downloads\vData.nc")['vgrdprs']]
+data[0].to_netcdf(r"C:\Users\deela\Downloads\uData.nc")
+data[1].to_netcdf(r"C:\Users\deela\Downloads\vData.nc")
+#data = [xr.open_dataset(r"C:\Users\deela\Downloads\uData.nc")['ugrdprs'], xr.open_dataset(r"C:\Users\deela\Downloads\vData.nc")['vgrdprs']]
 
 cShears = []
 cUS = []
@@ -242,4 +279,4 @@ us = cUS[0] - cUS[1]
 vs = cVS[0] - cVS[1]
 
 # Runs program
-finalPlot(grid, shears, init, title, clusterType, us, vs)
+finalPlot(grid, shears, init, title, clusterType, (clusters, centroids), us, vs)

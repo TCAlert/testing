@@ -676,7 +676,7 @@ def rbtop():
 
     return newcmp.reversed(), vmax, vmin
 
-def copper():
+def copperOld():
     newcmp = LinearSegmentedColormap.from_list("", [
     (0/90, "#07010a"), 
     (10/90, "#4a474a"),
@@ -689,7 +689,38 @@ def copper():
     vmax = 30
     vmin = -90
 
-    return newcmp.reversed()
+    return newcmp.reversed(), vmax, vmin
+
+def coppert():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/90, "#549977"), 
+    (15/90, "#07010a"),
+    (30/90, "#f7f7f7"),
+    (40/90, "#e88c6d"),
+    (60/90, "#703030"),
+    (75/90, "#79a2d4"),
+    (90/90, "#25184a")])
+
+    vmax = 30
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin
+
+def copper():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/90, "#bfbfbf"),
+    (15/90, "#4d1f1f"), 
+    (22.5/90, "#e88c6d"),
+    (30/90, "#f7f7f7"),
+    (40/90, "#98bf8e"),
+    (60/90, "#104020"),
+    (75/90, "#79a2d4"),
+    (90/90, "#25184a")])
+
+    vmax = 30
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin
 
 def ire():
     newcmp = LinearSegmentedColormap.from_list("", [
@@ -1069,9 +1100,9 @@ def irm():
     (0/140, "#ad4747"),
     (15/140, "#604642"),
     (25/140, "#162c36"),
-    (70/140, "#a3becc"),
-    (75/140, "#FFFFFF"),
-    (80/140, "#dae6cf"),
+    (60/140, "#a3becc"),
+    (65/140, "#FFFFFF"),
+    (70/140, "#dae6cf"),
     (95/140, "#085024"),
     (105/140, "#bf9b30"),
     (110/140, "#cc1414"),
@@ -1084,6 +1115,9 @@ def irm():
     vmin = -100
 
     return newcmp.reversed(), vmax, vmin
+
+def irn():
+    print('next')
 
 def nws():
     newcmp = LinearSegmentedColormap.from_list("", [
@@ -1292,7 +1326,25 @@ def codywv():
 
     return newcmp.reversed(), vmax, vmin
 
-def testwv():
+def mikewv():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0.0, "#1b1a17"), 
+    (10/90, "#fdbf20"),
+    (17.5/90, "#f36631"),
+    (20/90, "#d2352c"),
+    (32.5/90, "#f2f1f6"),
+    (40/90, "#44b8cf"),
+    (50/90, "#307584"),
+    (60/90, "#223b48"),
+    (70/90, "#274397"),
+    (90/90, "#8927f4")])
+
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin
+
+def wv3():
     newcmp = LinearSegmentedColormap.from_list("", [
     (0/90, "#804080"),
     (5/90, "#1a000d"),
@@ -1307,6 +1359,62 @@ def testwv():
     (70/90, "#67041f"),
     (80/90, "#d1145b"),
     (90/90, "#f7f4f9")])
+
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin
+
+def testwv():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/90, "#992660"),
+    (10/90, "#802020"),
+    (15/90, "#000000"),
+    (22.5/90, "#413D3E"),
+    (30/90, "#FFFFFF"),
+    (55/90, "#3d3d99"),
+    (60/90, "#d96cd9"),
+    (70/90, "#663d52"),
+    (72.5/90, "#bf3030"),
+    (75/90, "#bf4830"),
+    (90/90, "#FFFFFF")])
+
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin
+
+def camwv():
+    # Define the new colormap with specified colors at specified locations
+    newcmp = LinearSegmentedColormap.from_list("", [
+        (0.0, "#00000a"),    # Start of the gradient
+        # Assuming your color scale changes gradually, you'd place key colors at their relative positions
+        (1/8, "#010055"),    # An example color partway through
+        (1/4, "#0a0070"),    # Another example color partway through
+        (1/2, "#4a0096"),    # Midpoint color
+        (3/4, "#bf0692"),    # Further along the gradient
+        (7/8, "#febd00"),    # Nearly at the end
+        (1.0, "#fffff6")     # End of the gradient
+    ])
+
+    vmax = 0
+    vmin = -90
+
+    # Return the reversed colormap, vmax, and vmin
+    return newcmp, vmax, vmin 
+
+def hand():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/90, "#5d5e7f"),
+    (17.5/90, "#07080c"),
+    (25/90, "#061d47"),
+    (40/90, "#6b81b7"),
+    (50/90, "#ffe374"),
+    (65/90, "#7f3c1e"),
+    (70/90, "#27140d"),
+    (75/90, "#8c1612"),
+    (82.5/90, "#fa9e29"),
+    (90/90, "#f0fdf4")])
 
     vmax = 0
     vmin = -90
@@ -1330,7 +1438,10 @@ def codywv2():
     (80/85, "#822049"),
     (85/85, "#250740")])
 
-    return newcmp.reversed()
+    vmax = 0
+    vmin = -85
+
+    return newcmp.reversed(), vmax, vmin
 
 def darkwv():
     newcmp = LinearSegmentedColormap.from_list("", [
@@ -1368,10 +1479,15 @@ wvtables = {
     'msfc'  : msfc(),
     'wv'    : wv(),
     'wv2'   : wv2(),
-    'wv3'   : testwv(),
+    'wv3'   : wv3(),
     'ssd'   : ssdwv(),
     'newwv' : newwv(),
+    'camwv' : camwv(),
     'codywv': codywv(),
+    'codywv2': codywv2(),
+    'mikewv': mikewv(),
+    'testwv': testwv(),
+    'hand'  : hand(),
     'dark'  : darkwv(),
     'oldwv' : oldwv()}
 
@@ -1414,6 +1530,7 @@ irtables = {
     'irk'     :irk(),
     'irl'     :irl(),
     'irm'     :irm(),
+    'irn'     :irn(),
     'irca'    :ca(),
     'test'    :test(),
     'nws'     :nws()}

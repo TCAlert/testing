@@ -79,9 +79,9 @@ t = datetime.now()
 year = t.year
 month = t.month
 day = t.day
-hr = 12
-fcastHour = 132
-storm = 'sh16'
+hr = 6
+fcastHour = 96
+storm = 'sh18'
 levels = [[200, 850], [500, 850], [200, 500]]
 
 # Collects requisite information from the A-Deck regarding the given storm for the specified hour and models

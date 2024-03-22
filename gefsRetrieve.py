@@ -45,7 +45,6 @@ def getData(request, hour):
         init_hour, mdate, link1, link2 = url(False)
         dataset1, dataset2 = xr.open_dataset(link1).sel(time = hour), xr.open_dataset(link2).sel(time = hour)
     dataset1, dataset2 = dataset1[request], dataset2[request]
-    print(dataset1)
     dataset = xr.merge([dataset1, dataset2])
     print(dataset)
 

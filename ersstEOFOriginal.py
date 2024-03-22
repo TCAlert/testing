@@ -70,7 +70,7 @@ def get_zscores(data, months):
 # open variable data
 varDataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
 varData = varDataset['sst']
-detrendedData = detrend_data(varData).isel(time=slice(-7))
+detrendedData = detrend_data(varData).isel(time=slice(-8))
 
 # get anomaly data for given variable
 months = []
@@ -79,7 +79,7 @@ for idx in range(len(detrendedData.time)):
         months.append(idx)
 monthData = detrendedData.isel(time=months)
 zscoreData = get_zscores(monthData, forecast_months)
-zscoreData = zscoreData.sel(latitude=slice(70, 10), longitude=slice(250, 360))
+zscoreData = zscoreData.sel(latitude=slice(70, 0), longitude=slice(275, 360))
 zscores = np.nan_to_num(zscoreData.to_numpy())
 print(f"Initial shape: {zscores.shape}")
 
@@ -107,13 +107,16 @@ print(f"Explained variance: {explained_variance}")
 for i in range(n_components):
     EOF = EOFs[i]
 
-    # reshaped_array = PCs.T[i].reshape(len(forecast_months), -1)
-    # sums = []
-    # for j in range(len(reshaped_array[0])):
-    #     sums.append(reshaped_array[0][j] + reshaped_array[1][j])
-    # contributions = np.array([list(range(1970, 2023)), sums]).T
-    # contributions = contributions[contributions[:, 1].argsort()]
-    # print(contributions)
+    print(PCs.T[i].shape)
+    reshaped_array = PCs.T[i].reshape(len(forecast_months), -1)
+    print(reshaped_array.shape)
+    sums = []
+    for j in range(len(reshaped_array[0])):
+        sums.append(reshaped_array[0][j] + reshaped_array[1][j])
+    print([len(list(range(1854, 2023))), len(sums)])
+    contributions = np.array([list(range(1854, 2023)), sums]).T
+    contributions = contributions[contributions[:, 1].argsort()]
+    print(contributions)
 
     # plot cartopy map and various features
     plt.figure(figsize=(12, 6))
@@ -150,7 +153,7 @@ for i in range(n_components):
     # add titling
     mainTitle = f"EOF{i + 1} With Detrended and Normalized SST Data for JAS"
     subTitle = f"\nExplained variance: {round(float(explained_variance[i]), 3)}"
-    subTitle2 = "\nERA5 Data (1854-2023)"
+    subTitle2 = "\nERSSTv5 Data (1854-2023)"
     plt.title(mainTitle + subTitle + subTitle2, fontsize=10, weight='bold', loc='left')
     plt.title("DCAreaWx", fontsize=10, weight='bold', loc='right', color='gray')
 

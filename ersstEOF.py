@@ -9,6 +9,10 @@ import cartopy.mpl.ticker as cticker
 import cartopy.feature as cfeature
 np.set_printoptions(suppress=True)
 
+ALLMONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+for x in range(len(ALLMONTHS)):
+    ALLMONTHS[x] = [np.datetime64(f'{y}-{str(ALLMONTHS[x]).zfill(2)}-01') for y in range(1854, 2023 + 1)]
+
 # Create a map using Cartopy
 def map(ax, interval, labelsize):
     # Add the map and set the extent
@@ -34,7 +38,6 @@ def detrend_data(data):
     :return: the detrended variable DataArray
     """
     data = data.fillna(0)
-    print(data)
     reshaped = data.stack(combined=('lat', 'lon'))
     detrended = detrend(reshaped, axis=0)
 
@@ -67,14 +70,15 @@ def get_zscores(data, months):
             latitude=(["latitude"], data.latitude.values),
             longitude=(["longitude"], data.longitude.values)
         ))
+
     return all_zscores
 
 labelsize = 9
-months = [9]#, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-startYear = 1981
+months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+startYear = 1854
 endYear = 2023
 numOfEOFS = 6
-extent = [-45, 45, 0, 360]
+extent = [-30, 30, 120, 280]
 
 for x in range(len(months)):
     months[x] = [np.datetime64(f'{y}-{str(months[x]).zfill(2)}-01') for y in range(startYear, endYear + 1)]
@@ -82,9 +86,18 @@ fMonths = np.array(months).flatten()
 
 # open variable data
 dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
-data = dataset['sst'].sel(time = fMonths, lat=slice(extent[1], extent[0]), lon=slice(extent[2], extent[3]))
+if extent[3] > 360:
+    extent[2] = extent[2] - 360
+    extent[3] = extent[3] - 360
+    dataset = dataset.assign_coords(lon=(((dataset.lon + 180) % 360) - 180)).sortby('lon')
+    center = 0
+else:
+    center = 180
+
+data = dataset['sst'].sel(lat=slice(extent[1], extent[0]), lon=slice(extent[2], extent[3]))
 detrendedData = detrend_data(data)
-zscoreData = get_zscores(detrendedData, months)
+detrended = detrendedData.sel(time = fMonths)
+zscoreData = get_zscores(detrended, months)
 zscores = np.nan_to_num(zscoreData.to_numpy())
 print(f"Initial shape: {zscores.shape}")
 
@@ -102,6 +115,7 @@ print(f"PC matrix shape: {PCs.shape}")
 EOFs = np.zeros((numOfEOFS, lat_size, lon_size))
 for i in range(numOfEOFS):
     EOFs[i, :, :] = pca.inverse_transform(np.eye(numOfEOFS)[i]).reshape(lat_size, lon_size)
+    EOFs[i, :, :] = EOFs[i, :, :] / np.linalg.norm(EOFs[i, :, :], axis=1)[:, np.newaxis]
 print(f"EOF matrix shape: {EOFs.shape}")
 
 explained_variance = pca.explained_variance_ratio_
@@ -112,7 +126,7 @@ for i in range(numOfEOFS):
     fig = plt.figure(figsize=(12, 12))
     gs = fig.add_gridspec(4, 1, wspace = 0, hspace = 0)
     axes = [fig.add_subplot(gs[3, 0]),
-            fig.add_subplot(gs[0:3, 0], projection = ccrs.PlateCarree(central_longitude=180))]
+            fig.add_subplot(gs[0:3, 0], projection = ccrs.PlateCarree(central_longitude=center))]
 
     # Add the map and set the extent
     axes[0].set_frame_on(False)
@@ -124,17 +138,65 @@ for i in range(numOfEOFS):
     axes[0].set_xlabel('Time', weight = 'bold', size = 9)
     axes[0].axhline(color = 'black')
 
-    axes[0].plot(np.sort(fMonths), PCs[:, i], linewidth = 2.5, color = '#404040', label = f'PC{i + 1} Timeseries')
+    test = PCs[:, i]
+    test = test[fMonths.argsort()]
+    m, s = np.mean(test), np.std(test)
+    test = np.array([(x - m) / s for x in test])
+    sortedMonths = np.sort(fMonths)
+    for x in range(len(test)):
+        print(sortedMonths[x], test[x])
+
+    reshaped_array = PCs.T[i].reshape(len(months), -1)
+    sums = []
+    for j in range(len(reshaped_array[0])):
+        sums.append(np.sum(reshaped_array[:, j], axis = 0))
+    m, s = np.mean(sums), np.std(sums)
+    sums = [(x - m) / s for x in sums]
+    contributions = np.array([list(range(startYear, endYear + 1)), sums]).T
+    contributions = contributions[contributions[:, 1].argsort()]
+    print(contributions)
+
+    axes[0].plot(sortedMonths, test, linewidth = 2, color = '#404040', label = f'PC{i + 1} Monthly Timeseries')
+    years = range(startYear, endYear + 1)
+    years = [np.datetime64(f'{year}-01-01') for year in years]
+    axes[0].plot(years, sums, linewidth = 2, color = '#d94c4c', label = f'PC{i + 1} Yearly Timeseries')
     axes[0].legend()
 
-    axes[1] = map(axes[1], 30, 9) 
-    c = axes[1].contourf(zscoreData.longitude, zscoreData.latitude, EOF, np.arange(-0.05, 0.05, 0.001), extend='both', transform=ccrs.PlateCarree(), cmap=cmap.tempAnoms())
+    axes[1] = map(axes[1], 10, 9) 
+
+    data = np.nan_to_num(get_zscores(detrendedData.isel(time=slice(-2)), ALLMONTHS))
+    dataShape = data.shape
+    EOFshape = EOF.shape
+    print(dataShape, EOFshape)
+    #EOF = np.where(EOF == 0, np.nan, EOF)
+    #EOF = (EOF / (np.nanmax(EOF) / 2)) - 1
+    #plt.imshow(EOF)
+    #plt.show()
+    #EOF = np.nan_to_num(EOF)
+    #timeseries = np.matmul(EOF.reshape(EOFshape[0] * EOFshape[1]), data.reshape(dataShape[1] * dataShape[2], dataShape[0]))
+    #for x in range(len(timeseries)):
+    #    print(detrendedData.time[x].values, timeseries[x])
+    #file_object = open(r"C:\Users\deela\Downloads\New Text Document.txt", 'w')
+    #file_object.write(str(list(timeseries)))
+    #file_object.close()
+    test = []
+    e = EOF.reshape(EOFshape[0] * EOFshape[1])
+    d = data.reshape(dataShape[1] * dataShape[2], dataShape[0])
+    print(d.shape, e.shape)
+    for x in range(len(d)):
+        t = []
+        for y in range(len(d[x])):
+            t.append(d[x][y] * e)
+        test.append(t)
+    print(np.array(test).shape)
+    eof = np.array(test).reshape(EOF.shape)
+    c = axes[1].contourf(zscoreData.longitude, zscoreData.latitude, EOF, np.arange(-.5, .5, 0.001), extend='both', transform=ccrs.PlateCarree(), cmap=cmap.tempAnoms())
 
     plt.title(f'ERSSTv5 EOF{i + 1} (Detrended and Normalized)\nExplained variance: {round(float(explained_variance[i]) * 100, 1)}%' , fontweight='bold', fontsize=labelsize, loc='left')
-    plt.title(f'January {startYear}-{endYear}', fontsize = labelsize, loc = 'center')
+    plt.title(f'Full Year {startYear}-{endYear}', fontsize = labelsize, loc = 'center')
     plt.title(f'Deelan Jariwala\nCredit to Nikhil Trivedi', fontsize=labelsize, loc='right')  
     cbar = plt.colorbar(c, orientation = 'horizontal', aspect = 100, pad = .08)
     cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
-    cbar.set_ticks(np.arange(-0.05, 0.06, 0.01))
+    cbar.set_ticks(np.arange(-.5, .55, 0.05))
     plt.savefig(r"C:\Users\deela\Downloads\ersstEOF" + str(i + 1) + ".png", dpi = 400, bbox_inches = 'tight')
-plt.show()
+    plt.show()
