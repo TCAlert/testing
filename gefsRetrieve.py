@@ -57,6 +57,27 @@ def getData(request, hour):
     dataset.close()
     return data, init
 
+# Retrieve data for the requested parameters, as well as pertinent information regarding the run
+# Variable "request" should be a list
+def getData2(request, hour):
+    try:
+        init_hour, mdate, link1, link2 = url(True)
+        dataset1 = xr.open_dataset(link1).sel(time = hour)
+    except:
+        init_hour, mdate, link1, link2 = url(False)
+        dataset1 = xr.open_dataset(link1).sel(time = hour)
+    dataset = dataset1[request]
+    print(dataset)
+
+    init = f'{mdate[0:4]}-{mdate[4:6]}-{mdate[6:8]} at {init_hour}:00z'
+    print("GEFS Initialization: ", init)
+
+    data = []
+    for x in range(len(request)):
+        data.append(dataset[request[x]].squeeze())
+    dataset.close()
+    return data, init
+
 # Create a map using Cartopy
 def map(n, s, e, w):
     fig = plt.figure(figsize=(20, 10))

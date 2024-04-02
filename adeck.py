@@ -19,6 +19,7 @@ def getData(storm):
             link = 'https://www.ssd.noaa.gov/PS/TROP/DATA/ATCF/JTWC/a' + storm.lower() + year + '.dat'    
             file = urllib.urlopen(link).read().decode('utf-8')           
     print(link)
+
     return file
 
 # Takes the data and converts it into a format that is easier to work with, at least for these purposes

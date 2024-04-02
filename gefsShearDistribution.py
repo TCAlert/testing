@@ -156,9 +156,9 @@ p = 50
 #title = 'Minimum Shear in Ensemble Suite'
 #title = 'Maximum Shear in Ensemble Suite'
 #title = 'Interquartile Range'
-#title = 'Probability a Layer has the Max Shear Vector'
+title = 'Probability a Layer has the Max Shear Vector'
 #title = f'{p}th Percentile of Wind Shears'
-title = 'Ensemble Mean'
+#title = 'Ensemble Mean'
 #title = 'Quartile Coefficient of Dispersion'
 #title = 'Standard Deviation'
 
