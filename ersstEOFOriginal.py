@@ -79,7 +79,7 @@ for idx in range(len(detrendedData.time)):
         months.append(idx)
 monthData = detrendedData.isel(time=months)
 zscoreData = get_zscores(monthData, forecast_months)
-zscoreData = zscoreData.sel(latitude=slice(70, 0), longitude=slice(275, 360))
+zscoreData = zscoreData#.sel(latitude=slice(70, 0), longitude=slice(275, 360))
 zscores = np.nan_to_num(zscoreData.to_numpy())
 print(f"Initial shape: {zscores.shape}")
 

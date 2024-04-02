@@ -1,17 +1,23 @@
 import xarray as xr 
 import numpy as np
         
-def createClimoMonthly(allYears, month, var, sigma):    
-    allYears = [np.datetime64(f'{year}-{month}-01') for year in allYears]
+def createClimoMonthly(allYears, months, var, type, mean = True):    
+    allYears = [np.datetime64(f'{year}-{str(month).zfill(2)}-01') for year in allYears for month in months]
     data = []
     for x in range(len(var)):
-        if sigma[x] == True:
+        if type[x].lower() == 'sigma':
             file = f'http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/sigma/{var[x]}.mon.mean.nc'
+        elif type[x].lower() == 'tropopause':
+            file = f'http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/tropopause/{var[x]}.mon.mean.nc'
         else:
             file = f'http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/pressure/{var[x]}.mon.mean.nc'
         tempDataset = xr.open_dataset(file)
         tempDataset = tempDataset[var[x]].sel(time = allYears)
-        data.append(tempDataset.mean(['time']))
+        
+        if mean == True:
+            data.append(tempDataset.mean(['time']))
+        else:
+            data.append(tempDataset)
     return data 
 
 

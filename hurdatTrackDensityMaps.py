@@ -30,8 +30,8 @@ rcParams['font.family'] = 'Courier New'
 
 hyperactive = [1995, 1996, 1998, 1999, 2003, 2004, 2005, 2010, 2017, 2020]
 belowNormal = [1991, 1993, 1994, 1997, 2002, 2009, 2013, 2014, 2015]
-years =  [1878, 1915, 1926, 1933, 1942, 1995, 1998, 2005, 2010, 2020]
-months = ['06', '07', '08', '09', '10', '11']
+years =  [1878, 1926, 1933, 1942, 1995, 1998, 2005, 2010, 2020]
+months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 interval = 3
 #dataType = 'RI'
 dataType = 'track'
@@ -48,8 +48,8 @@ def map(interval, labelsize):
     
     # Add state boundaries to plot
     ax.add_feature(cfeature.COASTLINE.with_scale('50m'), linewidth = 0.5)
-    ax.add_feature(cfeature.BORDERS.with_scale('50m'), linewidth = 0.5)
-    ax.add_feature(cfeature.STATES.with_scale('50m'), linewidth = 0.5)
+    ax.add_feature(cfeature.BORDERS.with_scale('50m'), linewidth = 0.25)
+    ax.add_feature(cfeature.STATES.with_scale('50m'), linewidth = 0.25)
     ax.set_xticks(np.arange(-180, 181, interval), crs=ccrs.PlateCarree())
     ax.set_yticks(np.arange(-90, 91, interval), crs=ccrs.PlateCarree())
     ax.yaxis.set_major_formatter(cticker.LatitudeFormatter())
@@ -106,7 +106,7 @@ data = getData(data, years, months)
 ax = map(5, 9)
 ax.set_extent([-117.5, -2.5, 2.5, 67.5], crs = ccrs.PlateCarree())
 c = ax.contourf(lons, lats, data, cmap = cmap.tempAnoms(), levels = np.arange(-.25, .251, .001), extend = 'both', transform = ccrs.PlateCarree())
-#c = plt.pcolormesh(lons, lats, data, cmap = cmap.tempAnoms(), vmin = -0.1, vmax = 0.1)
+#c = plt.pcolormesh(lons, lats, data, cmap = cmap.tempAnoms3(), vmin = -.5, vmax = 0.5)
 ax.set_title(f'HURDAT2 {dataType.upper()} Density Anomaly\n30-Year Sliding Climatology', fontweight='bold', fontsize=9, loc='left')
 #ax.set_title(f'{numToMonth(int(month))} {years}', fontsize=9, loc='center') 
 ax.set_title(f'Hurricane Season {years}', fontsize=9, loc='center') 

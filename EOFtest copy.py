@@ -7,11 +7,8 @@ import matplotlib.pyplot as plt
 import cmaps as cmap 
 import cartopy.mpl.ticker as cticker
 import cartopy.feature as cfeature
+from scipy.ndimage import gaussian_filter
 np.set_printoptions(suppress=True)
-
-ALLMONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-for x in range(len(ALLMONTHS)):
-    ALLMONTHS[x] = [np.datetime64(f'{y}-{str(ALLMONTHS[x]).zfill(2)}-01') for y in range(1854, 2023 + 1)]
 
 # Create a map using Cartopy
 def map(ax, interval, labelsize):
@@ -38,7 +35,7 @@ def detrend_data(data):
     :return: the detrended variable DataArray
     """
     data = data.fillna(0)
-    reshaped = data.stack(combined=('lat', 'lon'))
+    reshaped = np.reshape(data.values, (len(data.time), len(data.lon) * len(data.lat)))
     detrended = detrend(reshaped, axis=0)
 
     newData = detrended.reshape(data.shape)
@@ -50,6 +47,7 @@ def detrend_data(data):
             latitude=(["latitude"], data.lat.values),
             longitude=(["longitude"], data.lon.values)
         ))
+
     return newData
 
 def get_zscores(data, months):
@@ -70,35 +68,28 @@ def get_zscores(data, months):
             latitude=(["latitude"], data.latitude.values),
             longitude=(["longitude"], data.longitude.values)
         ))
-
     return all_zscores
 
 labelsize = 9
 months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-startYear = 1854
+startYear = 1971
 endYear = 2023
-numOfEOFS = 6
-extent = [-30, 30, 120, 280]
+numOfEOFS = 4 
+#extent = [-117.5, -2.5, 2.5, 67.5]
 
 for x in range(len(months)):
     months[x] = [np.datetime64(f'{y}-{str(months[x]).zfill(2)}-01') for y in range(startYear, endYear + 1)]
 fMonths = np.array(months).flatten()
 
 # open variable data
-dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
-if extent[3] > 360:
-    extent[2] = extent[2] - 360
-    extent[3] = extent[3] - 360
-    dataset = dataset.assign_coords(lon=(((dataset.lon + 180) % 360) - 180)).sortby('lon')
-    center = 0
-else:
-    center = 180
+dataset = xr.open_dataset(r"C:\Users\deela\Downloads\R1CI1971-2023.nc")
+data = dataset['__xarray_dataarray_variable__'].sel(time = fMonths, lat = slice(70, 0), lon = slice(260, 360))
+#s = 2
+#interval = 3
+#data.values = gaussian_filter(data.values, sigma = s, truncate = (((interval - 1) / 2) - 0.5) / s)
 
-data = dataset['sst'] * np.cos(np.radians(dataset['lat']))
-data = data.sel(lat=slice(extent[1], extent[0]), lon=slice(extent[2], extent[3])) 
 detrendedData = detrend_data(data)
-detrended = detrendedData.sel(time = fMonths)
-zscoreData = get_zscores(detrended, months)
+zscoreData = get_zscores(detrendedData, months)
 zscores = np.nan_to_num(zscoreData.to_numpy())
 print(f"Initial shape: {zscores.shape}")
 
@@ -116,7 +107,6 @@ print(f"PC matrix shape: {PCs.shape}")
 EOFs = np.zeros((numOfEOFS, lat_size, lon_size))
 for i in range(numOfEOFS):
     EOFs[i, :, :] = pca.inverse_transform(np.eye(numOfEOFS)[i]).reshape(lat_size, lon_size)
-    EOFs[i, :, :] = EOFs[i, :, :] / np.linalg.norm(EOFs[i, :, :], axis=1)[:, np.newaxis]
 print(f"EOF matrix shape: {EOFs.shape}")
 
 explained_variance = pca.explained_variance_ratio_
@@ -127,7 +117,7 @@ for i in range(numOfEOFS):
     fig = plt.figure(figsize=(12, 12))
     gs = fig.add_gridspec(4, 1, wspace = 0, hspace = 0)
     axes = [fig.add_subplot(gs[3, 0]),
-            fig.add_subplot(gs[0:3, 0], projection = ccrs.PlateCarree(central_longitude=center))]
+            fig.add_subplot(gs[0:3, 0], projection = ccrs.PlateCarree(central_longitude=180))]
 
     # Add the map and set the extent
     axes[0].set_frame_on(False)
@@ -140,13 +130,12 @@ for i in range(numOfEOFS):
     axes[0].axhline(color = 'black')
 
     test = PCs[:, i]
-    print(fMonths)
     test = test[fMonths.argsort()]
     m, s = np.mean(test), np.std(test)
     test = np.array([(x - m) / s for x in test])
     sortedMonths = np.sort(fMonths)
-    #for x in range(len(test)):
-    #    print(sortedMonths[x], test[x])
+    for x in range(len(test)):
+        print(sortedMonths[x], test[x])
 
     reshaped_array = PCs.T[i].reshape(len(months), -1)
     sums = []
@@ -156,7 +145,7 @@ for i in range(numOfEOFS):
     sums = [(x - m) / s for x in sums]
     contributions = np.array([list(range(startYear, endYear + 1)), sums]).T
     contributions = contributions[contributions[:, 1].argsort()]
-    #print(contributions)
+    print(contributions)
 
     axes[0].plot(sortedMonths, test, linewidth = 2, color = '#404040', label = f'PC{i + 1} Monthly Timeseries')
     years = range(startYear, endYear + 1)
@@ -164,15 +153,15 @@ for i in range(numOfEOFS):
     axes[0].plot(years, sums, linewidth = 2, color = '#d94c4c', label = f'PC{i + 1} Yearly Timeseries')
     axes[0].legend()
 
-    axes[1] = map(axes[1], 10, 9) 
-    
-    c = axes[1].contourf(zscoreData.longitude, zscoreData.latitude, EOF, np.arange(-1, 1.01, 0.01), extend='both', transform=ccrs.PlateCarree(), cmap=cmap.tempAnoms())
+    axes[1] = map(axes[1], 20, 9) 
+    #axes[1].set_extent(extent)
+    c = axes[1].contourf(zscoreData.longitude, zscoreData.latitude, EOF, np.arange(-0.1, 0.1, 0.001), extend='both', transform=ccrs.PlateCarree(), cmap=cmap.tempAnoms())
 
-    plt.title(f'ERSSTv5 EOF{i + 1} (Detrended and Normalized)\nExplained variance: {round(float(explained_variance[i]) * 100, 1)}%' , fontweight='bold', fontsize=labelsize, loc='left')
+    plt.title(f'NCEP/NCAR Reanalysis I: Coupling Index EOF{i + 1} (Detrended and Normalized)\nExplained variance: {round(float(explained_variance[i]) * 100, 1)}%' , fontweight='bold', fontsize=labelsize, loc='left')
     plt.title(f'Full Year {startYear}-{endYear}', fontsize = labelsize, loc = 'center')
     plt.title(f'Deelan Jariwala\nCredit to Nikhil Trivedi', fontsize=labelsize, loc='right')  
     cbar = plt.colorbar(c, orientation = 'horizontal', aspect = 100, pad = .08)
     cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
-    cbar.set_ticks(np.arange(-1, 1.1, 0.1))
-    plt.savefig(r"C:\Users\deela\Downloads\ersstEOF" + str(i + 1) + ".png", dpi = 400, bbox_inches = 'tight')
+    cbar.set_ticks(np.arange(-0.1, 0.11, 0.01))
+    plt.savefig(r"C:\Users\deela\Downloads\ciEOF" + str(i + 1) + ".png", dpi = 400, bbox_inches = 'tight')
     plt.show()

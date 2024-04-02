@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import cmaps as cmap 
 import cartopy.mpl.ticker as cticker
 import cartopy.feature as cfeature
+from scipy.ndimage import gaussian_filter
 np.set_printoptions(suppress=True)
 
 # Create a map using Cartopy
@@ -34,18 +35,15 @@ def detrend_data(data):
     :return: the detrended variable DataArray
     """
     data = data.fillna(0)
-    reshaped = data.stack(combined=('longitude', 'latitude'))
+    reshaped = np.reshape(data.values, (len(data.time), len(data.x) * len(data.y)))
     detrended = detrend(reshaped, axis=0)
 
     newData = detrended.reshape(data.shape)
-    newData = xr.DataArray(
-        data=newData,
-        dims=('time', 'longitude', 'latitude'),
-        coords=dict(
-            time=(["time"], data.time.values),
-            longitude=(["longitude"], data.longitude.values),
-            latitude=(["latitude"], data.latitude.values)
-        ))
+    newData = xr.DataArray(newData,
+                      coords={"time": data.time.values, "latitude": (["x","y"], data.longitude.values),
+                           "longitude": (["x","y"], data.latitude.values)},
+                   dims=["time", "x","y"], name = 'trackDensity')
+
     return newData
 
 def get_zscores(data, months):
@@ -58,22 +56,20 @@ def get_zscores(data, months):
         for y in range(len(tempData)):
             all_zscores.append((tempData[y] - mean) / stdd)
 
-    all_zscores = xr.DataArray(
-        data=all_zscores,
-        dims=('time', 'longitude', 'latitude'),
-        coords=dict(
-            time=(["time"], data.time.values),
-            latitude=(["latitude"], data.latitude.values),
-            longitude=(["longitude"], data.longitude.values)
-        ))
+    all_zscores = xr.DataArray(all_zscores,
+                           coords={"time": data.time.values, 
+                                   "latitude": (["x","y"], data.longitude.values),
+                                   "longitude": (["x","y"], data.latitude.values)},
+                           dims=["time", "x","y"], name = 'trackDensity')    
+
     return all_zscores
 
 labelsize = 9
-months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+months = [9]#1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 startYear = 1923
-endYear = 2023
+endYear = 2022
 numOfEOFS = 4 
-#extent = [20, 60, 120, 240]
+extent = [-117.5, -2.5, 2.5, 67.5]
 
 for x in range(len(months)):
     months[x] = [np.datetime64(f'{y}-{str(months[x]).zfill(2)}-01') for y in range(startYear, endYear + 1)]
@@ -81,7 +77,11 @@ fMonths = np.array(months).flatten()
 
 # open variable data
 dataset = xr.open_dataset(r"C:\Users\deela\Downloads\trackDensity.nc")
-data = dataset['trackDensity'].sel(time = fMonths)#, lat=slice(extent[1], extent[0]), lon=slice(extent[2], extent[3]))
+data = dataset['trackDensity'].sel(time = fMonths)
+s = 2
+interval = 3
+data.values = gaussian_filter(data.values, sigma = s, truncate = (((interval - 1) / 2) - 0.5) / s)
+
 detrendedData = detrend_data(data)
 zscoreData = get_zscores(detrendedData, months)
 zscores = np.nan_to_num(zscoreData.to_numpy())
@@ -123,17 +123,39 @@ for i in range(numOfEOFS):
     axes[0].set_xlabel('Time', weight = 'bold', size = 9)
     axes[0].axhline(color = 'black')
 
-    axes[0].plot(np.sort(fMonths), PCs[:, i], linewidth = 2.5, color = '#404040', label = f'PC{i + 1} Timeseries')
+    test = PCs[:, i]
+    test = test[fMonths.argsort()]
+    m, s = np.mean(test), np.std(test)
+    test = np.array([(x - m) / s for x in test])
+    sortedMonths = np.sort(fMonths)
+    for x in range(len(test)):
+        print(sortedMonths[x], test[x])
+
+    reshaped_array = PCs.T[i].reshape(len(months), -1)
+    sums = []
+    for j in range(len(reshaped_array[0])):
+        sums.append(np.sum(reshaped_array[:, j], axis = 0))
+    m, s = np.mean(sums), np.std(sums)
+    sums = [(x - m) / s for x in sums]
+    contributions = np.array([list(range(startYear, endYear + 1)), sums]).T
+    contributions = contributions[contributions[:, 1].argsort()]
+    print(contributions)
+
+    axes[0].plot(sortedMonths, test, linewidth = 2, color = '#404040', label = f'PC{i + 1} Monthly Timeseries')
+    years = range(startYear, endYear + 1)
+    years = [np.datetime64(f'{year}-01-01') for year in years]
+    # axes[0].plot(years, sums, linewidth = 2, color = '#d94c4c', label = f'PC{i + 1} Yearly Timeseries')
     axes[0].legend()
 
     axes[1] = map(axes[1], 10, 9) 
-    c = axes[1].contourf(zscoreData.latitude, zscoreData.longitude, EOF, np.arange(-0.05, 0.05, 0.001), extend='both', transform=ccrs.PlateCarree(), cmap=cmap.tempAnoms())
+    axes[1].set_extent(extent)
+    c = axes[1].contourf(zscoreData.longitude, zscoreData.latitude, EOF, np.arange(-0.1, 0.1, 0.001), extend='both', transform=ccrs.PlateCarree(), cmap=cmap.tempAnoms())
 
     plt.title(f'HURDAT2 Atlantic Track Density EOF{i + 1} (Detrended and Normalized)\nExplained variance: {round(float(explained_variance[i]) * 100, 1)}%' , fontweight='bold', fontsize=labelsize, loc='left')
-    plt.title(f'Full Year {startYear}-{endYear}', fontsize = labelsize, loc = 'center')
+    plt.title(f'September {startYear}-{endYear}', fontsize = labelsize, loc = 'center')
     plt.title(f'Deelan Jariwala\nCredit to Nikhil Trivedi', fontsize=labelsize, loc='right')  
     cbar = plt.colorbar(c, orientation = 'horizontal', aspect = 100, pad = .08)
     cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
-    cbar.set_ticks(np.arange(-0.05, 0.06, 0.01))
+    cbar.set_ticks(np.arange(-0.1, 0.11, 0.01))
     plt.savefig(r"C:\Users\deela\Downloads\trackEOF" + str(i + 1) + ".png", dpi = 400, bbox_inches = 'tight')
-plt.show()
+    plt.show()
