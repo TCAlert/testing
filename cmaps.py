@@ -53,6 +53,15 @@ def probs():
 
     return newcmp
 
+def cloud():
+    newcmp = LinearSegmentedColormap.from_list("",[
+    (0/100, "#FFFFFF"),
+    (25/100, "#e6e6e6"),
+    (75/100, "#202080"),
+    (100/100, "#8080ff")])
+
+    return newcmp.reversed()
+
 def tempAnoms():
     newcmp = LinearSegmentedColormap.from_list("", [
     (0/20, "#f2b3b3"),
@@ -61,6 +70,40 @@ def tempAnoms():
     (10/20, "#FFFFFF"),
     (12.5/20, "#4da4fa"),
     (15/20, "#252580"),
+    (20/20, "#d3b3f2")])
+
+    vmin = -5
+    vmax = 5
+
+    return newcmp.reversed()
+
+def tempAnoms2():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/20, "#101040"),
+    (5/20, "#4040ff"),
+    (9/20, "#e6e6ff"),
+    (9/20, "#FFFFFF"),
+    (10/20, "#FFFFFF"),
+    (11/20, "#FFFFFF"),
+    (11/20, "#ffe6e6"),
+    (15/20, "#ff4040"),
+    (20/20, "#401010")])
+
+    vmin = -5
+    vmax = 5
+
+    return newcmp
+
+def tempAnoms3():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/20, "#f2b3b3"),
+    (2.5/20, "#802525"),
+    (5/20, "#ff4d4d"),
+    (9.5/20, "#FFFFFF"),
+    (10/20, "#FFFFFF"),
+    (10.5/20, "#FFFFFF"),
+    (15/20, "#4d4dff"),
+    (17.5/20, "#252580"),
     (20/20, "#d3b3f2")])
 
     vmin = -5
