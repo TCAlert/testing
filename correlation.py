@@ -8,6 +8,7 @@ import cmaps as cmap
 import pandas as pd 
 from helper import numToMonth
 import scipy.stats
+from scipy.signal import detrend
 import matplotlib as mpl
 mpl.rcParams['hatch.linewidth'] = 0.5
 mpl.rcParams['font.family'] = 'Courier New'
@@ -21,8 +22,8 @@ def map(interval, labelsize):
     
     # Add state boundaries to plot
     ax.add_feature(cfeature.COASTLINE.with_scale('50m'), linewidth = 0.5)
-    ax.add_feature(cfeature.BORDERS.with_scale('50m'), linewidth = 0.5)
-    ax.add_feature(cfeature.STATES.with_scale('50m'), linewidth = 0.5)
+    ax.add_feature(cfeature.BORDERS.with_scale('50m'), linewidth = 0.25)
+    ax.add_feature(cfeature.STATES.with_scale('50m'), linewidth = 0.25)
     ax.set_xticks(np.arange(-180, 181, interval), crs=ccrs.PlateCarree())
     ax.set_yticks(np.arange(-90, 91, interval), crs=ccrs.PlateCarree())
     ax.yaxis.set_major_formatter(cticker.LatitudeFormatter())
@@ -34,14 +35,18 @@ def map(interval, labelsize):
     # ax.minorticks_on()
     return ax 
 
-startYear = 1950
+startYear = 1971
 endYear = 2020
 indexMonth = '12'
-dataMonth = '12'
-index = 'oni'
+dataMonth = '9'
+index = 'Cumulative NATL ACE'
 csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]]
 dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
-data = dataset['sst']
+print(np.cos(np.radians(dataset['lat'])))
+data = dataset['sst'].fillna(0) * np.cos(np.radians(dataset['lat']))
+#dataset = xr.open_dataset(r"C:\Users\deela\Downloads\R1CI1971-2023.nc")
+#data = dataset['__xarray_dataarray_variable__']
+print(data.values)
 
 fMonths = np.array([np.datetime64(f'{y}-{str(dataMonth).zfill(2)}-01') for y in range(startYear, endYear + 1)])
 data = data.sel(time = fMonths)
@@ -49,12 +54,12 @@ ogShape = data.shape
 
 temp = data.values
 temp = np.reshape(temp, (ogShape[0], ogShape[1] * ogShape[2]))
+temp = detrend(temp, axis = 0)
 print(temp.shape, csv.shape)
 
 corrData = []
 signData = []
 for x in range(temp.shape[1]):
-    #corr = np.corrcoef(temp[:, x], csv)
     temp[:, x] = np.nan_to_num(temp[:, x])
     corr, sig = scipy.stats.pearsonr(temp[:, x], csv)
     corrData.append(corr)
@@ -69,14 +74,14 @@ dataset['sig'] = ((ogShape[1], ogShape[2]), np.reshape(signData, (ogShape[1], og
 
 ax = map(20, 9)
 #ax.set_extent([-110, -0.01, 0, 70])
-c = plt.contourf(data.lon, data.lat, data.values, cmap = 'RdBu_r', levels = np.arange(-1, 1.1, .1), extend = 'both', transform = ccrs.PlateCarree(central_longitude = 0))
+c = plt.contourf(data.lon, data.lat, data.values, cmap = cmap.tempAnoms3(), levels = np.arange(-1, 1.1, .1), extend = 'both', transform = ccrs.PlateCarree(central_longitude = 0))
 h = plt.contourf(data.lon, data.lat, dataset['sig'].values, colors = 'none', levels = np.arange(0, 0.06, 0.01), hatches = ['...'], transform = ccrs.PlateCarree(central_longitude = 0))
 
 for collection in h.collections:
     collection.set_edgecolor('#262626')
     collection.set_linewidth(0)
 
-ax.set_title(f'ERSSTv5 Correlation with {numToMonth(indexMonth)} {index.upper()}\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
+ax.set_title(f'ERSSTv5 Correlation with {numToMonth(indexMonth)} {index.upper()} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'{numToMonth(dataMonth)}', fontsize=9, loc='center') 
 ax.set_title(f'Significant Values Hatched\nDeelan Jariwala', fontsize=9, loc='right') 
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
