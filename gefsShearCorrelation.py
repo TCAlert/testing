@@ -66,9 +66,9 @@ def finalPlot(grid, shear, init, title, us = None, vs = None):
                 plt.text(grid[0][x][y], grid[1][x][y], f'{"{:.2f}".format(shear[x][y], 2)}', size=12, color='black', weight = 'bold', horizontalalignment = 'center', verticalalignment = 'center', path_effects=[pe.withStroke(linewidth = 1, foreground="white")])#, transform = ccrs.PlateCarree(central_longitude = 0))
 
     time = (str(data[0].time.values)).split('T')
-    time = '2024-03-12 at 18:00z'#f'{time[0]} at {(time[1][:5])}z'
+    time = f'{time[0]} at {(time[1][:5])}z'
 
-    ax.set_title(f'GEFS Vertical Wind Shear Distribution: SH17\nInitialization: {init}', fontweight='bold', fontsize=10, loc='left')
+    ax.set_title(f'GEFS Vertical Wind Shear Distribution: SH21\nInitialization: {init}', fontweight='bold', fontsize=10, loc='left')
     ax.set_title(f'Forecast Hour: {time}', fontsize = 10, loc = 'center')
     ax.set_title(f'Deelan Jariwala', fontsize=10, loc='right') 
     at = AnchoredText("Inspired by Michael Fischer",
@@ -83,12 +83,12 @@ def finalPlot(grid, shear, init, title, us = None, vs = None):
 # Sample usage
 t = datetime.now()
 year = t.year
-month = 3#t.month
-day = 12#t.day
-hr = 18
-fcastHour = 0
-fcastHour2 = 48
-storm = 'sh17'
+month = t.month
+day = 6#t.day
+hr = 0
+fcastHour = 36
+fcastHour2 = 36
+storm = 'sh21'
 shearStrength = 15
 p = 50
 
@@ -101,12 +101,13 @@ adeckDFFH = adeck.filterData(storm, [f'{year}{str(month).zfill(2)}{str(day).zfil
 print(adeckDF, adeckDFFH)
 intensities = np.array(adeckDFFH[8].astype('Float64'))
 
-#data, init = gefs.getData(['ugrdprs', 'vgrdprs'], np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hr).zfill(2)}') + np.timedelta64(fcastHour, 'h'))
-init = '2024-03-12 at 18:00z'
+data, init = gefs.getData(['ugrdprs', 'vgrdprs'], np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hr).zfill(2)}') + np.timedelta64(fcastHour, 'h'))
+print(data)
+init = '2024-04-06 at 00:00z'
 print(init)
-#data[0].to_netcdf(r"C:\Users\deela\Downloads\uData.nc")
-#data[1].to_netcdf(r"C:\Users\deela\Downloads\vData.nc")
-data = [xr.open_dataset(r"C:\Users\deela\Downloads\uData.nc")['ugrdprs'], xr.open_dataset(r"C:\Users\deela\Downloads\vData.nc")['vgrdprs']]
+data[0].to_netcdf(r"C:\Users\deela\Downloads\uData.nc")
+data[1].to_netcdf(r"C:\Users\deela\Downloads\vData.nc")
+#data = [xr.open_dataset(r"C:\Users\deela\Downloads\uData.nc")['ugrdprs'], xr.open_dataset(r"C:\Users\deela\Downloads\vData.nc")['vgrdprs']]
 
 # Calculate wind shears for each member of the GEFS
 shears = []

@@ -46,7 +46,7 @@ def anomalies(month, years, sd = False):
         #else:
         #    plt.contour(data.lon, data.lat, data.isel(time = x), origin = 'lower', levels = [26], colors = 'black', linewidths = 1, transform=ccrs.PlateCarree(central_longitude=0))
     plt.contour(data.lon, data.lat, data.sel(time = y[:-1]).mean('time'), origin = 'lower', levels = [26], colors = 'green', linewidths = 2, transform=ccrs.PlateCarree(central_longitude=0))
-    plt.title(f'ERSSTv5 26C Isotherm Location\n1974-2023 Mean in Green' , fontweight='bold', fontsize=labelsize, loc='left')
+    plt.title(f'ERSSTv5 26C Isotherm Location\n1974-2024 Mean in Green' , fontweight='bold', fontsize=labelsize, loc='left')
     plt.title(f'{helper.numToMonth(month)} {str(years)}', fontsize = labelsize, loc = 'center')
     plt.title('Deelan Jariwala', fontsize=labelsize, loc='right')  
     #cbar = plt.colorbar(orientation = 'vertical', aspect = 50, pad = .02)
@@ -54,4 +54,4 @@ def anomalies(month, years, sd = False):
     plt.savefig(r"C:\Users\deela\Downloads\ersstComposite.png", dpi = 400, bbox_inches = 'tight')
     plt.show()
 
-anomalies('3', [1878, 1926, 1933, 1942, 1995, 1998, 2005, 2010, 2020])
+anomalies('3', range(1974, 2025))

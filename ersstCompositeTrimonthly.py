@@ -49,28 +49,32 @@ def std(dataset, average):
     stddev = dataset
     return stddev
 
-def anomalies(month, years, sd = False):
+def anomalies(months, years, sd = False):
     dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')['sst']
-    allData = []
-    for year in years:
-        climo = computeClimo(dataset, month, int(year))
+    finalData = []
+    for month in months:
+        allData = []
+        for year in years:
+            climo = computeClimo(dataset, month, int(year))
 
-        data = dataset.sel(time = np.datetime64(f'{year}-{month.zfill(2)}-01')) - climo.mean(['time'])
-        if sd == True:
-            sdata = std(climo, climo.mean(['time']))
-            allData.append((data / sdata).values)
-            title = 'Standardized Anomalies'
-        else:
-            globalMean = data.mean()
-            allData.append((data - globalMean).values)
-            title = 'Global Mean Anomalies'    
-    allData = sum(allData) / len(allData)
+            data = dataset.sel(time = np.datetime64(f'{year}-{month.zfill(2)}-01')) - climo.mean(['time'])
+            if sd == True:
+                sdata = std(climo, climo.mean(['time']))
+                allData.append((data / sdata).values)
+                title = 'Standardized Anomalies'
+            else:
+                globalMean = data.mean()
+                allData.append((data - globalMean).values)
+                title = 'Global Mean Anomalies'    
+        allData = sum(allData) / len(allData)
+        finalData.append(allData)
+    finalData = sum(finalData) / len(finalData)
 
     labelsize = 8 
     ax = map(20, labelsize)    
     #ax.set_extent([240, 359, 0, 70])
 
-    plt.contourf(data.lon, data.lat, allData, origin='lower', levels = np.arange(-5, 5, .1), cmap = cmap.tempAnoms3(), extend = 'both', transform=ccrs.PlateCarree(central_longitude=0))
+    plt.contourf(data.lon, data.lat, allData, origin='lower', levels = np.arange(-5, 5, .1), cmap = cmap.tempAnoms(), extend = 'both', transform=ccrs.PlateCarree(central_longitude=0))
     plt.title(f'ERSSTv5 {title}\n30-Year Sliding Climatology' , fontweight='bold', fontsize=labelsize, loc='left')
     plt.title(f'{helper.numToMonth(month)} {str(years)}', fontsize = labelsize, loc = 'center')
     plt.title('Deelan Jariwala', fontsize=labelsize, loc='right')  
@@ -104,4 +108,4 @@ def anomalies(month, years, sd = False):
     
 #anomalies('9', years)#[2010, 1999, 2020, 1995, 1955, 2017, 2022, 2021, 1988, 1942, 1889, 1856, 1998])
 analogs = [1878, 1926, 1933, 1942, 1995, 1998, 2005, 2010, 2020]
-anomalies('3', [2024])#, True)
+anomalies(['8', '9', '10'], analogs)#, True)

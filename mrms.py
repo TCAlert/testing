@@ -8,7 +8,7 @@ import bdeck as bdeck
 usage = '```$mrms [storm (best track ID)/latitude] [longitude]```'
 
 def plot(lat, lon = 0):
-    link = f'https://thredds.aos.wisc.edu/thredds/dodsC/grib/NCEP/MRMS/BaseRef/MRMS_BaseReflectivity_{datetime.utcnow().year}{str(datetime.utcnow().month).zfill(2)}{str(datetime.utcnow().day).zfill(2)}_{datetime.utcnow().hour}00.grib2'
+    link = f'https://thredds.aos.wisc.edu/thredds/dodsC/grib/NCEP/MRMS/BaseRef/MRMS_BaseReflectivity_{datetime.utcnow().year}{str(datetime.utcnow().month).zfill(2)}{str(datetime.utcnow().day).zfill(2)}_{str(datetime.utcnow().hour).zfill(2)}00.grib2'
     data = xr.open_dataset(link)
 
     mrms = data['MergedBaseReflectivityQC_altitude_above_msl'].sel(time = data['time'][-1], altitude_above_msl = data['altitude_above_msl'][0])
@@ -49,11 +49,11 @@ def plot(lat, lon = 0):
     time = f'{t[0]} at {t[1][0:5]}z'
 
     plt.title(f'MRMS Base Reflectivity\n{time}', fontweight='bold', fontsize=10, loc='left')
-    plt.title(f'{title}\nTCAlert', fontsize=10, loc='right') 
+    plt.title(f'{title}\nDeelan Jariwala', fontsize=10, loc='right') 
     
     #print('Plotting complete!')
     plt.colorbar(orientation = 'vertical', aspect = 50, pad = .02)
-    plt.savefig(r"C:\Users\[Username]\Downloads\mrmsradar.png", dpi = 250, bbox_inches = 'tight')
+    plt.savefig(r"C:\Users\deela\Downloads\mrmsradar.png", dpi = 250, bbox_inches = 'tight')
     plt.show()
     plt.close()
-#plot(34.822, -98.757)
+plot(34.822, -98.757)

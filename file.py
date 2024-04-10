@@ -1,6 +1,7 @@
 import urllib.request
+import gzip
 
-def getFile(link):
+def getFTP(link):
     name = link.split('/')
     # Local path where you want to save the downloaded file
     local_filename = r"C:\Users\deela\Downloads\\" + name[-1]
@@ -10,4 +11,12 @@ def getFile(link):
 
     print(f"File '{local_filename}' downloaded successfully.")
 
-getFile('ftp://ftp.ifremer.fr/ifremer/argo/dac/coriolis/6902919/profiles/R6902919_183.nc')
+def getGZ(file):
+    newFile = file[:-3]
+    with gzip.open(file, 'rb') as f:
+        with open(newFile, 'wb') as nf:
+            print(f'File {file} opened successfully.')
+            nf.write(f.read())
+    
+#getFTP('ftp://ftp.ifremer.fr/ifremer/argo/dac/coriolis/6902919/profiles/R6902919_183.nc')
+
