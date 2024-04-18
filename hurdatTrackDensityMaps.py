@@ -31,7 +31,8 @@ rcParams['font.family'] = 'Courier New'
 hyperactive = [1995, 1996, 1998, 1999, 2003, 2004, 2005, 2010, 2017, 2020]
 belowNormal = [1991, 1993, 1994, 1997, 2002, 2009, 2013, 2014, 2015]
 analogs =  [1878, 1926, 1933, 1942, 1995, 1998, 2005, 2010, 2020]
-years = [1878, 1926, 1998, 2010, 2020]
+atlnino = [1949, 1951, 1960, 1963, 1966, 1968, 1973, 1981, 1984, 1987, 1988, 1995, 1998, 1999, 2003, 2008, 2010, 2016, 2021]
+atlnina = [1958, 1964, 1965, 1967, 1969, 1971, 1976, 1978, 1982, 1983, 1992, 1994, 2005, 2013]
 months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 interval = 3
 #dataType = 'RI'
@@ -39,6 +40,17 @@ dataType = 'track'
 #dataType = '24hrChange'
 #dataType = 'ACE'
 #dataType = 'wind'
+
+if dataType == '24hrChange':
+    vmin, vmax = -2, 2
+elif dataType == 'RI':
+    vmin, vmax = -0.1, 0.1
+elif dataType == 'ACE':
+    vmin, vmax = -0.25, 0.25
+elif dataType == 'wind':
+    vmin, vmax = -25, 25
+else:
+    vmin, vmax = -0.5, 0.5
 
 def map(interval, labelsize):
     fig = plt.figure(figsize=(18, 9))
@@ -102,18 +114,18 @@ lons = data['longitude']
 lats = data['latitude']
 data = data[f'{dataType}Density']
 
-data = getData(data, years, months)
+data = getData(data, atlnino, months)# - getData(data, atlnina, months)
 
 ax = map(5, 9)
 ax.set_extent([-117.5, -2.5, 2.5, 67.5], crs = ccrs.PlateCarree())
-c = ax.contourf(lons, lats, data, cmap = cmap.tempAnoms(), levels = np.arange(-.5, .51, .001), extend = 'both', transform = ccrs.PlateCarree())
+c = ax.contourf(lons, lats, data, cmap = cmap.tempAnoms(), levels = np.arange(vmin, vmax + ((vmax - vmin) / 200), (vmax - vmin) / 200), extend = 'both', transform = ccrs.PlateCarree())
 #c = plt.pcolormesh(lons, lats, data, cmap = cmap.tempAnoms3(), vmin = -.5, vmax = 0.5)
 ax.set_title(f'HURDAT2 {dataType.upper()} Density Anomaly\n30-Year Sliding Climatology', fontweight='bold', fontsize=9, loc='left')
 #ax.set_title(f'{numToMonth(int(month))} {years}', fontsize=9, loc='center') 
-ax.set_title(f'Hurricane Season {years}', fontsize=9, loc='center') 
+ax.set_title(f'Hurricane Season Atlantic Nino Years', fontsize=9, loc='center') 
 ax.set_title(f'{interval}\u00b0x{interval}\u00b0\nDeelan Jariwala', fontsize=9, loc='right') 
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
-cbar.set_ticks(np.arange(-.5, .6, 0.1))
+cbar.set_ticks(np.arange(vmin, vmax + ((vmax - vmin) / 20), (vmax - vmin) / 10))
 plt.savefig(r"C:\Users\deela\Downloads\hurdatDensity" + dataType + ".png", dpi = 400, bbox_inches = 'tight')
 plt.show()

@@ -38,7 +38,7 @@ hour = 18
 level = [200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000]
 lat, lon = 16.9, -59.2
 date = f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}'
-#retrieve(['u_component_of_wind', 'v_component_of_wind'], level, [year, str(month).zfill(2), str(day).zfill(2), str(hour).zfill(2)], lat, lon)
+retrieve(['u_component_of_wind', 'v_component_of_wind'], level, [year, str(month).zfill(2), str(day).zfill(2), str(hour).zfill(2)], lat, lon)
 data = xr.open_dataset(r"C:\Users\deela\Downloads\era5.nc")
 print(data)
 uData = (data['u'].sel(latitude = slice(lat + 2.5, lat - 2.5), longitude = slice(lon - 2.5, lon + 2.5))).mean(['latitude', 'longitude']).squeeze()
@@ -82,7 +82,7 @@ def allShear(u, v):
     return grid, np.array(shear).reshape(grid[0].shape), np.array(us).reshape(grid[0].shape), np.array(vs).reshape(grid[0].shape)
 
 # Function to put together the whole plot
-def finalPlot(hour):
+def finalPlot():
     grid, shear, us, vs = allShear(uData * 1.9438, vData * 1.9438)
     mag = (2.5 * (us**2 + vs**2)**0.5)
 
@@ -114,4 +114,4 @@ def finalPlot(hour):
     plt.show() 
 
 # Sample usage
-finalPlot(hour)
+finalPlot()

@@ -31,7 +31,7 @@ def std(dataset, average):
     return stddev
 
 def timeseries(month, years, sd = False):
-    dataset = ((xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')['sst']).sel(lat = slice(20, 10), lon = slice(275, 345))).mean(['lat', 'lon'])
+    dataset = ((xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')['sst']).sel(lat = slice(50, 40), lon = slice(170, 200))).mean(['lat', 'lon'])
     print(dataset)
     allData = []
     anomalies = []
@@ -62,11 +62,11 @@ def timeseries(month, years, sd = False):
 
     plt.legend()
 
-    plt.title(f'ERSSTv5 Sea Surface Temperatures\n10N to 20N, 85W to 15W' , fontweight='bold', fontsize=10, loc='left')
+    plt.title(f'ERSSTv5 Sea Surface Temperatures\n40N to 50N, 170E to 160W' , fontweight='bold', fontsize=10, loc='left')
     plt.title(f'{helper.numToMonth(month)}', fontsize = 10, loc = 'center')
     plt.title('Deelan Jariwala', fontsize=10, loc='right')  
     plt.savefig(r"C:\Users\deela\Downloads\ersstlineplot.png", dpi = 400, bbox_inches = 'tight')
 
     plt.show()
 
-timeseries(month='9', years=range(1854, 2024))
+timeseries(month='6', years=range(1854, 2024))

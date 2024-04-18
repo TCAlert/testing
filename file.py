@@ -11,8 +11,10 @@ def getFTP(link):
 
     print(f"File '{local_filename}' downloaded successfully.")
 
-def getGZ(file):
-    newFile = file[:-3]
+def getGZ(file, newFile = None):
+    if newFile is None:
+        newFile = file[:-3]
+        
     with gzip.open(file, 'rb') as f:
         with open(newFile, 'wb') as nf:
             print(f'File {file} opened successfully.')

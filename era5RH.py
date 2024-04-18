@@ -35,7 +35,7 @@ hour = 18
 level = [200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000]
 lat, lon = 16.9, -59.2
 date = f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}'
-retrieve(['u_component_of_wind', 'v_component_of_wind'], level, [year, str(month).zfill(2), str(day).zfill(2), str(hour).zfill(2)], lat, lon)
+retrieve(['relative_humidity'], level, [year, str(month).zfill(2), str(day).zfill(2), str(hour).zfill(2)], lat, lon)
 data = xr.open_dataset(r"C:\Users\deela\Downloads\era5.nc")
 data = (data['r'].mean(['latitude', 'longitude'])).squeeze()
 print(data)
