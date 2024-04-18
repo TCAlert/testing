@@ -467,3 +467,22 @@ def ref():
     newcolors = np.vstack((top(np.linspace(0, 1, num1)), mid(np.linspace(0, 1, num2)), bot(np.linspace(0.5, 1, num3))))
     newcmp = ListedColormap(newcolors, name='temp')
     return newcmp
+
+def reflectivity():
+    newcmp = LinearSegmentedColormap.from_list("", [ 
+            (0/80, "#000000"),
+            (10/80, "#FFFFFF"),
+            (20/80, "#005580"),
+            (30/80, "#80ff80"),
+            (45/80, "#004000"),
+            (50/80, "#d9d921"),
+            (60/80, "#d95e21"),
+            (60/80, "#d92121"),
+            (70/80, "#4d1717"),
+            (70/80, "#4d1732"),
+            (80/80, "#e6b8cf")])
+
+    vmin = -10
+    vmax = 70
+    
+    return newcmp
