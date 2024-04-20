@@ -6,6 +6,8 @@ import math
 import matplotlib.pyplot as plt
 import cartopy, cartopy.crs as ccrs
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
+import warnings 
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 pd.options.mode.chained_assignment = None
 

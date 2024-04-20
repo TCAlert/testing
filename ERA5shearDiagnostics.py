@@ -10,6 +10,7 @@ from matplotlib import patheffects
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from matplotlib.patches import Rectangle
 import cdsapi as cds 
+import hurdatParser
 
 c = cds.Client()
 
@@ -30,17 +31,8 @@ def retrieve(type, level, date, lat, lon):
         r"C:\Users\deela\Downloads\era5.nc")                          # Output file. Adapt as you wish.
 
 labelsize = 8 
-year = 2017
-month = 9
-day = 5
-hour = 18
 level = [200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000]
-lat, lon = 16.9, -59.2
-date = f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}'
-#retrieve(['u_component_of_wind', 'v_component_of_wind'], level, [year, str(month).zfill(2), str(day).zfill(2), str(hour).zfill(2)], lat, lon)
-data = xr.open_dataset(r"C:\Users\deela\Downloads\era5.nc")
-uData = (data['u']).squeeze()#.mean(['latitude', 'longitude'])).squeeze()
-vData = (data['v']).squeeze()#.mean(['latitude', 'longitude'])).squeeze()
+database = hurdatParser.database()
 
 # Helper function to calculate wind shear, primarily for the maximum wind function
 def calcShear(u, v, top, bot):
@@ -115,10 +107,26 @@ def maxShear(u, v):
     return [int((max(ar1, key = ar1.get)).split('-')[0]), int((max(ar1, key = ar1.get)).split('-')[1])]
 
 # Function to put together the whole plot
-def finalPlot(hour, lat, lon):
+def finalPlot(year, month, day, hour, name):
+    if type(name) == str:
+        # Retrieve storm data from HURDAT2
+        stormData = hurdatParser.retrieveStorm(database, [name, str(year)])['Storm Data']
+        stormData = stormData[(stormData['Time'] == np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hour).zfill(2)}'))]
+        lat, lon = stormData['Latitude'].values[0], stormData['Longitude'].values[0]
+    else:
+        lat, lon = name
+    
+    date = f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}'
+    print(date, lat, lon)
+
     # Requests GFS zonal and meridional wind data 
     # Creates four tuples to hold the model data
     # Calculates the maximum shear vector using the above function
+    retrieve(['u_component_of_wind', 'v_component_of_wind'], level, [year, str(month).zfill(2), str(day).zfill(2), str(hour).zfill(2)], lat, lon)
+    data = xr.open_dataset(r"C:\Users\deela\Downloads\era5.nc")
+    uData = (data['u']).squeeze()
+    vData = (data['v']).squeeze()
+
     data = [uData, vData]
     deep, mid, upper, maxi = (), (), (), ()
     top, bot = maxShear(uData.sel(latitude = slice(lat + 2.5, lat - 2.5), longitude = slice(lon - 2.5, lon + 2.5)).mean(['latitude', 'longitude']), vData.sel(latitude = slice(lat + 2.5, lat - 2.5), longitude = slice(lon - 2.5, lon + 2.5)).mean(['latitude', 'longitude']))
@@ -147,7 +155,7 @@ def finalPlot(hour, lat, lon):
         c = windbarbs(axes[x + 1], shear[x][0], shear[x][1], shearText[x], lat, lon)
 
     axes[0].set_title(f'Wind Shear Diagnostics\n{date} at {hour}:00z', fontweight='bold', fontsize=10, loc='left')
-    axes[0].set_title(f'Hurricane IRMA', fontsize = 10, loc = 'center')
+    axes[0].set_title(f'IRMA', fontsize = 10, loc = 'center')
     axes[0].set_title('0.25\u00b0 ERA5\nDeelan Jariwala', fontsize=10, loc='right') 
     #axes[0].set_title('##L\nDeelan Jariwala', fontsize=10, loc='right') 
 
@@ -159,4 +167,4 @@ def finalPlot(hour, lat, lon):
     plt.show() 
 
 # Sample Usage
-finalPlot(hour, lat, lon)
+finalPlot('2017', '09', '05', '18', 'irma')
