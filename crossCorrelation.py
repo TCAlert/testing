@@ -36,7 +36,6 @@ def map(interval, labelsize):
     # ax.minorticks_on()
     return ax 
 
-
 fullDataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
 dataset = fullDataset['sst']
 dataset = dataset.fillna(0) * np.cos(np.radians(dataset['lat']))

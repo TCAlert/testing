@@ -13,6 +13,8 @@ filename = ir.getDataGOES('18', 2023, 9, 7, '0600', '9')
 
 dataset = xr.open_dataset(r"C:\Users\deela\Downloads\\" + filename + ".nc")
 data = dataset['CMI']
+plt.imshow(data)
+plt.show()
 center = dataset['geospatial_lat_lon_extent'].geospatial_lon_center
 time = (dataset.time_coverage_start).split('T')
 time = f"{time[0]} at {time[1][:5]} UTC"

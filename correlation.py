@@ -36,30 +36,40 @@ def map(interval, labelsize):
     # ax.minorticks_on()
     return ax 
 
-dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/tropopause/pres.tropp.mon.mean.nc')
-data = dataset['pres'].fillna(0) * np.cos(np.radians(dataset['lat']))
-# dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
-# data = dataset['sst']
-# data = data.fillna(0) * np.cos(np.radians(data['lat']))
+#dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/pressure/hgt.mon.mean.nc')
+#data = dataset['hgt'].sel(level = 500).fillna(0) * np.cos(np.radians(dataset['lat']))
+#dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
+#data = dataset['sst']
+dates = []
+for x in range(1987, 2024):
+    for y in range(1, 13):
+        dates.append(np.datetime64(f'{x}-{str(y).zfill(2)}-01T00'))
+
+dataset = xr.open_dataset('https://www.ncei.noaa.gov/thredds/dodsC/cdr/mean_layer_temperature/amsu/rss/avrg/uat4_tb_v04r00_avrg_chtts_s198701_e202402_c20240314.nc')
+data = dataset['brightness_temperature'].isel(time = slice(0, 444))
+data = data.assign_coords(time = dates)
+data = data.fillna(0) * np.cos(np.radians(data['latitude']))
+#dataset = xr.open_dataset(r"C:\Users\deela\Downloads\R1CI1971-2023.nc")
+#data = dataset['__xarray_dataarray_variable__'].fillna(0) * np.cos(np.radians(dataset['lat']))
 print(data)
+
+startYear = 1987
+endYear = 2020
+indexMonth = '12'
+dataMonth = '9'
+index = 'Cumulative NATL ACE'
+csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]].iloc[16:]
 
 # startYear = 1971
 # endYear = 2020
 # indexMonth = '12'
 # dataMonth = '9'
-# index = 'Cumulative NATL ACE'
-# csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]]
-
-startYear = 1971
-endYear = 2020
-indexMonth = '12'
-dataMonth = '9'
-index = 'SSTAs in Box'
-lats = [-5, 5]
-lons = [190, 240]
-boxXCoords = [lons[0], lons[1], lons[1], lons[0], lons[0]]
-boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
-csv = timeseries(indexMonth, range(startYear, endYear + 1), slice(lats[1], lats[0]), slice(lons[0], lons[1]))[numToMonth(indexMonth)[0:3]]
+# index = 'SSTAs in Box'
+# lats = [-5, 5]
+# lons = [190, 240]
+# boxXCoords = [lons[0], lons[1], lons[1], lons[0], lons[0]]
+# boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
+# csv = timeseries(indexMonth, range(startYear, endYear + 1), slice(lats[1], lats[0]), slice(lons[0], lons[1]))[numToMonth(indexMonth)[0:3]]
 
 fMonths = np.array([np.datetime64(f'{y}-{str(dataMonth).zfill(2)}-01') for y in range(startYear, endYear + 1)])
 data = data.sel(time = fMonths)
@@ -85,9 +95,9 @@ data.values = np.reshape(corrData, (ogShape[1], ogShape[2]))
 dataset['sig'] = ((ogShape[1], ogShape[2]), np.reshape(signData, (ogShape[1], ogShape[2])))
 
 ax = map(20, 9)
-#ax.set_extent([220, 358, -20, 70], crs = ccrs.PlateCarree())
-c = plt.contourf(data.lon, data.lat, data.values, cmap = cmap.tempAnoms3(), levels = np.arange(-1, 1.1, .1), extend = 'both', transform = ccrs.PlateCarree(central_longitude = 0))
-h = plt.contourf(data.lon, data.lat, dataset['sig'].values, colors = 'none', levels = np.arange(0, 0.06, 0.01), hatches = ['...'], transform = ccrs.PlateCarree(central_longitude = 0))
+#ax.set_extent([205, 355, -15, 55], crs = ccrs.PlateCarree())
+c = plt.contourf(data.longitude, data.latitude, data.values, cmap = cmap.tempAnoms3(), levels = np.arange(-1, 1.1, .1), extend = 'both', transform = ccrs.PlateCarree(central_longitude = 0))
+h = plt.contourf(data.longitude, data.latitude, dataset['sig'].values, colors = 'none', levels = np.arange(0, 0.06, 0.01), hatches = ['...'], transform = ccrs.PlateCarree(central_longitude = 0))
 
 try:
     for y in range(len(boxXCoords)):
@@ -103,11 +113,12 @@ for collection in h.collections:
     collection.set_edgecolor('#262626')
     collection.set_linewidth(0)
 
-ax.set_title(f'NCEP/NCAR R1 Tropopause Pressure Correlation with {numToMonth(indexMonth)} {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
+#ax.set_title(f'NCEP/NCAR R1 Coupling Index Correlation with {numToMonth(indexMonth)} {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
 #ax.set_title(f'ERSSTv5 Correlation with {numToMonth(indexMonth)} {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
+ax.set_title(f'AMSU Tropopause (TTS) Brightness Temp. Correlation with {numToMonth(indexMonth)} {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'{numToMonth(dataMonth)}', fontsize=9, loc='center') 
 ax.set_title(f'Significant Values Hatched\nDeelan Jariwala', fontsize=9, loc='right') 
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
-plt.savefig(r"C:\Users\deela\Downloads\correlationplot.png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\correlationPlot.png", dpi = 400, bbox_inches = 'tight')
 plt.show()

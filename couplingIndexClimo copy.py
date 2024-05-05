@@ -29,7 +29,7 @@ def map(interval, labelsize):
 
     return ax 
 
-years = [2022]
+years = [1995]
 months = [8]
 if years[0] - 30 >= 1971:
     climoYears = [years[0] - 30, years[0] - 1]

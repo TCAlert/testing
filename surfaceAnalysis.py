@@ -81,7 +81,6 @@ def plot(data, year, month, day, hour, name = None, t = 'wind'):
     stationPlot(ax, obsLats, obsLons, u, v, seaLevP, airTemp, dewTemp)    
     ax.text(lon, lat, 'L', size = 30, color = '#bf3030', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center', transform = ccrs.PlateCarree(central_longitude = 0))
     
-
     if t.lower() == 'wind':
         level = 'Surface'
         uwnd, vwnd = psl.getHourlyData(year, month, day, hour, 'uwnd', level), psl.getHourlyData(year, month, day, hour, 'vwnd', level)#, psl.getHourlyData(year, month, day, hour, 'slp', 'surface') / 100

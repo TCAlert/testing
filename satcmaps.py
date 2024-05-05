@@ -1476,6 +1476,29 @@ def wv8():
 
     return newcmp.reversed(), vmax, vmin
 
+def wv9():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/90, "#ff4040"),
+    (5/90, "#994736"),
+    (10/90, "#593c2d"),
+    (17.5/90, "#000000"),
+    (30/90, "#ffffff"),
+    (35/90, "#c9e1ee"),
+    (45/90, "#205c80"),
+
+    (50/90, "#fcd665"),
+    (62.5/90, "#bf1d22"),
+    (67.5/90, "#400000"),
+    (70/90, "#000000"),
+    (72.5/90, "#3e2080"),
+    (80/90, "#8080ff"),
+    (90/90, "#FFFFFF")])
+
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin
+
 def irgwv():
     newcmp = LinearSegmentedColormap.from_list("", [
     (0/90, "#b55555"),
@@ -1514,12 +1537,31 @@ def oldwv():
 
     return newcmp, vmax, vmin
 
+def codywv3():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0.0, "#FCD100"), 
+    (10/90, "#534A37"),
+    (20/90, "#070704"), 
+    (25/90, "#7A7A7A"),
+    (30/90, "#EDEDED"),
+    (40/90, "#64BDDF"),
+    (50/90, "#156899"),
+    (60/90, "#03062F"),
+    (70/90, "#D92028"),
+    (80/90, "#FBCA0C"),
+    (90/90, "#FFFFFF")])
+
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin
 
 wvtables = {
     'msfc'  : msfc(),
     'wv'    : wv(),
     'wv2'   : wv2(),
     'wv3'   : wv3(),
+    'wv9'   : wv9(),
     'ssd'   : ssdwv(),
     'newwv' : newwv(),
     'codywv': codywv(),
