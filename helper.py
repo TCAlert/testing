@@ -1,6 +1,7 @@
 import numpy as np 
 import cartopy, cartopy.crs as ccrs
 import cartopy.mpl.ticker as cticker
+from datetime import datetime
 
 REGIONS = {'NATL' : ([-100, -10, 0, 65], (18, 9)),
            'WATL' : ([-100, -50, 2.5, 35], (18, 9)),
@@ -43,6 +44,17 @@ def strip(l):
     l = [x.strip() for x in l]
 
     return l 
+
+def dayOfYear(num, year):
+    if int(year) != 1900 and int(year) % 4 == 0:
+        date = str(datetime.strptime(f'{year}-{int(num) + 1}', "%Y-%j").strftime("%m-%d-%Y"))
+    else:
+        date = str(datetime.strptime(f'{year}-{int(num)}', "%Y-%j").strftime("%m-%d-%Y"))
+    
+    date = date.split('-')
+    date = np.datetime64(f'{date[2]}-{date[0]}-{date[1]}')
+
+    return date
 
 def gridlines(ax, interval):
     ax.set_xticks(np.arange(-180, 181, interval), crs=ccrs.PlateCarree())
