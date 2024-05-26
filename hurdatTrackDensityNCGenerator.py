@@ -16,11 +16,11 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 pd.options.mode.chained_assignment = None
 
-basin = 'AL'
-climoYears = np.arange(2020, 2024)
+basin = 'EP'
+climoYears = np.arange(1949 , 2024)
 months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-bounds = [-120, 0, 0, 70]
-interval = 3
+bounds = [-180, -80, 0, 70]
+interval = 1
 
 if basin == 'EP':
     link = 'https://www.aoml.noaa.gov/hrd/hurdat/hurdat2-nepac.html'
@@ -146,7 +146,7 @@ def database(climo, months):
     storms = getData(climo)
     storms = filterByMonth(storms, months)
     storms = stormObjects(storms)
-    print(len(storms))
+    #print(len(storms))
 
     return storms
 
@@ -156,31 +156,48 @@ def gridData(data, bounds):
     # Also define a grid of these levels -- will be used later
     lats = np.arange(bounds[2], bounds[3] + interval, interval)
     lons = np.arange(bounds[0], bounds[1] + interval, interval)
-    grid = np.meshgrid(lats, lons)
+    grid = np.meshgrid(lons, lats)
 
     # Place HURDAT2 datapoints into latitude/longitude bins to compute density
-    bins = []
+    bins1 = []
+    bins2 = []
+    bins3 = []
+    bins4 = []
+    bins5 = []
     for x in range(len(lons)):
         for y in range(len(lats)):
-            binStorm = 0
+            numStorms = 0
+            riStorms = 0
+            ACEStorms = 0
+            WindStorms = 0
+            hr24change = 0
             for z in range(len(data)):
                 temp = data[z]
                 for w in range(len(temp)):
                     try:
                         if temp['Latitude'][w] > lats[y] and temp['Latitude'][w] < lats[y + 1] and temp['Longitude'][w] > lons[x] and temp['Longitude'][w] < lons[x + 1]:
-                            #binStorm += temp['ACE'][w]
-                            binStorm += 1
-                            #if temp['RI'][w] == True:
-                            #    binStorm += 1            
-                            #binStorm += temp['Wind'][w]
+                            ACEStorms += temp['ACE'][w]
+                            numStorms += 1
+                            if temp['RI'][w] == True:
+                                riStorms += 1   
+                            hr24change += temp['24hrChange'][w]         
+                            WindStorms += temp['Wind'][w]
                         else:
-                            binStorm += 0
+                            numStorms += 0
+                            riStorms += 0
+                            ACEStorms += 0
+                            WindStorms += 0
+                            hr24change += 0
                     except:
                         pass
-            bins.append(binStorm)
+            bins1.append(numStorms)
+            bins2.append(riStorms)
+            bins3.append(ACEStorms)
+            bins4.append(WindStorms)
+            bins5.append(hr24change)
 
-    # Return the numpy meshgrid and shape the three lists into gridded numpy arrays using  the 2D grid  
-    return grid, np.array(bins).reshape(grid[0].shape)
+    # Return the numpy meshgrid and shape the three lists into gridded numpy arrays using the 2D grid  
+    return (lats, lons), [np.array(bins1).T.reshape(grid[0].T.shape), np.array(bins2).T.reshape(grid[0].T.shape), np.array(bins3).T.reshape(grid[0].T.shape), np.array(bins4).T.reshape(grid[0].T.shape), np.array(bins5).T.reshape(grid[0].T.shape)]
 
 def map(interval, labelsize):
     fig = plt.figure(figsize=(18, 9))
@@ -210,27 +227,36 @@ times = []
 for x in range(len(climoYears)):
     for y in range(len(months)):
         print(months[y], climoYears[x])
-        climo = database([climoYears[x]], [months[y]])
-        grid, climo = gridData(climo, bounds)
-        climo = climo / (interval**2)
-        dataset.append(climo)
+        dat = database([climoYears[x]], [months[y]])
+        grid, data = gridData(dat, bounds)
+        a = []
+        for climo in data:            
+            climo = climo / (interval**2)
+            a.append(climo.T)
         times.append(np.datetime64(f'{climoYears[x]}-{months[y]}-01T00'))
+        dataset.append(a)
 
-        #ax = map(6, 9)
-        #c = plt.contourf(grid[1], grid[0], climo, cmap = cmap.probs(), levels = np.arange(0, 1, .01), extend = 'both')
-        #ax.set_title(f'HURDAT2 Track Density\n{numToMonth(int(months[y]))} {climoYears[x]}', fontweight='bold', fontsize=9, loc='left')
-        #ax.set_title(f'{interval}\u00b0x{interval}\u00b0 Bins\nDeelan Jariwala', fontsize=9, loc='right') 
-        #cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
-        #cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
-        #plt.savefig(r"C:\Users\deela\Downloads\density\\" + months[y] + "_" + str(climoYears[x]) + ".png", dpi = 400, bbox_inches = 'tight')
-        #plt.show()
-        #plt.close()
-
-print(np.array(dataset).shape)
-ds = xr.DataArray(dataset,coords={"time": times, "latitude": (["x","y"], grid[0]),
-                           "longitude": (["x","y"], grid[1])},
-                   dims=["time", "x","y"], name = 'trackDensity')
+        # ax = map(6, 9)
+        # c = plt.contourf(grid[1], grid[0], climo, cmap = cmap.probs(), levels = np.arange(0, 1, .01), extend = 'both')
+        # ax.set_title(f'HURDAT2 Track Density\n{numToMonth(int(months[y]))} {climoYears[x]}', fontweight='bold', fontsize=9, loc='left')
+        # ax.set_title(f'{interval}\u00b0x{interval}\u00b0 Bins\nDeelan Jariwala', fontsize=9, loc='right') 
+        # cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
+        # cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
+        # plt.savefig(r"C:\Users\deela\Downloads\density\\" + months[y] + "_" + str(climoYears[x]) + ".png", dpi = 400, bbox_inches = 'tight')
+        # plt.show()
+        # plt.close()
+dataset = np.array(dataset)
+ds = xr.Dataset({'track' : (["time", "latitude", "longitude"], dataset[:, 0]), 
+                 'RI' : (["time", "latitude", "longitude"], dataset[:, 1]), 
+                 'ACE' : (["time", "latitude", "longitude"], dataset[:, 2]),
+                 'wind' : (["time", "latitude", "longitude"], dataset[:, 3]), 
+                 '24hrChange' : (["time", "latitude", "longitude"], dataset[:, 4])}, 
+       coords = {"time": times,
+                 "latitude": grid[0],
+                 "longitude": grid[1]})
 
 print(ds)
-ds.to_netcdf(r"C:\Users\deela\Downloads\trackDensity.nc")
+plt.pcolormesh(ds.longitude, ds.latitude, ds['ACE'].mean('time'))
+plt.show()
+ds.to_netcdf(r"C:\Users\deela\Downloads\HURDAT2DensityEPAC.nc")
 

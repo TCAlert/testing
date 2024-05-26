@@ -9,14 +9,16 @@ import pandas as pd
 from helper import numToMonth
 import scipy.stats
 from scipy.signal import detrend
-from scipy.ndimage import gaussian_filter
 import matplotlib as mpl
 from ersstTimeseriesGenerator import timeseries 
+from regionalACE import createClimoData
+from sklearn.linear_model import LinearRegression 
+
 mpl.rcParams['hatch.linewidth'] = 0.5
 mpl.rcParams['font.family'] = 'Courier New'
 
 def map(interval, labelsize):
-    fig = plt.figure(figsize=(16, 5))
+    fig = plt.figure(figsize=(18, 4))
 
     # Add the map and set the extent
     ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=180))
@@ -37,69 +39,60 @@ def map(interval, labelsize):
     # ax.minorticks_on()
     return ax 
 
-def yearlySum(data):
-    values = data.values
-    values = values.reshape(int(values.shape[0] / 12), 12, 71, 181)
-    values = np.sum(values, axis = 1)
-
-    data = data.resample(time = 'AS').mean()
-    data.values = values
-
-    return data
-
-startYear = 1950
-endYear = 2020
-indexMonth = '5'
-dataMonth = '1'
-index = 'amo'
-type = 'ACE'
-#csv = timeseries(indexMonth, range(startYear, endYear + 1), slice(5, -5), slice(240, 290))[numToMonth(indexMonth)[0:3]]
-csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]]
-dataset = xr.open_dataset(r"C:\Users\deela\Downloads\HURDAT2DensityALL.nc")
-data = dataset[type]
-print(data.shape)
-data = yearlySum(data)
-#s = 1
-#data.values = gaussian_filter(data.values, sigma = s, axes = (1, 2))
+# dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/pressure/uwnd.mon.mean.nc')
+# data = dataset['uwnd'].sel(level = 850).fillna(0) * np.cos(np.radians(dataset['lat']))
+dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
+data = dataset['sst'].sel(lat = slice(50, -50))
+data = data.fillna(0) * np.cos(np.radians(data['lat']))
 print(data)
+
+startYear = 1971
+endYear = 1997
+indexMonth = '12'
+dataMonth = '4'
+day = 365
+index = f'ACE in Box (to day {day})'
+lats = [0, 90]
+lons = [-120, 0]
+csv = createClimoData([startYear, endYear - 1], 'AL', lats, lons)[day].to_numpy()
+print(csv)
 
 fMonths = np.array([np.datetime64(f'{y}-{str(dataMonth).zfill(2)}-01') for y in range(startYear, endYear + 1)])
 data = data.sel(time = fMonths)
+data = data - data.sel(time = fMonths[:-1]).mean('time')
+
+print(data)
 ogShape = data.shape
 
 temp = data.values
 temp = np.reshape(temp, (ogShape[0], ogShape[1] * ogShape[2]))
-#temp = detrend(temp, axis = 0)
+temp = detrend(temp, axis = 0)
 print(temp.shape, csv.shape)
+year = temp[-1].reshape(1, ogShape[1] * ogShape[2])
+temp = temp[:-1]
+print(temp.shape, year.shape, csv.shape)
 
 corrData = []
 signData = []
 for x in range(temp.shape[1]):
     temp[:, x] = np.nan_to_num(temp[:, x])
-    corr, sig = scipy.stats.pearsonr(temp[:, x], csv)
-    corrData.append(corr)
-    signData.append(sig)
+    model = LinearRegression().fit(temp[:, x].reshape(-1, 1), csv)
+    corrData.append(model.predict([year[:, x]]))
 
-print(np.array(corrData).shape)
+corrData = np.array(corrData)
+print(np.array(corrData).mean(), np.array(corrData).sum(), np.nanmax(corrData), np.nanmin(corrData))
+#corrData = (corrData - np.nanmin(corrData)) / (np.nanmax(corrData) - np.nanmin(corrData))
 data = data.mean('time')
 data.values = np.reshape(corrData, (ogShape[1], ogShape[2]))
-dataset['sig'] = ((ogShape[1], ogShape[2]), np.reshape(signData, (ogShape[1], ogShape[2])))
 
-data.to_netcdf(r"C:\Users\deela\Downloads\HarrisonFile.nc")
+ax = map(20, 9)
+#ax.set_extent([205, 355, -15, 55], crs = ccrs.PlateCarree())
+c = plt.contourf(data.lon, data.lat, data.values, cmap = cmap.tempAnoms(), levels = np.arange(0, 200, 1), extend = 'both', transform = ccrs.PlateCarree(central_longitude = 0))
 
-ax = map(10, 9)
-ax.set_extent([180, 359.9, 0, 70], crs = ccrs.PlateCarree(central_longitude = 0))
-c = plt.contourf(data.longitude, data.latitude, data.values, cmap = cmap.tempAnoms3(), levels = np.arange(-1, 1.1, .1), extend = 'both', transform = ccrs.PlateCarree(central_longitude = 0))
-h = plt.contourf(data.longitude, data.latitude, dataset['sig'].values, colors = 'none', levels = np.arange(0, 0.06, 0.01), hatches = ['...'], transform = ccrs.PlateCarree(central_longitude = 0))
-
-for collection in h.collections:
-    collection.set_edgecolor('#262626')
-    collection.set_linewidth(0)
-
-ax.set_title(f'HURDAT2 {type} Density Correlation with {numToMonth(indexMonth)} {index.upper()}\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
-ax.set_title(f'Full Year', fontsize=9, loc='center') 
+ax.set_title(f'How Much ACE Does a Linear Regression Here Yield?\nYears Used: {startYear}-{endYear - 1}', fontweight='bold', fontsize=9, loc='left')
+ax.set_title(f'{numToMonth(dataMonth)} {endYear}', fontsize=9, loc='center') 
 ax.set_title(f'Significant Values Hatched\nDeelan Jariwala', fontsize=9, loc='right') 
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
-plt.savefig(r"C:\Users\deela\Downloads\corrtest.png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\correlationPlot" + dataMonth + ".png", dpi = 400, bbox_inches = 'tight')
 plt.show()

@@ -19,12 +19,13 @@ def getData():
     dataset = []
     date = datetime.utcnow()
     time = str(date.hour).zfill(2) + (str(date.minute))[0] + '0'
-    year = date.year
-    month = date.month
-    day = date.day
+    year = 2020#date.year
+    month = 10#date.month
+    day = 28#date.day
     
     s3_client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
     prefix = f'CONUS/{product_name}/{year}{month:02.0f}{day:02.0f}/'
+    print(prefix)
     kwargs = {'Bucket': bucket,
                 'Prefix': prefix}
 
@@ -35,7 +36,7 @@ def getData():
         if key.startswith(prefix):
             files.append(key)
     
-    f = files[-1]
+    f = files[int(len(files) * (7/8))]
     print(f'Success! File Name: {f}')
     
     s3_client.download_file(bucket, f, r"C:\Users\deela\Downloads\mrms.grib2.gz")  
@@ -70,7 +71,7 @@ def plot(lat, lon = 0):
         lat = float(lat)
         lon = float(lon)
         title = f'Centered at {lat}N, {abs(lon)}W'
-        extent = [lon - 2.5, lon + 2.5, lat - 2.5, lat + 2.5]
+        extent = [lon - 5, lon + 5, lat - 5, lat + 5]
     except:
         storm = lat
         lat, lon = bdeck.latlon(storm)
@@ -84,14 +85,14 @@ def plot(lat, lon = 0):
     t = str(data['time'].values).split('T')
     time = f'{t[0]} at {t[1][0:5]}z'
 
-    ax = map(.5, labelsize)
+    ax = map(1, labelsize)
     ax.set_extent(extent)
-    c = ax.pcolormesh(mrms.longitude, mrms.latitude, mrms.values, cmap = cmap.reflectivity(), vmin = -10, vmax = 70)
+    c = ax.pcolormesh(mrms.longitude, mrms.latitude, mrms.values, cmap = 'Greys_r', vmin = 5, vmax = 50)
     plt.title(f'MRMS Base Reflectivity\nTime: {time}' , fontweight='bold', fontsize=labelsize + 1, loc='left')
     plt.title(f'{title}\nDeelan Jariwala', fontsize=labelsize + 1, loc='right')  
     cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
     cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
-    plt.savefig(r"C:\Users\deela\Downloads\mrmstest.png", dpi = 400, bbox_inches = 'tight')
-    plt.close()
+    plt.savefig(r"C:\Users\deela\Downloads\mrmstest.png", dpi = 300, bbox_inches = 'tight')
+    plt.show()
     data.close()
-plot(30, -95)
+plot(30, -90)

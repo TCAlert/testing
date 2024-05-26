@@ -12,7 +12,7 @@ from scipy.signal import detrend
 import matplotlib as mpl
 from ersstTimeseriesGenerator import timeseries 
 from regionalACE import createClimoData
-
+from correlationPCA import pcaSeries
 mpl.rcParams['hatch.linewidth'] = 0.5
 mpl.rcParams['font.family'] = 'Courier New'
 
@@ -38,10 +38,10 @@ def map(interval, labelsize):
     # ax.minorticks_on()
     return ax 
 
-#dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/pressure/hgt.mon.mean.nc')
-#data = dataset['hgt'].sel(level = 500).fillna(0) * np.cos(np.radians(dataset['lat']))
-dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
-data = dataset['sst']
+dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/pressure/uwnd.mon.mean.nc')
+data = dataset['uwnd'].sel(level = 850).fillna(0)# * np.cos(np.radians(dataset['lat']))
+#dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
+#data = dataset['sst']
 # dates = []
 # for x in range(1987, 2024):
 #     for y in range(1, 13):
@@ -49,36 +49,49 @@ data = dataset['sst']
 
 # dataset = xr.open_dataset('https://www.ncei.noaa.gov/thredds/dodsC/cdr/mean_layer_temperature/amsu/rss/avrg/uat4_tb_v04r00_avrg_chtts_s198701_e202402_c20240314.nc')
 # data = dataset['brightness_temperature'].isel(time = slice(0, 444))
+# data = data.rename({'latitude' : 'lat', 'longitude' : 'lon'})
 # data = data.assign_coords(time = dates)
 data = data.fillna(0) * np.cos(np.radians(data['lat']))
 #dataset = xr.open_dataset(r"C:\Users\deela\Downloads\R1CI1971-2023.nc")
 #data = dataset['__xarray_dataarray_variable__'].fillna(0) * np.cos(np.radians(dataset['lat']))
 print(data)
+#csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]].iloc[16:]
 
 startYear = 1971
 endYear = 2023
 indexMonth = '12'
-dataMonth = '5'
+dataMonth = '9'
 day = 365
 index = f'ACE in Box (to day {day})'
-lats = [10, 20]
-lons = [-180, -130]
+lats = [15, 30]
+lons = [-75, -55]
 boxXCoords = [lons[0], lons[1], lons[1], lons[0], lons[0]]
 boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
-csv = createClimoData([startYear, endYear], 'EP', lats, lons)[day]
+csv = createClimoData([startYear, endYear], 'AL', lats, lons)[day]
 print(csv)
-#csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]].iloc[16:]
 
 # startYear = 1971
 # endYear = 2020
-# indexMonth = '12'
+# indexMonth = '9'
 # dataMonth = '9'
 # index = 'SSTAs in Box'
 # lats = [-5, 5]
-# lons = [190, 240]
+# lons = [300, 358]
 # boxXCoords = [lons[0], lons[1], lons[1], lons[0], lons[0]]
 # boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
 # csv = timeseries(indexMonth, range(startYear, endYear + 1), slice(lats[1], lats[0]), slice(lons[0], lons[1]))[numToMonth(indexMonth)[0:3]]
+
+# startYear = 1971
+# endYear = 2023
+# indexMonth = '4'
+# dataMonth = '4'
+# eofNum = 1
+# index = f'EOF{eofNum} of Box'
+# lats = [-20, 65]
+# lons = [120, 360]
+# boxXCoords = [lons[0] - 360, lons[1] - 360, lons[1] - 360, lons[0] - 360, lons[0] - 360]
+# boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
+# csv = pcaSeries(startYear, endYear, lats, lons, indexMonth, eofNum)[numToMonth(indexMonth)[0:3]]
 
 fMonths = np.array([np.datetime64(f'{y}-{str(dataMonth).zfill(2)}-01') for y in range(startYear, endYear + 1)])
 data = data.sel(time = fMonths)
@@ -122,10 +135,10 @@ for collection in h.collections:
     collection.set_edgecolor('#262626')
     collection.set_linewidth(0)
 
-#ax.set_title(f'NCEP/NCAR R1 Coupling Index Correlation with {numToMonth(indexMonth)} {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
+ax.set_title(f'NCEP/NCAR R1 850mb Zonal Wind Correlation with {numToMonth(indexMonth)} {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
 #ax.set_title(f'ERSSTv5 Correlation with {numToMonth(indexMonth)} {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
 #ax.set_title(f'AMSU Tropopause (TTS) Brightness Temp. Correlation with {numToMonth(indexMonth)} {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
-ax.set_title(f'ERSSTv5 Correlation with {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
+#ax.set_title(f'ERSSTv5 Correlation with {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'{numToMonth(dataMonth)}', fontsize=9, loc='center') 
 ax.set_title(f'Significant Values Hatched\nDeelan Jariwala', fontsize=9, loc='right') 
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)

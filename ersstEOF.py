@@ -75,10 +75,10 @@ def get_zscores(data, months):
 
 labelsize = 9
 months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-startYear = 1854
+startYear = 1971
 endYear = 2023
 numOfEOFS = 6
-extent = [-30, 30, 120, 280]
+extent = [0, 70, 270, 360]
 
 for x in range(len(months)):
     months[x] = [np.datetime64(f'{y}-{str(months[x]).zfill(2)}-01') for y in range(startYear, endYear + 1)]
@@ -145,8 +145,8 @@ for i in range(numOfEOFS):
     m, s = np.mean(test), np.std(test)
     test = np.array([(x - m) / s for x in test])
     sortedMonths = np.sort(fMonths)
-    #for x in range(len(test)):
-    #    print(sortedMonths[x], test[x])
+    for x in range(len(test)):
+       print(sortedMonths[x], test[x])
 
     reshaped_array = PCs.T[i].reshape(len(months), -1)
     sums = []
