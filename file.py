@@ -11,6 +11,21 @@ def getFTP(link):
 
     print(f"File '{local_filename}' downloaded successfully.")
 
+def getGRIB(link, title = None):
+    if title == None:
+        name = link.split('/')
+        # Local path where you want to save the downloaded file
+        local_filename = r"C:\Users\deela\Downloads\\" + name[-1]
+    else:
+        local_filename = r"C:\Users\deela\Downloads\\" + title
+        
+    # Download the file from the FTP server
+    urllib.request.urlretrieve(link, local_filename)
+
+    print(f"File '{local_filename}' downloaded successfully.")
+
+    return local_filename
+
 def getGZ(file, newFile = None):
     if newFile is None:
         newFile = file[:-3]
