@@ -333,6 +333,32 @@ def dust():
     newcmp = ListedColormap(newcolors, name='temp')
     return newcmp
 
+def dust2():
+    newcmp = LinearSegmentedColormap.from_list("", [ 
+        (0/10, "#FFFFFF"),
+        (2.5/10, "#6e0505"),
+        (4.5/10, "#c66523"),
+        (6.5/10, "#c79038"),
+        (8.5/10, "#62441f"),
+        (10/10, "#040404")])
+
+    vmin = 0
+    vmax = 10
+    
+    return newcmp.reversed()
+
+def sst():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/32, "#730073"),
+    (5/32, "#6d3a78"),
+    (20/32, "#abcdff"),
+    (26/32, "#fcfcff"),
+    (26/32, "#fffcfc"),
+    (29/32, "#e63322"),
+    (32/32, "#330000")])
+    
+    return newcmp
+
 # SSTA Colormap
 def ssta():
     num1 = 45

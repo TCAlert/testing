@@ -303,7 +303,6 @@ def retrieveStorm(dataset, storm = None, ID = None):
             data = 'Storm not found!'
     return data
 
-
 # Sample Usage:
 # Pass processed database to retrieveStorm function with necessary inputs
 # Returns dictionary with storm information and a few basic charts

@@ -36,20 +36,26 @@ def map(interval, labelsize):
     # ax.minorticks_on()
     return ax 
 
-fullDataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
-dataset = fullDataset['sst']
-dataset = dataset.fillna(0) * np.cos(np.radians(dataset['lat']))
-print(dataset)
+# fullDataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
+# dataset = fullDataset['sst']
+# dataset = dataset.fillna(0) * np.cos(np.radians(dataset['lat']))
+
+u_dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/pressure/uwnd.mon.mean.nc')
+udataset = u_dataset['uwnd'].sel(level = 850).fillna(0) * np.cos(np.radians(u_dataset['lat']))
+udataset = udataset.fillna(0) * np.cos(np.radians(udataset['lat']))
+vdataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/pressure/vwnd.mon.mean.nc')
+vdataset = vdataset['vwnd'].sel(level = 850).fillna(0) * np.cos(np.radians(vdataset['lat']))
+vdataset = vdataset.fillna(0) * np.cos(np.radians(vdataset['lat']))
 
 startYear = 1951
 endYear = 2020
-indexMonth = '12'
-dataMonth = '1'
+indexMonth = '8'
+dataMonth = '8'
 
 fMonths = np.array([np.datetime64(f'{y}-{str(dataMonth).zfill(2)}-01') for y in range(startYear, endYear + 1)])
-data1 = dataset.sel(time = fMonths)
+data1 = udataset.sel(time = fMonths)
 fMonths = np.array([np.datetime64(f'{y}-{str(indexMonth).zfill(2)}-01') for y in range(startYear, endYear + 1)])
-data2 = dataset.sel(time = fMonths)
+data2 = vdataset.sel(time = fMonths)
 ogShape = data1.shape
 print(ogShape)
 
@@ -74,18 +80,19 @@ for x in range(temp1.shape[1]):
 print(np.array(corrData).shape)
 data = data1.mean('time')
 data.values = np.reshape(corrData, (ogShape[1], ogShape[2]))
-fullDataset['sig'] = ((ogShape[1], ogShape[2]), np.reshape(signData, (ogShape[1], ogShape[2])))
+u_dataset['sig'] = ((ogShape[1], ogShape[2]), np.reshape(signData, (ogShape[1], ogShape[2])))
 
 ax = map(20, 9)
 #ax.set_extent([220, 358, -20, 70], crs = ccrs.PlateCarree())
 c = plt.contourf(data.lon, data.lat, data.values, cmap = cmap.tempAnoms3(), levels = np.arange(-1, 1.1, .1), extend = 'both', transform = ccrs.PlateCarree(central_longitude = 0))
-h = plt.contourf(data.lon, data.lat, fullDataset['sig'].values, colors = 'none', levels = np.arange(0, 0.06, 0.01), hatches = ['...'], transform = ccrs.PlateCarree(central_longitude = 0))
+h = plt.contourf(data.lon, data.lat, u_dataset['sig'].values, colors = 'none', levels = np.arange(0, 0.06, 0.01), hatches = ['...'], transform = ccrs.PlateCarree(central_longitude = 0))
 
 for collection in h.collections:
     collection.set_edgecolor('#262626')
     collection.set_linewidth(0)
 
-ax.set_title(f'ERSSTv5 Correlation with {numToMonth(indexMonth)} SSTs | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
+#ax.set_title(f'ERSSTv5 Correlation with {numToMonth(indexMonth)} SSTs | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
+ax.set_title(f'U and V Wind Cross Correlation | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'{numToMonth(dataMonth)}', fontsize=9, loc='center') 
 ax.set_title(f'Significant Values Hatched\nDeelan Jariwala', fontsize=9, loc='right') 
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)

@@ -49,18 +49,18 @@ def yearlySum(data):
 
 startYear = 1950
 endYear = 2020
-indexMonth = '5'
+indexMonth = '6'
 dataMonth = '1'
-index = 'amo'
+index = 'ATL3'
 type = 'ACE'
-#csv = timeseries(indexMonth, range(startYear, endYear + 1), slice(5, -5), slice(240, 290))[numToMonth(indexMonth)[0:3]]
-csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]]
+csv = timeseries(indexMonth, range(startYear, endYear + 1), slice(5, -5), slice(340, 358))[numToMonth(indexMonth)[0:3]]
+#csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]]
 dataset = xr.open_dataset(r"C:\Users\deela\Downloads\HURDAT2DensityALL.nc")
 data = dataset[type]
 print(data.shape)
 data = yearlySum(data)
-#s = 1
-#data.values = gaussian_filter(data.values, sigma = s, axes = (1, 2))
+s = 2
+data.values = gaussian_filter(data.values, sigma = s, axes = (1, 2))
 print(data)
 
 fMonths = np.array([np.datetime64(f'{y}-{str(dataMonth).zfill(2)}-01') for y in range(startYear, endYear + 1)])
@@ -87,8 +87,8 @@ dataset['sig'] = ((ogShape[1], ogShape[2]), np.reshape(signData, (ogShape[1], og
 
 data.to_netcdf(r"C:\Users\deela\Downloads\HarrisonFile.nc")
 
-ax = map(10, 9)
-ax.set_extent([180, 359.9, 0, 70], crs = ccrs.PlateCarree(central_longitude = 0))
+ax = map(20, 9)
+#ax.set_extent([180, 359.9, 0, 70], crs = ccrs.PlateCarree(central_longitude = 0))
 c = plt.contourf(data.longitude, data.latitude, data.values, cmap = cmap.tempAnoms3(), levels = np.arange(-1, 1.1, .1), extend = 'both', transform = ccrs.PlateCarree(central_longitude = 0))
 h = plt.contourf(data.longitude, data.latitude, dataset['sig'].values, colors = 'none', levels = np.arange(0, 0.06, 0.01), hatches = ['...'], transform = ccrs.PlateCarree(central_longitude = 0))
 

@@ -53,6 +53,7 @@ def createClimoData(climo, basin, lats = None, lons = None):
     link = urlopen(link)
     soup = BeautifulSoup(link, 'html.parser')
     lines = soup.get_text().split('\n')
+    print(lines)
 
     years = []
     for x in range(climo[0], climo[1] + 1):
@@ -77,3 +78,11 @@ def createClimoData(climo, basin, lats = None, lons = None):
     years = pd.DataFrame(years, index = range(climo[0], climo[1] + 1), columns = range(1, 366))
 
     return years
+
+# startYear = 1951
+# endYear = 2023
+# day = 365
+# lats = [0, 90]
+# lons = [-120, 0]
+# csv = createClimoData([startYear, endYear], 'AL', lats, lons)[day]
+# print(csv)

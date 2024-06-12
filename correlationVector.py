@@ -38,38 +38,28 @@ def map(interval, labelsize):
     # ax.minorticks_on()
     return ax 
 
-# dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/pressure/vwnd.mon.mean.nc')
-# data = dataset['vwnd'].sel(level = 850).fillna(0)# * np.cos(np.radians(dataset['lat']))
-dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
-data = dataset['sst']
-# dates = []
-# for x in range(1987, 2024):
-#     for y in range(1, 13):
-#         dates.append(np.datetime64(f'{x}-{str(y).zfill(2)}-01T00'))
-
-# dataset = xr.open_dataset('https://www.ncei.noaa.gov/thredds/dodsC/cdr/mean_layer_temperature/amsu/rss/avrg/uat4_tb_v04r00_avrg_chtts_s198701_e202402_c20240314.nc')
-# data = dataset['brightness_temperature'].isel(time = slice(0, 444))
-# data = data.rename({'latitude' : 'lat', 'longitude' : 'lon'})
-# data = data.assign_coords(time = dates)
-data = data.fillna(0) * np.cos(np.radians(data['lat']))
-#dataset = xr.open_dataset(r"C:\Users\deela\Downloads\R1CI1971-2023.nc")
-#data = dataset['__xarray_dataarray_variable__'].fillna(0) * np.cos(np.radians(dataset['lat']))
-print(data)
+udataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/pressure/uwnd.mon.mean.nc')
+uData = udataset['uwnd'].sel(level = 850).fillna(0) * np.cos(np.radians(udataset['lat']))
+uData = uData.fillna(0) * np.cos(np.radians(uData['lat']))
+vdataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/pressure/vwnd.mon.mean.nc')
+vData = vdataset['vwnd'].sel(level = 850).fillna(0) * np.cos(np.radians(vdataset['lat']))
+vData = vData.fillna(0) * np.cos(np.radians(vData['lat']))
 #csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]].iloc[16:]
+
+print(uData, vData)
 
 startYear = 1971
 endYear = 2023
-indexMonth = '8'
+indexMonth = '12'
 dataMonth = '8'
-day = 243
-day2 = 213
+day = 365
 index = f'ACE in Box (to day {day})'
 lats = [0, 70]
-lons = [-120, -2.5]
+lons = [-120, 0]
 boxXCoords = [lons[0], lons[1], lons[1], lons[0], lons[0]]
 boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
 csv = createClimoData([startYear, endYear], 'AL', lats, lons)
-csv = csv[day] - csv[day2]
+csv = csv[day]
 print(csv)
 
 # startYear = 1971
@@ -96,32 +86,50 @@ print(csv)
 # csv = pcaSeries(startYear, endYear, lats, lons, indexMonth, eofNum)[numToMonth(indexMonth)[0:3]]
 
 fMonths = np.array([np.datetime64(f'{y}-{str(dataMonth).zfill(2)}-01') for y in range(startYear, endYear + 1)])
-data = data.sel(time = fMonths)
-print(data)
-ogShape = data.shape
+uData = uData.sel(time = fMonths)
+vData = vData.sel(time = fMonths)
+ogShape = uData.shape
 
-temp = data.values
-temp = np.reshape(temp, (ogShape[0], ogShape[1] * ogShape[2]))
-temp = detrend(temp, axis = 0)
-print(temp.shape, csv.shape)
+utemp = uData.values
+utemp = np.reshape(utemp, (ogShape[0], ogShape[1] * ogShape[2]))
+utemp = detrend(utemp, axis = 0)
+vtemp = vData.values
+vtemp = np.reshape(vtemp, (ogShape[0], ogShape[1] * ogShape[2]))
+vtemp = detrend(vtemp, axis = 0)
+print(utemp.shape, csv.shape)
 
-corrData = []
-signData = []
-for x in range(temp.shape[1]):
-    temp[:, x] = np.nan_to_num(temp[:, x])
-    corr, sig = scipy.stats.pearsonr(temp[:, x], csv)
-    corrData.append(corr)
-    signData.append(sig)
+ucorrData = []
+usignData = []
+for x in range(utemp.shape[1]):
+    utemp[:, x] = np.nan_to_num(utemp[:, x])
+    corr, sig = scipy.stats.pearsonr(utemp[:, x], csv)
+    ucorrData.append(corr)
+    usignData.append(sig)
 
-print(np.array(corrData).shape)
-data = data.mean('time')
-data.values = np.reshape(corrData, (ogShape[1], ogShape[2]))
-dataset['sig'] = ((ogShape[1], ogShape[2]), np.reshape(signData, (ogShape[1], ogShape[2])))
+print(np.array(ucorrData).shape)
+uData = uData.mean('time')
+uData.values = np.reshape(ucorrData, (ogShape[1], ogShape[2]))
+udataset['sig'] = ((ogShape[1], ogShape[2]), np.reshape(usignData, (ogShape[1], ogShape[2])))
 
+vcorrData = []
+vsignData = []
+for x in range(vtemp.shape[1]):
+    vtemp[:, x] = np.nan_to_num(vtemp[:, x])
+    corr, sig = scipy.stats.pearsonr(vtemp[:, x], csv)
+    vcorrData.append(corr)
+    vsignData.append(sig)
+
+print(np.array(vcorrData).shape)
+vData = vData.mean('time')
+vData.values = np.reshape(vcorrData, (ogShape[1], ogShape[2]))
+vdataset['sig'] = ((ogShape[1], ogShape[2]), np.reshape(vsignData, (ogShape[1], ogShape[2])))
+
+mag = (uData**2 + vData**2)**0.5
 ax = map(20, 9)
-#ax.set_extent([240, 359.9, -20, 50], crs = ccrs.PlateCarree())
-c = plt.contourf(data.lon, data.lat, data.values, cmap = cmap.tempAnoms3(), levels = np.arange(-1, 1.1, .1), extend = 'both', transform = ccrs.PlateCarree(central_longitude = 0))
-h = plt.contourf(data.lon, data.lat, dataset['sig'].values, colors = 'none', levels = np.arange(0, 0.06, 0.01), hatches = ['...'], transform = ccrs.PlateCarree(central_longitude = 0))
+ax.set_extent([180, 359.9, -20, 75], crs = ccrs.PlateCarree())
+c = plt.contourf(uData.lon, uData.lat, uData.values, cmap = cmap.tempAnoms3(), levels = np.arange(-1, 1.1, .1), extend = 'both', transform = ccrs.PlateCarree(central_longitude = 0))
+#h = plt.contourf(uData.lon, uData.lat, dataset['sig'].values, colors = 'none', levels = np.arange(0, 0.06, 0.01), hatches = ['...'], transform = ccrs.PlateCarree(central_longitude = 0))
+plt.quiver(uData.lon, vData.lat, uData.values, vData.values, transform = ccrs.PlateCarree(central_longitude = 0))
 
 try:
     for y in range(len(boxXCoords)):
@@ -133,9 +141,9 @@ try:
 except:
     pass
 
-for collection in h.collections:
-    collection.set_edgecolor('#262626')
-    collection.set_linewidth(0)
+# for collection in h.collections:
+#     collection.set_edgecolor('#262626')
+#     collection.set_linewidth(0)
 
 ax.set_title(f'NCEP/NCAR R1 850mb Vector Wind Correlation with {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
 #ax.set_title(f'ERSSTv5 Correlation with {numToMonth(indexMonth)} {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
