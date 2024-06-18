@@ -30,24 +30,24 @@ def map(interval, labelsize):
     return ax 
 
 labelsize = 9
-spacing = 1
+spacing = .5
 year = 2024
-month = 2
-day = 28
-hour = 2
-extent = [-107, -82, 32, 47]
+month = 6
+day = 18
+hour = 17
+extent = [-79, -69, 37, 45]
 data = xr.open_dataset(f'http://nomads.ncep.noaa.gov:80/dods/rtma2p5/rtma2p5{str(year)}{str(month).zfill(2)}{str(day).zfill(2)}/rtma2p5_anl_{str(hour).zfill(2)}z')
-data = data['tmp2m'].squeeze()
+data = data['dpt2m'].squeeze()
 data.values = ((data.values - 273.15) * (9/5)) + 32
 print(data)
 
 date = f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}'
 ax = map(spacing, labelsize - 1)
 ax.set_extent(extent)
-c = plt.contourf(data.lon, data.lat, data.values, cmap = cmap.temperature(), levels = np.arange(-100, 101, 1), extend = 'both')
-plt.contour(data.lon, data.lat, data.values, colors = 'black', levels = [32])
+c = plt.contourf(data.lon, data.lat, data.values, cmap = cmap.pwat(), levels = np.arange(0, 91, 1), extend = 'both')
+#plt.contour(data.lon, data.lat, data.values, colors = 'black', levels = [32])
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
-cbar.ax.set_yticks(np.arange(-100, 110, 10))
+#cbar.ax.set_yticks(np.arange(-100, 140, 10))
 
 for x in np.arange(extent[0] + spacing / 2, extent[1], spacing):
     for y in np.arange(extent[2] + spacing / 2, extent[3], spacing):
