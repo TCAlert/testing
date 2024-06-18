@@ -31,7 +31,7 @@ def map(interval, labelsize):
 
 year = 2024
 month = 6
-day = 3
+day = 14
 hour = 0
 contour = 1
 link = f'https://nomads.ncep.noaa.gov/pub/data/nccf/com/cdas/prod/cdas.{year}{str(month).zfill(2)}{str(day).zfill(2)}/cdas.t{str(hour).zfill(2)}z.sstgrb.grib2'
@@ -42,7 +42,8 @@ cdas = cdas['t'] - 273
 print(cdas)
 
 oisst = xr.open_dataset(f"http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.oisst.v2.highres/sst.day.mean.{datetime.utcnow().year}.nc")
-latest = oisst['time'][-2]
+print(oisst['time'])
+latest = oisst['time'][-1]
 oisst = oisst['sst'].sel(time = latest)
 oisst = oisst[::4, ::4].isel(lat=slice(None, None, -1))
 #oisst = oisst.reindex(lon=list(cdas.longitude))
