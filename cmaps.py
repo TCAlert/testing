@@ -43,11 +43,39 @@ def pwat():
 
     return newcmp
 
+def dewp():
+    newcmp = LinearSegmentedColormap.from_list("",[
+    (0/120, "#eeeeee"),
+    (30/120, "#2e2e2e"),
+    (40/120, "#6e3e04"),
+    (60/120, "#c7ad8d"),
+    
+    (85/120, "#1f5725"),
+
+    (90/120, "#5c9d8d"),
+    (100/120, "#385472"),
+    (110/120, "#a98dc3"),
+    (120/120, "#e7e7e7")])
+
+    return newcmp
+
 def probs():
     newcmp = LinearSegmentedColormap.from_list("",[
     (0/100, "#FFFFFF"),
     (10/100, "#7da1a2"),
     (25/100, "#3f9349"),
+    (50/100, "#e2c657"),
+    (75/100, "#f7843c"),
+    (90/100, "#fc4226"),
+    (100/100, "#f19582")])
+
+    return newcmp
+
+def probs2():
+    newcmp = LinearSegmentedColormap.from_list("",[
+    (0/100, "#000000"),
+    (10/100, "#0c3336"),
+    (25/100, "#2e6b35"),
     (50/100, "#e2c657"),
     (75/100, "#f7843c"),
     (90/100, "#fc4226"),

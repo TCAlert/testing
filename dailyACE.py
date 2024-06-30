@@ -91,12 +91,12 @@ def createClimoData(climo, basin, lats = None, lons = None):
         avg.append(np.mean(years[x + 1]))
         std.append(np.std(years[x + 1]))
 
-    years = (years - avg)# / std
+    years = (years - avg) / std
 
     return years
 
-dailyACEAnoms = createClimoData(climoYears, basin, [10, 20], [-75, -15])
-dailyACEAnoms.to_csv(r"C:\Users\deela\Downloads\dailyACEAnoms1981-2023mdr.csv")
+dailyACEAnoms = createClimoData(climoYears, basin, [0, 70], [-120, -1])
+dailyACEAnoms.to_csv(r"C:\Users\deela\Downloads\dailyACEAnoms1981-2023.csv")
 
 dataset = dailyACEAnoms.to_numpy()
 

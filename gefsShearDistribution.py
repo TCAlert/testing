@@ -29,6 +29,16 @@ def std(dataset):
 
     return stddev
 
+def skewness(dataset):
+    dev = []
+    average = np.mean(dataset, axis = 0)
+    for x in range(0, 30):
+        temp = dataset[x]
+        dev.append((temp - average)**3)
+    skewness = np.sum(dev, axis = 0) / (30 * (std(dataset)**3))
+
+    return skewness
+
 # Calculates percentiles
 # `data` is a 3D array containing the computed wind shears from each member of the GEFS 
 # `num` is the desired percentile (Ex: 10, 25, 50, 75, 90)
@@ -99,14 +109,29 @@ def finalPlot(grid, shear, init, title, us = None, vs = None):
         # Plots the data using the pressure level grid created before
         # This section plots probabilistic data
         if us == None:
-            c = ax.pcolormesh(grid[0], grid[1], shear, cmap = cmap.probs(), vmin = 0, vmax = 100)
-            cb = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
-            cb.set_ticks(range(0, 105, 5))
+            if title == 'Skewness':
+                c = ax.pcolormesh(grid[0], grid[1], shear, cmap = cmap.tempAnoms3(), vmin = -2, vmax = 2)
+                cb = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
+                cb.set_ticks(np.arange(-2, 2.2, .2))
+                for x in range(len(grid[0])):
+                    for y in range(len(grid[1])):
+                        if shear[x][y] != 0:
+                            try:
+                                plt.text(grid[0][x][y], grid[1][x][y], f'{round(shear[x][y], 1)}', size=12, color='black', weight = 'bold', horizontalalignment = 'center', verticalalignment = 'center', path_effects=[pe.withStroke(linewidth = 1, foreground="white")])#, transform = ccrs.PlateCarree(central_longitude = 0))
+                            except:
+                                pass
+            else:
+                c = ax.pcolormesh(grid[0], grid[1], shear, cmap = cmap.probs(), vmin = 0, vmax = 100)
+                cb = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
+                cb.set_ticks(range(0, 105, 5))
 
-            for x in range(len(grid[0])):
-                for y in range(len(grid[1])):
-                    if shear[x][y] != 0:
-                        plt.text(grid[0][x][y], grid[1][x][y], f'{int(round(shear[x][y], 0))}%', size=12, color='black', weight = 'bold', horizontalalignment = 'center', verticalalignment = 'center', path_effects=[pe.withStroke(linewidth = 1, foreground="white")])#, transform = ccrs.PlateCarree(central_longitude = 0))
+                for x in range(len(grid[0])):
+                    for y in range(len(grid[1])):
+                        if shear[x][y] != 0:
+                            try:
+                                plt.text(grid[0][x][y], grid[1][x][y], f'{int(round(shear[x][y], 0))}%', size=12, color='black', weight = 'bold', horizontalalignment = 'center', verticalalignment = 'center', path_effects=[pe.withStroke(linewidth = 1, foreground="white")])#, transform = ccrs.PlateCarree(central_longitude = 0))
+                            except:
+                                pass
 
     except:    
         # Plots the data using the pressure level grid created before
@@ -130,7 +155,7 @@ def finalPlot(grid, shear, init, title, us = None, vs = None):
     time = (str(data[0].time.values)).split('T')
     time = f'{time[0]} at {(time[1][:5])}z'
 
-    ax.set_title(f'GEFS Vertical Wind Shear Distribution: SH21\nInitialization: {init}', fontweight='bold', fontsize=10, loc='left')
+    ax.set_title(f'GEFS Vertical Wind Shear Distribution: AL02\nInitialization: {init}', fontweight='bold', fontsize=10, loc='left')
     ax.set_title(f'Forecast Hour: {time}', fontsize = 10, loc = 'center')
     ax.set_title(f'{title}\nDeelan Jariwala', fontsize=10, loc='right') 
     at = AnchoredText("Inspired by Michael Fischer",
@@ -147,31 +172,32 @@ t = datetime.now()
 year = t.year
 month = t.month
 day = t.day
-hr = 0
-fcastHour = 36
-storm = 'sh21'
-shearStrength = 15
+hr = 12
+fcastHour = 84
+storm = 'al02'
+shearStrength = 20
 p = 50
-title = f'Percent of Members with Shear Exceeding {shearStrength}kt'
+#title = f'Percent of Members with Shear Exceeding {shearStrength}kt'
 #title = 'Probability a Layer has the Max Shear Vector'
 #title = 'Minimum Shear in Ensemble Suite'
 #title = 'Maximum Shear in Ensemble Suite'
 #title = f'{p}th Percentile of Wind Shears'
 #title = 'Ensemble Mean'
-#title = 'Quartile Coefficient of Dispersion'
+title = 'Quartile Coefficient of Dispersion'
 #title = 'Interquartile Range'
 #title = 'Standard Deviation'
+#title = 'Skewness'
 
 # Collects requisite information from the A-Deck regarding the given storm for the specified hour and models
 # Additionally retrieves the U and V wind data for the GEFS corresponding to the same time and run
 adeckDF = adeck.filterData(storm, [f'{year}{str(month).zfill(2)}{str(day).zfill(2)}{str(hr).zfill(2)}'], ['AP01', 'AP02', 'AP03', 'AP04', 'AP05', 'AP06', 'AP07', 'AP08', 'AP09', 'AP10', 'AP11', 'AP12', 'AP13', 'AP14', 'AP15', 'AP16', 'AP17', 'AP18', 'AP19', 'AP20', 'AP21', 'AP22', 'AP23', 'AP24', 'AP25', 'AP26', 'AP27', 'AP28', 'AP29', 'AP30', 'AP31'], [fcastHour])
 print(adeckDF)
 #data, init = gefs.getData(['ugrdprs', 'vgrdprs'], np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hr).zfill(2)}') + np.timedelta64(fcastHour, 'h'))
-init = '2024-04-06 at 00:00z'
+init = '2024-06-29 at 12:00z'
 print(init)
-#data[0].to_netcdf(r"C:\Users\deela\Downloads\uData.nc")
-#data[1].to_netcdf(r"C:\Users\deela\Downloads\vData.nc")
-data = [xr.open_dataset(r"C:\Users\deela\Downloads\uData.nc")['ugrdprs'], xr.open_dataset(r"C:\Users\deela\Downloads\vData.nc")['vgrdprs']]
+#data[0].to_netcdf(r"C:\Users\deela\Downloads\uData629202412.nc")
+#data[1].to_netcdf(r"C:\Users\deela\Downloads\vData629202412.nc")
+data = [xr.open_dataset(r"C:\Users\deela\Downloads\uData629202412.nc")['ugrdprs'], xr.open_dataset(r"C:\Users\deela\Downloads\vData629202412.nc")['vgrdprs']]
 
 # Calculate wind shears for each member of the GEFS
 shears = []
@@ -246,6 +272,10 @@ elif title == 'Standard Deviation':
     shears = std(shears)
     us = sum(us) / len(us)
     vs = sum(vs) / len(vs)
+# Calculates the skewness of all wind shears in the column.
+elif title == 'Skewness':
+    shears = skewness(shears)
+    us = vs = None
 
 # Runs program
 finalPlot(grid, shears, init, title, us, vs)

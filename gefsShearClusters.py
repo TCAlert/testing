@@ -180,7 +180,7 @@ def finalPlot(grid, shear, init, title, clusterType, clusters, us = None, vs = N
     print(time)
     time = f'{time[0]} at {(time[1][:5])}z'
 
-    ax.set_title(f'GEFS Vertical Wind Shear Distribution: SH21\nInitialization: {init}', fontweight='bold', fontsize=10, loc='left')
+    ax.set_title(f'GEFS Vertical Wind Shear Distribution: AL02\nInitialization: {init}', fontweight='bold', fontsize=10, loc='left')
     ax.set_title(f'Forecast Hour: {time}', fontsize = 10, loc = 'center')
     ax.set_title(f'Data split by {clusterType.upper()}: Cluster 1 - 2 Plotted\nDeelan Jariwala', fontsize=10, loc='right') 
     at = AnchoredText("Inspired by Michael Fischer",
@@ -196,14 +196,14 @@ def finalPlot(grid, shear, init, title, clusterType, clusters, us = None, vs = N
 t = datetime.now()
 year = t.year
 month = t.month
-day = 6#t.day
-hr = 0
-fcastHour = 36
-storm = 'sh21'
+day = t.day
+hr = 12
+fcastHour = 84
+storm = 'al02'
 shearStrength = 15
 p = 50
 numClusters = 2
-clusterType = 'Longitude'
+clusterType = 'Intensity'
 #title = f'Percent of Members with Shear Exceeding {shearStrength}kt'
 #title = f'{p}th Percentile of Wind Shears'
 title = 'Ensemble Mean'
@@ -221,11 +221,11 @@ elif clusterType.lower() == 'longitude':
     clusters, centroids = findClusters(adeckDF, adeckDF[7], numClusters)
 
 #data, init = gefs.getData(['ugrdprs', 'vgrdprs'], np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hr).zfill(2)}') + np.timedelta64(fcastHour, 'h'))
-init = '2024-04-06 at 00:00z'
+init = '2024-06-29 at 12:00z'
 print(init)
 #data[0].to_netcdf(r"C:\Users\deela\Downloads\uData.nc")
 #data[1].to_netcdf(r"C:\Users\deela\Downloads\vData.nc")
-data = [xr.open_dataset(r"C:\Users\deela\Downloads\uData.nc")['ugrdprs'], xr.open_dataset(r"C:\Users\deela\Downloads\vData.nc")['vgrdprs']]
+data = [xr.open_dataset(r"C:\Users\deela\Downloads\uData629202412.nc")['ugrdprs'], xr.open_dataset(r"C:\Users\deela\Downloads\vData629202412.nc")['vgrdprs']]
 
 cShears = []
 cUS = []

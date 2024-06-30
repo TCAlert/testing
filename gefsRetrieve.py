@@ -31,8 +31,8 @@ def url(flag):
         init_hour = get_init_hr(t.hour)
 
     mdate = f'{str(t.year).zfill(2)}{str(t.month).zfill(2)}{str(t.day).zfill(2)}'
-    mdate = f'20240406'
-    init_hour = '00'
+    #mdate = f'20240406'
+    #init_hour = '00'
     url1 = f'http://nomads.ncep.noaa.gov:80/dods/gefs/gefs{mdate}/gefs_pgrb2ap5_all_{init_hour}z'
     url2 = f'http://nomads.ncep.noaa.gov:80/dods/gefs/gefs{mdate}/gefs_pgrb2bp5_all_{init_hour}z'
     return init_hour, mdate, url1, url2
