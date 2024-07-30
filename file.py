@@ -35,5 +35,7 @@ def getGZ(file, newFile = None):
             print(f'File {file} opened successfully.')
             nf.write(f.read())
     
+    return newFile
+    
 #getFTP('ftp://ftp.ifremer.fr/ifremer/argo/dac/coriolis/6902919/profiles/R6902919_183.nc')
 

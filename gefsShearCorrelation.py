@@ -85,9 +85,9 @@ t = datetime.now()
 year = t.year
 month = t.month
 day = t.day
-hr = 12
-fcastHour = 84
-fcastHour2 = 36
+hr = 18
+fcastHour = 48
+fcastHour2 = 6
 storm = 'AL02'
 shearStrength = 15
 p = 50
@@ -101,12 +101,12 @@ adeckDFFH = adeck.filterData(storm, [f'{year}{str(month).zfill(2)}{str(day).zfil
 print(adeckDF, adeckDFFH)
 intensities = np.array(adeckDFFH[8].astype('Float64'))
 
-#data, init = gefs.getData(['ugrdprs', 'vgrdprs'], np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hr).zfill(2)}') + np.timedelta64(fcastHour, 'h'))
-init = '2024-06-29 at 12:00z'
+data, init = gefs.getData(['ugrdprs', 'vgrdprs'], np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hr).zfill(2)}') + np.timedelta64(fcastHour, 'h'))
+#init = '2024-06-29 at 12:00z'
 print(init)
 #data[0].to_netcdf(r"C:\Users\deela\Downloads\uData.nc")
 #data[1].to_netcdf(r"C:\Users\deela\Downloads\vData.nc")
-data = [xr.open_dataset(r"C:\Users\deela\Downloads\uData629202412.nc")['ugrdprs'], xr.open_dataset(r"C:\Users\deela\Downloads\vData629202412.nc")['vgrdprs']]
+#data = [xr.open_dataset(r"C:\Users\deela\Downloads\uData629202412.nc")['ugrdprs'], xr.open_dataset(r"C:\Users\deela\Downloads\vData629202412.nc")['vgrdprs']]
 print(data)
 
 # Calculate wind shears for each member of the GEFS
@@ -119,6 +119,11 @@ for x in range(1, 31):
     if lon < 0:
         lon = lon + 360
     
+    # tU = uData.sel(lon = slice(lon - 2.5, lon + 2.5), lat = slice(lat - 2.5, lat + 2.5), lev = 850)
+    # tV = vData.sel(lon = slice(lon - 2.5, lon + 2.5), lat = slice(lat - 2.5, lat + 2.5), lev = 850)
+    # plt.imshow(tU)
+    # plt.show()    
+
     # Subsets a 5x5 degree box centered on the storm and computes the average for all pressure levels
     # This data (both the zonal and meridional component of the wind vector) is then passed to the function to compute wind shears throughout the column
     # The values returned are then appended to lists to form the 3D matrices     

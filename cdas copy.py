@@ -30,8 +30,8 @@ def map(interval, labelsize):
     return ax 
 
 year = 2024
-month = 6
-day = 14
+month = 7
+day = 9
 hour = 0
 contour = 1
 link = f'https://nomads.ncep.noaa.gov/pub/data/nccf/com/cdas/prod/cdas.{year}{str(month).zfill(2)}{str(day).zfill(2)}/cdas.t{str(hour).zfill(2)}z.sstgrb.grib2'

@@ -2,17 +2,26 @@ import numpy as np
 import pandas as pd 
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
+import matplotlib.pyplot as plt
 from helper import dayOfYear
 
-climoYears = [1981, 2023]
-basin = 'AL'
+climoYears = [1980, 2023]
+basin = 'EP'
 day = 0
 if basin == 'EP':
     link = 'https://www.aoml.noaa.gov/hrd/hurdat/hurdat2-nepac.html'
 else:
     link = 'https://www.aoml.noaa.gov/hrd/hurdat/hurdat2.html'
 
-link = urlopen(link)
+try:
+    link = urlopen(link)
+except:
+    if basin == 'EP':
+        link = 'https://www.nhc.noaa.gov/data/hurdat/hurdat2-nepac-1949-2023-042624.txt'
+    else:
+        link = 'https://www.nhc.noaa.gov/data/hurdat/hurdat2-1851-2023-051124.txt'
+
+    link = urlopen(link)
 soup = BeautifulSoup(link, 'html.parser')
 lines = soup.get_text().split('\n')
 
@@ -90,13 +99,16 @@ def createClimoData(climo, basin, lats = None, lons = None):
     for x in range(len(years.columns)):
         avg.append(np.mean(years[x + 1]))
         std.append(np.std(years[x + 1]))
+    
+    plt.plot(range(1, 366), avg)
+    plt.show()
 
-    years = (years - avg) / std
+    years = (years)# - avg) / std
 
     return years
 
 dailyACEAnoms = createClimoData(climoYears, basin, [0, 70], [-120, -1])
-dailyACEAnoms.to_csv(r"C:\Users\deela\Downloads\dailyACEAnoms1981-2023.csv")
+dailyACEAnoms.to_csv(r"C:\Users\deela\Downloads\dailyACE1980-2023.csv")
 
 dataset = dailyACEAnoms.to_numpy()
 

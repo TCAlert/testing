@@ -47,13 +47,17 @@ def yearlySum(data):
 
     return data
 
-startYear = 1950
-endYear = 2020
-indexMonth = '6'
+startYear = 1978
+endYear = 2023
+indexMonth = '10'
 dataMonth = '1'
-index = 'ATL3'
+index = 'SSTAs in Box'
 type = 'ACE'
-csv = timeseries(indexMonth, range(startYear, endYear + 1), slice(5, -5), slice(340, 358))[numToMonth(indexMonth)[0:3]]
+lats = [40, 60]
+lons = [-70, -35]
+boxXCoords = [lons[0], lons[1], lons[1], lons[0], lons[0]]
+boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
+csv = timeseries(indexMonth, range(startYear, endYear + 1), slice(lats[1], lats[0]), slice(360 + lons[0], 360 + lons[1]))[numToMonth(indexMonth)[0:3]]
 #csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]]
 dataset = xr.open_dataset(r"C:\Users\deela\Downloads\HURDAT2DensityALL.nc")
 data = dataset[type]
@@ -88,9 +92,19 @@ dataset['sig'] = ((ogShape[1], ogShape[2]), np.reshape(signData, (ogShape[1], og
 data.to_netcdf(r"C:\Users\deela\Downloads\HarrisonFile.nc")
 
 ax = map(20, 9)
-#ax.set_extent([180, 359.9, 0, 70], crs = ccrs.PlateCarree(central_longitude = 0))
+ax.set_extent([180, 359.9, 0, 70], crs = ccrs.PlateCarree(central_longitude = 0))
 c = plt.contourf(data.longitude, data.latitude, data.values, cmap = cmap.tempAnoms3(), levels = np.arange(-1, 1.1, .1), extend = 'both', transform = ccrs.PlateCarree(central_longitude = 0))
 h = plt.contourf(data.longitude, data.latitude, dataset['sig'].values, colors = 'none', levels = np.arange(0, 0.06, 0.01), hatches = ['...'], transform = ccrs.PlateCarree(central_longitude = 0))
+
+try:
+    for y in range(len(boxXCoords)):
+        try:
+            print([boxXCoords[y], boxXCoords[y + 1]], [boxYCoords[y], boxYCoords[y + 1]])
+            ax.plot([boxXCoords[y], boxXCoords[y + 1]], [boxYCoords[y], boxYCoords[y + 1]], color = 'black', zorder = 20, transform = ccrs.PlateCarree(central_longitude = 360))
+        except:
+            pass
+except:
+    pass
 
 for collection in h.collections:
     collection.set_edgecolor('#262626')

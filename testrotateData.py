@@ -29,8 +29,8 @@ def rotateData(data, angle, degrees = True, xPivot = 0, yPivot = 0):
     return np.transpose(newData)
 
 
-xs = np.arange(0, 1, 0.01)
-ys = np.arange(0, 1, 0.01)
+xs = np.arange(-1, 1, 0.1)
+ys = np.arange(-1, 1, 0.1)
 
 data = np.meshgrid(xs, ys)[0]
 
@@ -38,7 +38,7 @@ for x in range(len(xs)):
     for y in range(len(ys)):
         data[x][y] = np.sqrt(xs[x]**2 + ys[y]**2)
 
-data = rotateData(data, 45, True)
+data = rotateData(data, 90, True)
 
 fig = plt.figure(figsize=(12, 12))
 ax = plt.axes()

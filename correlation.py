@@ -38,10 +38,10 @@ def map(interval, labelsize):
     # ax.minorticks_on()
     return ax 
 
-# dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/pressure/vwnd.mon.mean.nc')
-# data = dataset['vwnd'].sel(level = 850).fillna(0)# * np.cos(np.radians(dataset['lat']))
-dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
-data = dataset['sst']
+dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/pressure/uwnd.mon.mean.nc')
+data = dataset['uwnd'].sel(level = 850).fillna(0)# * np.cos(np.radians(dataset['lat']))
+#dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
+#data = dataset['sst']
 # dates = []
 # for x in range(1987, 2024):
 #     for y in range(1, 13):
@@ -57,31 +57,31 @@ data = data.fillna(0) * np.cos(np.radians(data['lat']))
 print(data)
 #csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]].iloc[16:]
 
-startYear = 1971
-endYear = 2023
-indexMonth = '8'
-dataMonth = '8'
-day = 243
-day2 = 213
-index = f'ACE in Box (to day {day})'
-lats = [0, 70]
-lons = [-120, -2.5]
-boxXCoords = [lons[0], lons[1], lons[1], lons[0], lons[0]]
-boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
-csv = createClimoData([startYear, endYear], 'AL', lats, lons)
-csv = csv[day] - csv[day2]
-print(csv)
-
 # startYear = 1971
-# endYear = 2020
+# endYear = 2023
 # indexMonth = '9'
-# dataMonth = '9'
-# index = 'SSTAs in Box'
-# lats = [-5, 5]
-# lons = [300, 358]
+# dataMonth = '7'
+# day = 365
+# day2 = 233
+# index = f'ACE in Box (to day {day})'
+# lats = [40, 60]
+# lons = [-70, -35]
 # boxXCoords = [lons[0], lons[1], lons[1], lons[0], lons[0]]
 # boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
-# csv = timeseries(indexMonth, range(startYear, endYear + 1), slice(lats[1], lats[0]), slice(lons[0], lons[1]))[numToMonth(indexMonth)[0:3]]
+# csv = createClimoData([startYear, endYear], 'AL', lats, lons)
+# csv = csv[day]# - csv[day2]
+# print(csv)
+
+startYear = 1971
+endYear = 2020
+indexMonth = '7'
+dataMonth = '7'
+index = 'SSTAs in Box'
+lats = [40, 60]
+lons = [360-70, 360-35]
+boxXCoords = [lons[0], lons[1], lons[1], lons[0], lons[0]]
+boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
+csv = timeseries(indexMonth, range(startYear, endYear + 1), slice(lats[1], lats[0]), slice(lons[0], lons[1]))[numToMonth(indexMonth)[0:3]]
 
 # startYear = 1971
 # endYear = 2023
@@ -137,7 +137,7 @@ for collection in h.collections:
     collection.set_edgecolor('#262626')
     collection.set_linewidth(0)
 
-ax.set_title(f'NCEP/NCAR R1 850mb Vector Wind Correlation with {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
+ax.set_title(f'NCEP/NCAR R1 850mb Zonal Wind Correlation with {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
 #ax.set_title(f'ERSSTv5 Correlation with {numToMonth(indexMonth)} {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
 #ax.set_title(f'AMSU Tropopause (TTS) Brightness Temp. Correlation with {numToMonth(indexMonth)} {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
 #ax.set_title(f'ERSSTv5 Correlation with {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')

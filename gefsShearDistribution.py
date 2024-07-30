@@ -173,17 +173,17 @@ year = t.year
 month = t.month
 day = t.day
 hr = 12
-fcastHour = 84
+fcastHour = 24
 storm = 'al02'
-shearStrength = 20
+shearStrength = 15
 p = 50
-#title = f'Percent of Members with Shear Exceeding {shearStrength}kt'
+title = f'Percent of Members with Shear Exceeding {shearStrength}kt'
 #title = 'Probability a Layer has the Max Shear Vector'
 #title = 'Minimum Shear in Ensemble Suite'
 #title = 'Maximum Shear in Ensemble Suite'
 #title = f'{p}th Percentile of Wind Shears'
 #title = 'Ensemble Mean'
-title = 'Quartile Coefficient of Dispersion'
+#title = 'Quartile Coefficient of Dispersion'
 #title = 'Interquartile Range'
 #title = 'Standard Deviation'
 #title = 'Skewness'
@@ -192,12 +192,12 @@ title = 'Quartile Coefficient of Dispersion'
 # Additionally retrieves the U and V wind data for the GEFS corresponding to the same time and run
 adeckDF = adeck.filterData(storm, [f'{year}{str(month).zfill(2)}{str(day).zfill(2)}{str(hr).zfill(2)}'], ['AP01', 'AP02', 'AP03', 'AP04', 'AP05', 'AP06', 'AP07', 'AP08', 'AP09', 'AP10', 'AP11', 'AP12', 'AP13', 'AP14', 'AP15', 'AP16', 'AP17', 'AP18', 'AP19', 'AP20', 'AP21', 'AP22', 'AP23', 'AP24', 'AP25', 'AP26', 'AP27', 'AP28', 'AP29', 'AP30', 'AP31'], [fcastHour])
 print(adeckDF)
-#data, init = gefs.getData(['ugrdprs', 'vgrdprs'], np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hr).zfill(2)}') + np.timedelta64(fcastHour, 'h'))
-init = '2024-06-29 at 12:00z'
+data, init = gefs.getData(['ugrdprs', 'vgrdprs'], np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hr).zfill(2)}') + np.timedelta64(fcastHour, 'h'))
+#init = '2024-06-29 at 12:00z'
 print(init)
 #data[0].to_netcdf(r"C:\Users\deela\Downloads\uData629202412.nc")
 #data[1].to_netcdf(r"C:\Users\deela\Downloads\vData629202412.nc")
-data = [xr.open_dataset(r"C:\Users\deela\Downloads\uData629202412.nc")['ugrdprs'], xr.open_dataset(r"C:\Users\deela\Downloads\vData629202412.nc")['vgrdprs']]
+#data = [xr.open_dataset(r"C:\Users\deela\Downloads\uData629202412.nc")['ugrdprs'], xr.open_dataset(r"C:\Users\deela\Downloads\vData629202412.nc")['vgrdprs']]
 
 # Calculate wind shears for each member of the GEFS
 shears = []

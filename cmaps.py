@@ -561,3 +561,21 @@ def reflectivity2():
     vmax = 70
     
     return newcmp
+
+def pressure():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/100, "#FFFFFF"),
+    (20/100, "#FFFFFF"),
+
+    (20/100, "#204040"),
+    (35/100, "#008585"),
+    (50/100, "#74a892"),
+
+    (50/100, "#e5c185"),
+    (70/100, "#c7522a"),
+    (85/100, "#402820"),
+
+    (85/100, "#404040"),
+    (100/100, "#000000")])
+    
+    return newcmp
