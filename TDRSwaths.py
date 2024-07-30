@@ -109,8 +109,8 @@ def panelPlot(dataset, caseNum):
     
     plt.savefig(r"C:\Users\deela\Downloads\TDR_Swaths\\" + date + ".png", dpi = 400, bbox_inches = 'tight')
     #plt.show()
-name = 'Irma'
-year = 2017
+name = 'Patricia'
+year = 2015
 height = 3
 data = retrieveStorm(name, year)
 print(data.num_cases.values)
