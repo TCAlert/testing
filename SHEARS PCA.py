@@ -25,7 +25,7 @@ def get_zscores(data):
     return all_zscores
 
 labelsize = 9
-numOfEOFS = 2
+numOfEOFS = 12
 
 # open variable data
 dataset = xr.open_dataset(r"C:\Users\deela\Downloads\SHEARS_1997-2021.nc")
@@ -55,10 +55,7 @@ PCs = pca.fit_transform(sst_reshaped)
 print(f"PC matrix shape: {PCs.shape}")
 
 # Reshape the PCA results (EOFs) back to 3D (x, latitude, longitude)
-EOFs = np.zeros((numOfEOFS, lat_size, lon_size))
-for i in range(numOfEOFS):
-    EOFs[i, :, :] = pca.inverse_transform(np.eye(numOfEOFS)[i]).reshape(lat_size, lon_size)
-    #EOFs[i, :, :] = EOFs[i, :, :] / np.linalg.norm(EOFs[i, :, :], axis=1)[:, np.newaxis]
+EOFs = pca.components_.reshape(numOfEOFS, lat_size, lon_size)
 print(f"EOF matrix shape: {EOFs.shape}")
 
 explained_variance = pca.explained_variance_ratio_
@@ -77,7 +74,7 @@ for i in range(numOfEOFS):
 
     test = PCs[:, i]
     m, s = np.nanmean(test), np.nanstd(test)
-    #test = np.array([(x - m) / s for x in test])
+    test = np.array([(x - m) / s for x in test])
     pcseries.append(test)
     mean.append(m)
     std.append(s)
@@ -118,7 +115,7 @@ for i in range(numOfEOFS):
     cbar = plt.colorbar(c, orientation = 'horizontal', aspect = 100, pad = .08)
     cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
     #cbar.set_ticks(np.arange(-1, 1.1, 0.1))
-    plt.savefig(r"C:\Users\deela\Downloads\SHEARSEOF" + str(i + 1) + ".png", dpi = 400, bbox_inches = 'tight')
+    #plt.savefig(r"C:\Users\deela\Downloads\SHEARSEOF" + str(i + 1) + ".png", dpi = 400, bbox_inches = 'tight')
     #plt.show()
 
 ds = xr.Dataset({'eof'    : (["num", "upper", "lower"], EOFs), 

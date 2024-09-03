@@ -16,6 +16,7 @@ dataset = dataset.where(dataset.system_type.isin(['TD', 'TS', 'HU', 'TY', 'ST', 
 dataset = dataset.where(dataset.sst > 26, drop=True)
 dataset = dataset.where(dataset.dist_land != 0, drop=True)
 dataset = dataset.where(dataset.rlhum.sel(upper = slice(300, 700)).mean('upper') > 40, drop = True)
+dataset = dataset.where(dataset.lats > 0, drop = True)
 dataset['case'] = np.arange(0, len(dataset.case.values))
 pres = dataset.upper
 climoMean = np.nanmean(dataset['sh_mag'].values, axis = 0)

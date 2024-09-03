@@ -20,11 +20,11 @@ year = [str(x).split('-')[0] for x in dataset.time.values]
 dataset = dataset.assign(year = (['case'], year))
 dataset = dataset.where(dataset.year == y, drop = True)
 dataset['case'] = np.arange(0, len(dataset.case.values))
-shearData = dataset['sh_mag']
+shearData = dataset['u_data']
 shearData.values = np.nan_to_num(shearData.values)
 
-eofData = xr.open_dataset(r"C:\Users\deela\Downloads\SHEARS_EOF.nc")
-anom = np.nan_to_num((shearData.values - eofData['climoMean'].values))
+eofData = xr.open_dataset(r"C:\Users\deela\Downloads\SHEARS_EOF_u.nc")
+anom = np.nan_to_num((shearData.values - eofData['climoMean'].values))# / eofData['climoStdd'].values)
 
 eofs = []
 for x in range(len(eofData.eof.num.values)):
@@ -32,19 +32,21 @@ for x in range(len(eofData.eof.num.values)):
 
 pcseries1, pcseries2 = [], []
 for x in range(len(shearData)):
-    # print(dataset.where(dataset.time == np.datetime64('2005-10-23T06'), drop = True).case)
+    print(dataset.where(dataset.time == np.datetime64('2005-10-23T06'), drop = True).case)
+    plt.plot(anom[30], dataset.upper)
+    temp = 0
+    for x in range(len(eofs)):
+        temp = temp + (eofs[x] * (np.dot(eofs[x].T, anom[30])))
+    pc1 = np.dot(eofs[0].flatten().T, anom[30].flatten()) + np.nan_to_num(eofData['climoMean'].values)
+    pc2 = np.dot(eofs[1].flatten().T, anom[30].flatten()) + np.nan_to_num(eofData['climoMean'].values)
 
-    # temp = 0
-    # for x in range(len(eofs)):
-    #     temp = temp + (eofs[x] * (np.dot(eofs[x].T, anom[30])))
-    pc1 = np.dot(eofs[0].flatten(), anom[30].flatten()) + np.nan_to_num(eofData['climoMean'].values)
-    pc2 = np.dot(eofs[1].flatten(), anom[30].flatten()) + np.nan_to_num(eofData['climoMean'].values)
-
+    plt.plot(temp, dataset.upper)
+    plt.show()
     pcseries1.append(pc1)
     pcseries2.append(pc2)
 print(pcseries1[-1], pcseries2[-1])
-#pcseries1 = (pcseries1 - eofData['mean'].sel(num = 1).values) / eofData['stddev'].sel(num = 1).values
-#pcseries2 = (pcseries2 - eofData['mean'].sel(num = 2).values) / eofData['stddev'].sel(num = 2).values
+pcseries1 = (pcseries1 - eofData['mean'].sel(num = 1).values) / eofData['stddev'].sel(num = 1).values
+pcseries2 = (pcseries2 - eofData['mean'].sel(num = 2).values) / eofData['stddev'].sel(num = 2).values
 
 fig = plt.figure(figsize=(14, 11))
 ax = plt.axes()

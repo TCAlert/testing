@@ -6,7 +6,7 @@ import cmaps as cmap
 np.set_printoptions(suppress=True)
 
 labelsize = 9
-numOfEOFS = 3
+numOfEOFS = 12
 
 def get_zscores(data):
     all_zscores = []
@@ -27,13 +27,13 @@ def get_zscores(data):
     return all_zscores
 
 def constructEOF(data):
-    zscoreData = get_zscores(data)
+    zscoreData = data#get_zscores(data)
     zscores = np.nan_to_num(zscoreData.to_numpy())
     print(f"Initial shape: {zscores.shape}")
 
     # Flatten the 3D array to a 2D matrix (time, space)
-    time_steps, lat_size = zscores.shape
-    sst_reshaped = zscores.reshape(time_steps, lat_size)
+    cases, levels = zscores.shape
+    sst_reshaped = zscores.reshape(cases, levels)
     print(f"Flattened shape: {sst_reshaped.shape}")
 
     # Perform PCA to get the most prevalent patterns (EOFs)
@@ -42,10 +42,7 @@ def constructEOF(data):
     print(f"PC matrix shape: {PCs.shape}")
 
     # Reshape the PCA results (EOFs) back to 3D (x, latitude, longitude)
-    EOFs = np.zeros((numOfEOFS, lat_size))
-    for i in range(numOfEOFS):
-        EOFs[i, :] = pca.inverse_transform(np.eye(numOfEOFS)[i]).reshape(lat_size)
-        #EOFs[i, :, :] = EOFs[i, :, :] / np.linalg.norm(EOFs[i, :, :], axis=1)[:, np.newaxis]
+    EOFs = pca.components_
     print(f"EOF matrix shape: {EOFs.shape}")
 
     explained_variance = pca.explained_variance_ratio_
@@ -59,27 +56,26 @@ dataset = dataset.where(dataset.system_type.isin(['TD', 'TS', 'HU', 'TY', 'ST', 
 dataset = dataset.where(dataset.sst > 26, drop=True)
 dataset = dataset.where(dataset.dist_land != 0, drop=True)
 dataset = dataset.where(dataset.rlhum.sel(upper = slice(300, 700)).mean('upper') > 40, drop = True)
+dataset = dataset.where(dataset.lats > 0, drop = True)
 dataset['case'] = np.arange(0, len(dataset.case.values))
-climoMean = np.nanmean(dataset['sh_mag'].values, axis = 0)
-climoStdd = np.nanstd(dataset['sh_mag'].values, axis = 0)
+climoMean = np.nanmean(dataset['u_data'].values, axis = 0)
+climoStdd = np.nanstd(dataset['u_data'].values, axis = 0)
 
 uData = dataset['u_data']
-vData = dataset['v_data']
 uEOFs, uPCs, uEV = constructEOF(uData)
-vEOFs, vPCs, vEV = constructEOF(vData)
 
 pcseries = []
 mean = []
 std = []
 for i in range(numOfEOFS):
-    vEOF = vEOFs[i]
+    uEOF = uEOFs[i]
     fig = plt.figure(figsize=(15, 12))
     gs = fig.add_gridspec(4, 12, wspace = 0, hspace = 0)
     axes = [fig.add_subplot(gs[3, 0:6]),
             fig.add_subplot(gs[0:3, 0:6]),
             fig.add_subplot(gs[0:4, 7:12])]
 
-    test = vPCs[:, i]
+    test = uPCs[:, i]
     m, s = np.nanmean(test), np.nanstd(test)
     test = np.array([(x - m) / s for x in test])
     pcseries.append(test)
@@ -99,19 +95,16 @@ for i in range(numOfEOFS):
 
     axes[1].invert_yaxis()   
     axes[1].set_ylabel('Pressure (hPa)')
-    #axes[1].set_xlabel('Variance Explained')
+    axes[1].set_xlim(-3, 3)
     axes[1].grid()  
-    #c = axes[1].pcolormesh(dataset.upper, dataset.lower, uEOF, cmap=cmap.tempAnoms())
-    axes[1].plot(vEOF, dataset.upper)
-    axes[1].set_title(f'SHEARS TC Meridional Wind Profile EOF{i + 1} (Filters: SST >26C | 300-700mb RH > 40%)\nExplained variance: {round(float(vEV[i]) * 100, 1)}%' , fontweight='bold', fontsize=labelsize, loc='left')
+    axes[1].plot(uEOF, dataset.upper)
+    axes[1].set_title(f'SHEARS TC Zonal Wind Profile EOF{i + 1} (Filters: SST >26C | 300-700mb RH > 40%)\nExplained variance: {round(float(uEV[i]) * 100, 1)}%' , fontweight='bold', fontsize=labelsize, loc='left')
 
     axes[2].set_frame_on(False)
     axes[2].tick_params(axis='both', labelsize=8, left = False, bottom = False)
     axes[2].grid(linestyle = '--', alpha = 0.5, color = 'black', linewidth = 0.5, zorder = 9)
     axes[2].set_xlabel(f'PC{i + 1} Index', weight = 'bold', size = 9)
     axes[2].set_ylabel('Following 24hr Change in VMax (kt)', weight = 'bold', size = 9)
-    #axes[2].yaxis.set_label_position("right")
-    #axes[2].yaxis.tick_right()
     axes[2].axvline(color = 'black')
     axes[2].axhline(color = 'black')
     s = axes[2].scatter(test, dataset.delta_vmax.values, c = dataset.vmax, cmap = cmap.probs2(), linewidth = 2, label = f'PC{i + 1} Series')
@@ -119,22 +112,18 @@ for i in range(numOfEOFS):
     cbar.set_label('Maximum Sustained Wind (kt)')
     axes[2].set_title(f'1997-2021\nDeelan Jariwala', fontsize=labelsize, loc='right')  
 
-    #cbar = plt.colorbar(c, orientation = 'horizontal', aspect = 100, pad = .08)
-    #cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
-    #cbar.set_ticks(np.arange(-1, 1.1, 0.1))
-    plt.savefig(r"C:\Users\deela\Downloads\SHEARSVEOF" + str(i + 1) + ".png", dpi = 400, bbox_inches = 'tight')
-    #plt.show()
+    #plt.savefig(r"C:\Users\deela\Downloads\SHEARSUEOF" + str(i + 1) + ".png", dpi = 400, bbox_inches = 'tight')
+    plt.show()
 
-# ds = xr.Dataset({'eof'    : (["num", "upper", "lower"], EOFs), 
-#                  'climoMean': (["upper", "lower"], climoMean),
-#                  'climoStdd': (["upper", "lower"], climoStdd),
-#                  'mean'   : (["num"], mean),
-#                  'stddev' : (["num"], std)}, 
-#     coords =   {"num"  : np.arange(1, numOfEOFS + 1, 1),
-#                 "upper": dataset.upper.values,
-#                 "lower": dataset.lower.values})
+ds = xr.Dataset({'eof'    : (["num", "upper"], uEOFs), 
+                 'climoMean': (["upper"], climoMean),
+                 'climoStdd': (["upper"], climoStdd),
+                 'mean'   : (["num"], mean),
+                 'stddev' : (["num"], std)}, 
+    coords =   {"num"  : np.arange(1, numOfEOFS + 1, 1),
+                "upper": dataset.upper.values})
 
-# ds.to_netcdf(r"C:\Users\deela\Downloads\SHEARS_EOF_u.nc")
+ds.to_netcdf(r"C:\Users\deela\Downloads\SHEARS_EOF_u.nc")
 
 # name = 'AL25'
 # y = '2005'
