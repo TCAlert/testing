@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from helper import dayOfYear
 
 climoYears = [1980, 2023]
-basin = 'EP'
+basin = 'AL'
 day = 0
 if basin == 'EP':
     link = 'https://www.aoml.noaa.gov/hrd/hurdat/hurdat2-nepac.html'

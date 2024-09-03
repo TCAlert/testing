@@ -7,7 +7,7 @@ import datetime
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
-climoYears = [1951, 2021]
+climoYears = [1995, 2023]
 basin = 'AL'
 day = 0
 if basin == 'EP':
@@ -63,22 +63,23 @@ def yearData(data, year):
 
     return dates, daily, accum
 
-# Retrieves best track data for 2022 and then similarly formats and plots it
+# Retrieves best track data for 2024 and then similarly formats and plots it
 def plotbdeck(data, ax):
     for x in range(len(data)):
         data[x][1] = np.datetime64(f'{data[x][1][0:4]}-{data[x][1][4:6]}-{data[x][1][6:8]}')
         data[x][3] = ACE(int(data[x][-2]), data[x][4].strip(), data[x][2].strip())
 
-    dates, daily, accum = yearData(data, 2022)
-    dates = np.arange(f'2022-01-01', f'2023-01-01', dtype = 'datetime64[D]')
+    dates, daily, accum = yearData(data, 2024)
+    accum = daily
+    dates = np.arange(f'2024-01-01', f'2025-01-01', dtype = 'datetime64[D]')
 
     today = datetime.datetime.utcnow()
     today = int(today.strftime('%j'))
 
-    ax.plot(dates[:today], accum[:today], color = 'blue', zorder = 52, linewidth = 2, label = '2022')
+    ax.plot(dates[:today], accum[:today], color = 'blue', zorder = 52, linewidth = 2, label = '2024')
     ax.scatter(dates[today - 1], accum[today - 1], color = 'blue', s = 50, zorder = 53)
 
-    return accum, dates, today
+    return daily, dates, today
 
 # Retrieve needed climatological data, formats, and plots it
 def createClimoData(climo, basin, ax):
@@ -91,8 +92,11 @@ def createClimoData(climo, basin, ax):
             data[x][3] = ACE(int(data[x][-2]), data[x][4].strip(), data[x][2].strip())
 
         dates, daily, accum = yearData(data, year)
-        years.append(accum)
-    dates = np.arange(f'2022-01-01', f'2023-01-01', dtype = 'datetime64[D]')
+        years.append(daily)
+    dates = np.arange(f'2024-01-01', f'2025-01-01', dtype = 'datetime64[D]')
+    if len(dates) == 366:
+        print(dates[59])
+        dates = np.delete(dates, 59)
 
     years = pd.DataFrame(years, index = range(climo[0], climo[1] + 1), columns = range(1, 366))
     max = []
@@ -102,8 +106,8 @@ def createClimoData(climo, basin, ax):
     for x in range(len(years.columns)):
         max.append(np.nanmax(years[x + 1]))
         min.append(np.nanmin(years[x + 1]))
-        avg.append(np.mean(years[x + 1]))
-        std.append(np.std(years[x + 1]))
+        avg.append(np.nanmean(years[x + 1]))
+        std.append(np.nanstd(years[x + 1]))
 
     ax.plot(dates, max, color = '#545e54', zorder = 50)
     ax.plot(dates, min, color = '#545e54', zorder = 50)
@@ -119,7 +123,7 @@ def createClimoData(climo, basin, ax):
 
     ax.plot(dates, avg, color = 'black', zorder = 51, label = 'Average')
 
-    return years, avg    
+    return years, avg, ax    
 
 fig = plt.figure(figsize=(10, 6))
 
@@ -131,28 +135,31 @@ axes = [fig.add_subplot(gs[0:64, 0:54]),
 tx = axes[1]
 ax = axes[0]
 
-ax.set_ylim([0, 320])
-ax.set_xlim([np.datetime64('2022-05-01'), np.datetime64('2022-12-31')])
+ax.set_ylim([0, 20])
+ax.set_xlim([np.datetime64('2024-05-01'), np.datetime64('2024-12-31')])
 ax.set_xticklabels(['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
 ax.grid()
 
-hdata, avg = createClimoData(climoYears, basin, ax)
+hdata, avg, ax = createClimoData(climoYears, basin, ax)
 bdeck, dates, today = plotbdeck(getStorms(basin), ax)
+for x in range(len(avg)):
+    print(x + 1, avg[x])
 
-hdata.loc['2022'] = bdeck
+hdata.loc[2024] = bdeck
 hace = np.array((hdata.sort_values(today))[today])
 hyear = np.array((hdata.sort_values(today)).index)
-place = int(np.where(hyear == '2022')[0])
+place = int(np.where(hyear == 2024)[0])
 
-cols = ['#', 'Year', 'ACE\nTo Date', 'Total\nACE']
+cols = ['#', 'Year', 'Daily\nACE', 'Total\nACE']
 data = []
 for x in range(-5, 6):
-    if (len(hyear) - place + x) > 72 or (len(hyear) - place + x) < 1:
-        data.append('N/A', 'N/A', 'N/A', 'N/A')
+    if (len(hyear) - place + x) > (climoYears[1] - climoYears[0] + 2) or (len(hyear) - place + x) < 1:
+        data.append(['N/A', 'N/A', 'N/A', 'N/A'])
     else:
         data.append([f'{len(hyear) - place + x}', f'{hyear[place + x]}', f'{round(hace[place - x], 2):.2f}', f'{round(np.array((hdata.sort_values(today)).iloc[:, -1])[place + x], 2):.2f}'])
 
 test = pd.DataFrame(data, columns = cols)
+print(test)
 table = tx.table(cellText = test.values, colLabels = test.columns, colColours = ['salmon', "#FFFFFF", "#FFFFFF", "#FFFFFF"], colWidths = [0.42, 0.8, 0.8, 0.8], cellLoc = 'center', loc = 'center')
 tx.set_xticks([])
 tx.set_yticks([])
@@ -165,19 +172,19 @@ for x in range(len(test.columns)):
     table[6, x].set_facecolor('#c5e6ed')
 
 place = len(hyear) - place
-ax.text(dates[today] - 25, bdeck[today] + 15, 
+ax.text(dates[today] - 25, bdeck[today] + 10, 
          bold('ACE:') + " " + str(round(bdeck[today], 2)) + "\n" + bold('Avg:') + " " + str(round(avg[today + 1], 2)) + "\n" + bold('Rank:') + " " + str(int(place)) + "/" + str(len(hyear)),
          zorder = 54, color= '#3d3d99', fontsize = 11, 
          path_effects= [PathEffects.withStroke(linewidth=0.5, foreground="w")],
          bbox = dict(facecolor = 'white', alpha=0.75))
 
-ax.set_title(f"HURDAT2 Cumulative ACE Plot (Climatology: {climoYears[0]}-{climoYears[1]})\nDate: {datetime.datetime.utcnow().date()}" , fontweight='bold', fontsize=10, loc='left')
+ax.set_title(f"HURDAT2 Daily ACE Plot (Climatology: {climoYears[0]}-{climoYears[1]})\nDate: {datetime.datetime.utcnow().date()}" , fontweight='bold', fontsize=10, loc='left')
 if basin == 'EP':
     ax.set_title(f'East Pacific\nDeelan Jariwala', fontsize=10, loc='right')
 else:
     ax.set_title(f'North Atlantic\nDeelan Jariwala', fontsize=10, loc='right')
 
 ax.legend(loc = 'upper left')
-plt.savefig(r"C:\Users\deela\Downloads\acecum.png", bbox_inches='tight', dpi = 222)
+plt.savefig(r"C:\Users\deela\Downloads\acedaily.png", bbox_inches='tight', dpi = 222)
 plt.show()
 plt.close()

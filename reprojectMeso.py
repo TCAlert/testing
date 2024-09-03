@@ -64,7 +64,7 @@ def calculate_degrees(dataset): # Adapted from https://www.star.nesdis.noaa.gov/
 
 def reproject(dataset, lats, lons, pos):   
     size = 7.5         
-    IR = dataset['CMI_C02'].data - dataset['CMI_C04'].data
+    IR = dataset['CMI_C13'].data - 273.15#dataset['CMI_C04'].data
                         
     # Extents and interpolation for IR
     minimglat = pos[0] - size
@@ -89,7 +89,7 @@ def reproject(dataset, lats, lons, pos):
 def stormir(lons, lats, data, pos, time, cmap = 'irg'):
     try:
         lat, lon = pos
-        extent = [lon - 7.5, lon + 7.5, lat - 7.5, lat + 7.5]
+        extent = [lon - 2.5, lon + 2.5, lat - 2.5, lat + 2.5]
         figSize = (18, 9)
     except:
         extent, figSize = REGIONS[pos.upper()]
@@ -106,10 +106,16 @@ def stormir(lons, lats, data, pos, time, cmap = 'irg'):
         rand = random.randrange(0, len(cmaps.irtables.keys()), 1)
         cmap = list(cmaps.irtables.keys())[rand]
         
-    cmap, vmax, vmin = cmaps.irtables[cmap.lower()]
+    ds = xr.Dataset({'data'    : (["lons", "lats"], data)}, 
+        coords =   {"lons"  : lons,
+                    "lats": lats})
 
+    ds.to_netcdf(r"C:\Users\deela\Downloads\dm_test_data.nc")
+
+    cmap, vmax, vmin = cmaps.irtables[cmap.lower()]
+    plt.pcolormesh(lons, lats, data, vmin = vmin, vmax = vmax, cmap = cmap)
     #plt.pcolormesh(lons, lats, data, vmin = 0.1, vmax = 1.5, cmap = 'Greys_r')
-    plt.pcolormesh(lons, lats, data, vmin = -1, vmax = 1, cmap = 'RdBu_r')
+    #plt.pcolormesh(lons, lats, data, vmin = -1, vmax = 1, cmap = 'RdBu_r')
     plt.colorbar(orientation = 'vertical', aspect = 50, pad = .02)
     plt.title(f'GOES-16 Channel 13 Brightness Temperature\nSatellite Image: {time}' , fontweight='bold', fontsize=10, loc='left')
     plt.title(f'2km\nDeelan Jariwala', fontsize=10, loc='right')
@@ -118,13 +124,13 @@ def stormir(lons, lats, data, pos, time, cmap = 'irg'):
     plt.close()
     #data[0].close()
 
-year = 2017
-month = 9
-day = 5
-time = '1415'
+year = 2024
+month = 7
+day = 2
+time = '1131'
 
-dataset = xr.open_dataset(r"C:\Users\deela\Downloads\OR_ABI-L2-MCMIPM1-M3_G16_s20172481415231_e20172481415289_c20172481415358.nc")
+dataset = xr.open_dataset(r"C:\Users\deela\Downloads\OR_ABI-L2-MCMIPM1-M6_G16_s20241841131261_e20241841131325_c20241841131407.nc")
 
 lats, lons = calculate_degrees(dataset)
-lons, lats, data = reproject(dataset, lats, lons, (17, -60))
-stormir(lons, lats, data, (17, -60), f'{str(year)}-{str(month).zfill(2)}-{str(str(day).zfill(2))} at {time}z', 'rammb')
+lons, lats, data = reproject(dataset, lats, lons, (14.98, -67.76))
+stormir(lons, lats, data, (14.98, -67.76), f'{str(year)}-{str(month).zfill(2)}-{str(str(day).zfill(2))} at {time}z', 'rbtop3')

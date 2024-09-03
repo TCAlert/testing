@@ -43,12 +43,15 @@ for x in range(1987, 2024):
     for y in range(1, 13):
         dates.append(np.datetime64(f'{x}-{str(y).zfill(2)}-01T00'))
 
-dataset = xr.open_dataset('https://www.ncei.noaa.gov/thredds/dodsC/cdr/mean_layer_temperature/amsu/rss/avrg/uat4_tb_v04r00_avrg_chtts_s198701_e202402_c20240314.nc')
-dataset = dataset['brightness_temperature'].isel(time = slice(0, 444))
+dates = dates + [np.datetime64(f'2024-{str(y).zfill(2)}-01T00') for y in range(1, 6)]
+
+dataset = xr.open_dataset('https://www.ncei.noaa.gov/thredds/dodsC/cdr/mean_layer_temperature/amsu/rss/avrg/uat4_tb_v04r00_avrg_chtts_s198701_e202405_c20240615.nc')
+print(dataset['brightness_temperature'])
+dataset = dataset['brightness_temperature']
 dataset = dataset.assign_coords(time = dates)
 
-years = [1995, 1996, 1998, 1999, 2003, 2004, 2005, 2010, 2017, 2020]
-month = '09'
+years = [2024]#1995, 1996, 1998, 1999, 2003, 2004, 2005, 2010, 2017, 2020]
+month = '05'
 
 allData = []
 for year in years:
@@ -62,12 +65,12 @@ allData = sum(allData) / len(allData)
 
 ax = map(20, 9)
 #ax.set_extent([-120, 0, 0, 60])
-c = plt.contourf(dataset.longitude, dataset.latitude, allData, cmap = cmap.tempAnoms(), levels = np.arange(-1, 1.01, .01), extend = 'both', transform=ccrs.PlateCarree(central_longitude=0))
+c = plt.contourf(dataset.longitude, dataset.latitude, allData, cmap = cmap.tempAnoms(), levels = np.arange(-2, 2.01, .01), extend = 'both', transform=ccrs.PlateCarree(central_longitude=0))
 ax.set_title(f'MSU/AMSU Tropopause (TTS) Brightness Temperature Anomalies\nClimatology: 1987-2023', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'{numToMonth(month)} {years}', fontsize=9, loc='center') 
 ax.set_title(f'Deelan Jariwala', fontsize=9, loc='right') 
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
-cbar.set_ticks(np.arange(-1, 1.2, .2))
+cbar.set_ticks(np.arange(-2, 2.2, .4))
 plt.savefig(r"C:\Users\deela\Downloads\amsutest.png", dpi = 400, bbox_inches = 'tight')
 plt.show()

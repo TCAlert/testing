@@ -5,7 +5,7 @@ import cmaps as cmap
 import numpy as np 
 import pandas as pd 
 
-def getData(storm, version = 'old'):
+def getData(storm, version = 'original'):
     data = pd.read_csv(r"C:\Users\deela\Downloads\\" + storm + " - " + version + ".csv")
     for x in range(len(data['Date'])):
         data['Date'][x] = pd.to_datetime(f"{str(data['Date'][x])[0:4]}-{str(data['Date'][x])[4:6]}-{str(data['Date'][x])[6:8]}T{str(int(data['Hour'][x] / 100)).zfill(2)}")
@@ -84,8 +84,8 @@ def acePlot(dataset, name, year = None):
     plt.close()
 
 def track(name):
-    data = getData(name, 'new')
-    name, id, time, stat, lat, lon, vmax = 'Delia', 'AL101973', data['Date'], data['type'], data['lat'], data['lon'], data['vmax']
+    data = getData(name, 'original')
+    name, id, time, stat, lat, lon, vmax = 'Gilda', 'AL161973', data['Date'], data['type'], data['lat'], data['lon'], data['vmax']
     year = id[4:8]
     ace = totalACE(vmax, stat, time)
     cl = 180
@@ -131,7 +131,7 @@ def track(name):
     cbar = plt.colorbar(p, orientation = 'vertical', aspect = 50, pad = .02, extend = 'max', ticks = [0, 34, 64, 83, 96, 113, 137])    
     cbar.ax.set_yticklabels(['TD', 'TS', 'C1', 'C2', 'C3', 'C4', 'C5'])
 
-    plt.savefig(r"C:\Users\deela\Downloads\storm.png", dpi = 200, bbox_inches = 'tight')
+    plt.savefig(r"C:\Users\deela\Downloads\gilma_original.png", dpi = 200, bbox_inches = 'tight')
     plt.show()
     plt.close()
-track('Delia')
+track('Gilda')
