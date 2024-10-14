@@ -57,13 +57,13 @@ def getData(dataset, var, levels, case):
         data.append(float(temp.mean().values))    
     return data
 
-dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3k_1997_2019_xy_rel_swath_ships.nc")
-#dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3k_2020_2022_xy_rel_swath_ships.nc")
+#dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc")
+dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc")
 # dataset2 = dataset2.assign_coords(num_cases = (dataset2.num_cases + 713).sortby('num_cases'))
 # dataset = xr.concat([dataset1, dataset2], dim = 'num_cases')
 # print(dataset)
-dataset = dataset.assign_coords(lons=((dataset.lons - 100)).sortby('lons'))
-dataset = dataset.assign_coords(lats=((dataset.lats - 100)).sortby('lats'))
+dataset = dataset.assign_coords(longitude=((dataset.longitude - 100)).sortby('longitude'))
+dataset = dataset.assign_coords(latitude=((dataset.latitude - 100)).sortby('latitude'))
 #print(list(dataset.variables.keys()))
 
 times = []
@@ -75,8 +75,8 @@ for x in range(len(dataset['num_cases'].values)):
     data = dataset.sel(num_cases = x)        
 
     date = np.datetime64(f'{str(data['swath_year'].values)}-{str(data['swath_month'].values).zfill(2)}-{str(data['swath_day'].values).zfill(2)}T{str(data['swath_hour'].values).zfill(2)}:{str(data['swath_min'].values).zfill(2)}')
-    tilt = np.nanmax(data['tc_tilt_magnitude'].sel(level = [5, 5.5, 6.0, 6.5]).values)
-    vmax = data['vmax_ships'].sel(num_ships_times = 0).values
+    tilt = np.nanmax(data['tc_tilt_magnitude'].sel(height = [5, 5.5, 6.0, 6.5]).values)
+    vmax = data['vmax_ships'].sel(ships_lag_times = 0).values
     name = f'{str(data['storm_name'].values)}_{str(data['swath_year'].values)}'
     case = data['num_cases'].values
     # if name == 'IAN_2022':
@@ -121,7 +121,7 @@ for times in iTimes:
             while y < len(times):
                 delta = np.timedelta64(times[y] - times[x], 'h')
                 tChange = round(iTilts[counter][y] - iTilts[counter][x], 2)
-                if tChange <= -5 and delta >= 6 and delta <= 18 and iTilts[counter][x] > 10 and iWinds[counter][x] < 75:
+                if tChange >= 5 and delta >= 6 and delta <= 18 and iTilts[counter][x] > 10:# and iWinds[counter][x] < 75:
                     data = [0, 0]#getData(dataset, ['swath_reflectivity', 'swath_vertical_velocity'], [3, [5, 5.5, 6, 6.5, 7, 7.5, 8]], iCases[counter][x])
 
                     print(f'{str(iCases[counter][x])[:-2]:5s}{str(iCases[counter][y])[:-2]:5s}{str(iNames[counter][x].split('_')[0]):15s}{str(times[x]):20s}{str(times[y]):20s}{str(delta):10s}{str(iTilts[counter][x]):15s}{str(iTilts[counter][y]):15s}{str(tChange):15s}{str(iWinds[counter][y]):10s}{str(round(data[0], 1)):15s}{str(round(data[1], 1)):15s}')

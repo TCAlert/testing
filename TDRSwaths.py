@@ -42,7 +42,7 @@ def spmap(ax, interval, labelsize):
 
     return ax 
 
-dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3k_1997_2019_xy_rel_swath_ships.nc")
+dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc")
 #dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3k_2020_2022_xy_rel_swath_ships.nc")
 
 print(list(dataset.variables.keys()))
@@ -108,7 +108,7 @@ def panelPlot(dataset, caseNum):
     axes[4].text(0.5, 0.95, 'Relative Vorticity (1/s)', fontweight = 'bold', fontsize = 8, horizontalalignment='center', verticalalignment='center', transform = axes[4].transAxes)
     
     plt.savefig(r"C:\Users\deela\Downloads\TDR_Swaths\\" + date + ".png", dpi = 400, bbox_inches = 'tight')
-    #plt.show()
+    plt.show()
 name = 'Michael'
 year = 2018
 height = 3

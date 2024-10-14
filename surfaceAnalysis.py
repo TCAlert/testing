@@ -11,17 +11,37 @@ import matplotlib.patheffects as pe
 import psl 
 import hurdatParser 
 import warnings
+import cdsapi as cds
+from scipy.ndimage import gaussian_filter
 warnings.simplefilter(action='ignore', category=FutureWarning)
+c = cds.Client()
+
+def retrieve(type, level, date, lat, lon): 
+    c.retrieve(
+        'reanalysis-era5-pressure-levels',
+        {
+            'product_type'  : 'reanalysis',
+            'variable'      : type,
+            'pressure_level': level,
+            'year'          : f'{date[0]}',
+            'month'         : f'{date[1]}',
+            'day'           : f'{date[2]}',
+            'time'          : f'{date[3]}:00',
+            'data_format'        : 'netcdf',                 # Supported format: grib and netcdf. Default: grib
+            'area'          : [lat + 9, lon - 11, lat - 9, lon + 11], # North, West, South, East.          Default: global
+        },
+        r"C:\Users\deela\Downloads\era5.nc")                          # Output file. Adapt as you wish.
+
 
 def Gradient2D(data):
     # Define gradient vector as <fx, fy>
     # Compute the derivative of the dataset, A, in x and y directions, accounting for dimensional changes due to centered differencing
-    dAx = data.diff('lon')[1:, :]
-    dAy = data.diff('lat')[:, 1:]
+    dAx = data.diff('longitude')[1:, :]
+    dAy = data.diff('latitude')[:, 1:]
 
     # Compute the derivative of both the x and y coordinates
-    dx = data['lon'].diff('lon') * np.cos(data['lat'] * (np.pi / 180)) 
-    dy = data['lat'].diff('lat')
+    dx = data['longitude'].diff('longitude') * np.cos(data['latitude'] * (np.pi / 180)) 
+    dy = data['latitude'].diff('latitude')
 
     # Return dA/dx and dA/dy, where A is the original dataset
     return dAx / dx, dAy / dy
@@ -57,11 +77,11 @@ def stationPlot(ax, lat, lon, u, v, slp = None, temp = None, dews = None):
         except:
             pass
 
-def plot(data, year, month, day, hour, name = None, t = 'wind'):
+def plot(data, year, month, day, hour, level = '1000', name = None, t = 'wind'):
     stormData = hurdatParser.retrieveStorm(hurdatParser.database(), [name, str(year)])['Storm Data']
     stormData = stormData[(stormData['Time'] == np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hour).zfill(2)}'))]
     lat, lon = stormData['Latitude'].values[0], stormData['Longitude'].values[0]
-    print(lat, lon)
+    # lat, lon = 28.5, -94
 
     data = data[(data['YR'] == year) & (data['MO'] == month) & (data['DY'] == day) & (data['HR'] == hour) & (data['LAT'] > lat - 6) & (data['LAT'] < lat + 6) & (data['LON (W)'] > lon - 7.5) & (data['LON (W)'] < lon + 7.5)]
     windDir = data['D']
@@ -81,51 +101,83 @@ def plot(data, year, month, day, hour, name = None, t = 'wind'):
     stationPlot(ax, obsLats, obsLons, u, v, seaLevP, airTemp, dewTemp)    
     ax.text(lon, lat, 'L', size = 30, color = '#bf3030', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center', transform = ccrs.PlateCarree(central_longitude = 0))
     
-    if t.lower() == 'wind':
-        level = 'Surface'
-        uwnd, vwnd = psl.getHourlyData(year, month, day, hour, 'uwnd', level), psl.getHourlyData(year, month, day, hour, 'vwnd', level)#, psl.getHourlyData(year, month, day, hour, 'slp', 'surface') / 100
+    if t.lower() == 'wind':        
+        retrieve(['u_component_of_wind', 'v_component_of_wind'], level, [year, str(month).zfill(2), str(day).zfill(2), str(hour).zfill(2)], lat, lon)
+        data = xr.open_dataset(r"C:\Users\deela\Downloads\era5.nc")
+        uwnd = (data['u']).squeeze()
+        vwnd = (data['v']).squeeze()
+
         mag = (((uwnd.squeeze()).values)**2 + ((vwnd.squeeze()).values)**2)**0.5 * 1.94384
-        c = ax.contourf(uwnd.lon, vwnd.lat, mag, levels = np.arange(0, 161, 1), cmap = cmap.wind2())
-        ax.streamplot(uwnd.lon - 180, vwnd.lat, uwnd.values, vwnd.values, linewidth = 1, density = 1, color = '#404040', transform = ccrs.PlateCarree(central_longitude=180))
+        c = ax.contourf(uwnd.longitude, vwnd.latitude, mag, levels = np.arange(0, 161, 1), cmap = cmap.wind2())
+        ax.streamplot(uwnd.longitude - 180, vwnd.latitude, uwnd.values, vwnd.values, linewidth = 1, density = 1, color = '#404040', transform = ccrs.PlateCarree(central_longitude=180))
         title = f'{level}mb Wind Speed (kt)'
     elif t.lower() == 'temp':
-        level = 'Surface'
-        temp = psl.getHourlyData(year, month, day, hour, 'air', level)
+        retrieve(['temperature'], level, [year, str(month).zfill(2), str(day).zfill(2), str(hour).zfill(2)], lat, lon)
+        data = xr.open_dataset(r"C:\Users\deela\Downloads\era5.nc")
+        temp = (data['t']).squeeze()
         temp = ((temp - 273.15) * (9 / 5)) + 32
-        c = ax.contourf(temp.lon, temp.lat, temp, levels = np.arange(-100, 101, 1), cmap = cmap.temperature())
+        c = ax.contourf(temp.longitude, temp.latitude, temp, levels = np.arange(-100, 130.25, .25), cmap = cmap.temperature())
         title = f'{level}mb Air Temperature (F)'
-    elif t.lower() == 'rhum':
-        level = 1000
-        temp = psl.getHourlyData(year, month, day, hour, 'rhum', level)
-        c = ax.contourf(temp.lon, temp.lat, temp, levels = np.arange(0, 101, 1), cmap = cmap.pwat())
-        title = f'{level}mb Relative Humidity'
     elif t.lower() == 'tempadv':
-        level = 'Surface'
-        temp, uwnd, vwnd = psl.getHourlyData(year, month, day, hour, 'air', level), psl.getHourlyData(year, month, day, hour, 'uwnd', level) * 1.94384, psl.getHourlyData(year, month, day, hour, 'vwnd', level) * 1.94384
+        retrieve(['temperature', 'u_component_of_wind', 'v_component_of_wind'], level, [year, str(month).zfill(2), str(day).zfill(2), str(hour).zfill(2)], lat, lon)
+        data = xr.open_dataset(r"C:\Users\deela\Downloads\era5.nc")
+        temp = (data['t']).squeeze()
+        uwnd = (data['u']).squeeze()
+        vwnd = (data['v']).squeeze()
+        
         temp = temp - 273.15
         dx, dy = Gradient2D(temp)
-        c = ax.contourf(dx.lon, dy.lat, (uwnd[1:, 1:] * dx + vwnd[1:, 1:] * dy) * -1, levels = np.arange(-10, 10.1, .1), cmap = cmap.tempAnoms(), extend = 'both')
-        ax.streamplot(uwnd.lon - 180, vwnd.lat, uwnd.values, vwnd.values, linewidth = 1, density = 1, color = '#404040', transform = ccrs.PlateCarree(central_longitude=180))
-        title = f'{level} Temperature Advection (C)'
+        c = ax.contourf(dx.longitude, dy.latitude, (uwnd[1:, 1:] * dx + vwnd[1:, 1:] * dy) * -1, levels = np.arange(-10, 10.1, .1), cmap = cmap.tempAnoms(), extend = 'both')
+        ax.streamplot(uwnd.longitude - 180, vwnd.latitude, uwnd.values, vwnd.values, linewidth = 1, density = 1, color = '#404040', transform = ccrs.PlateCarree(central_longitude=180))
+        title = f'{level}mb Temperature Advection (C)'
+    elif t.lower() == 'thetae':
+        retrieve(['specific_humidity', 'temperature', 'u_component_of_wind', 'v_component_of_wind'], level, [year, str(month).zfill(2), str(day).zfill(2), str(hour).zfill(2)], lat, lon)
+        data = xr.open_dataset(r"C:\Users\deela\Downloads\era5.nc")
+        uData = (data['u']).squeeze()
+        vData = (data['v']).squeeze()
+        sphum = (data['q']).squeeze()
+        tempe = (data['t']).squeeze()
+        thetae = helper.thetae(tempe, level, 1000, sphum)
+        
+        c = ax.contourf(thetae.longitude, thetae.latitude, thetae, levels = np.arange(280, 341, 1), cmap = 'terrain_r', extend = 'both')
+        ax.streamplot(uData.longitude, vData.latitude, uData.values, vData.values, linewidth = 1, density = 1, color = 'black', transform = ccrs.PlateCarree(central_longitude = 0))
+        title = f'{level}mb Theta-E (K)'
+    elif t.lower() == 'divergence':
+        retrieve(['u_component_of_wind', 'v_component_of_wind'], level, [year, str(month).zfill(2), str(day).zfill(2), str(hour).zfill(2)], lat, lon)
+        data = xr.open_dataset(r"C:\Users\deela\Downloads\era5.nc")
+        uData = (data['u']).squeeze()
+        vData = (data['v']).squeeze()
+
+        fxx, fxy = Gradient2D(uData * 1.94384)
+        fyx, fyy = Gradient2D(vData * 1.94384)
+        mag = fxx + fyy
+        s = 3
+        mag = gaussian_filter(mag, sigma = s)
+
+        c = ax.contourf(fxx.longitude, fyy.latitude, mag, levels = np.arange(-25, 25.25, .25), cmap = cmap.tempAnoms(), extend = 'both')
+        ax.streamplot(uData.longitude, vData.latitude, uData.values, vData.values, linewidth = 1, density = 1, color = 'black', transform = ccrs.PlateCarree(central_longitude = 0))
+        title = f'{level}mb Divergence (Smoothed)'
 
     plt.title(f'ICOADS Ship Observations\nDate: {str(year)}-{str(month).zfill(2)}-{str(day).zfill(2)} at {str(hour).zfill(2)}00z' , fontweight='bold', fontsize=labelsize + 1, loc='left')
     plt.title(f'{str(name).upper()}', fontsize = labelsize + 1, loc = 'center')
-    plt.title(f'Deelan Jariwala\nNCEP/NCAR R1 {title}', fontsize=labelsize + 1, loc='right')  
+    plt.title(f'Deelan Jariwala\nERA5 {title}', fontsize=labelsize + 1, loc='right')  
     cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
     cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
     plt.savefig(r"C:\Users\deela\Downloads\ " + name + title + ".png", dpi = 400, bbox_inches = 'tight')
     
-data = pd.read_csv(r"C:\Users\deela\Downloads\GILDA ICOADS Set #2 - ICOADS_R3.0_Rqst717076_19731023-19731027.csv")
-#data = pd.read_csv(r"C:\Users\deela\Downloads\GILDA ICOADS Set #1 - ICOADS_R3.0_Rqst717075_19731015-19731022.csv")
+data = pd.read_csv(r"C:\Users\deela\Downloads\AL04 ICOADS - data.csv")
+year, month, day, hour = 1974, 9, 5, 00
+level = 200
 
-year, month, day, hour = 1973, 10, 25, 18
+# plot(data, year, month, day, hour, level, 'UNNAMED', 'wind')
+# print('Wind done')
+# plot(data, year, month, day, hour, level, 'UNNAMED', 'temp')
+# print('Temp done')
+# plot(data, year, month, day, hour, level, 'UNNAMED', 'tempAdv')
+# print('Advection done')
+# plot(data, year, month, day, hour, level, 'UNNAMED', 'thetae')
+# print('Theta-E done')
+# plot(data, year, month, day, hour, level, 'Carmen', 'divergence')
+# print('Divergence done')
 
-#plot(data, year, month, day, hour, 'Gilda', 'wind')
-#print('Wind done')
-plot(data, year, month, day, hour, 'Gilda', 'temp')
-print('Temp done')
-#plot(data, year, month, day, hour, 'Gilda', 'rhum')
-#print('RH done')
-#plot(data, year, month, day, hour, 'Gilda', 'tempAdv')
-#print('Advection done')
 plt.show()

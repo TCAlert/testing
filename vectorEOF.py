@@ -51,12 +51,12 @@ def get_zscores(data):
     return all_zscores
 
 labelsize = 9
-months = [9]#1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+months = [8]#1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 startYear = 1981
-endYear = 2023
+endYear = 2024
 numOfEOFS = 4
-#extent = [0, 30, 320, 380]
-extent = [0, 40, 110, 180] 
+extent = [0, 30, 320, 380]
+#extent = [0, 40, 110, 180] 
 level = 850
 
 for x in range(len(months)):
@@ -64,9 +64,9 @@ for x in range(len(months)):
 fMonths = np.array(months).flatten()
 
 # open variable data
-uData = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis2.derived/pressure/uwnd.mon.mean.nc')
+uData = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/pressure/uwnd.mon.mean.nc')
 print(uData)
-vData = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis2.derived/pressure/vwnd.mon.mean.nc')
+vData = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/pressure/vwnd.mon.mean.nc')
 if extent[3] > 360:
     extent[2] = extent[2] - 360
     extent[3] = extent[3] - 360
@@ -151,11 +151,11 @@ for i in range(numOfEOFS):
     c = axes[1].contourf(uData.lon, uData.lat, (uEOF**2 + vEOF**2)**0.5, levels = np.arange(0, 0.205, 0.005), extend='both', transform=ccrs.PlateCarree(), cmap=cmap.wind2())
     axes[1].streamplot(uData.lon, uData.lat, uEOF, vEOF, linewidth = 1, density = 1, color = 'black', transform = ccrs.PlateCarree(central_longitude = 0))
 
-    plt.title(f'NCEP/NCAR Reanalysis 2 {level}mb Vector EOF{i + 1} (Normalized)\nExplained variance: {round(float(explained_variance[i]) * 100, 1)}%' , fontweight='bold', fontsize=labelsize, loc='left')
-    plt.title(f'September {startYear}-{endYear}', fontsize = labelsize, loc = 'center')
+    plt.title(f'NCEP/NCAR Reanalysis 1 {level}mb Vector EOF{i + 1}\nExplained variance: {round(float(explained_variance[i]) * 100, 1)}%' , fontweight='bold', fontsize=labelsize, loc='left')
+    plt.title(f'August {startYear}-{endYear}', fontsize = labelsize, loc = 'center')
     plt.title(f'Deelan Jariwala', fontsize=labelsize, loc='right')  
     cbar = plt.colorbar(c, orientation = 'horizontal', aspect = 100, pad = .08)
     cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
     #cbar.set_ticks(np.arange(-1, 1.1, 0.1))
-    plt.savefig(r"C:\Users\deela\Downloads\r2EOF" + str(i + 1) + ".png", dpi = 400, bbox_inches = 'tight')
+    #plt.savefig(r"C:\Users\deela\Downloads\r1EOF" + str(i + 1) + ".png", dpi = 400, bbox_inches = 'tight')
     plt.show()

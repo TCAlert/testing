@@ -13,6 +13,8 @@ import matplotlib as mpl
 from ersstTimeseriesGenerator import timeseries 
 from regionalACE import createClimoData
 from correlationPCA import pcaSeries
+import psl
+import helper
 mpl.rcParams['hatch.linewidth'] = 0.5
 mpl.rcParams['font.family'] = 'Courier New'
 
@@ -38,8 +40,10 @@ def map(interval, labelsize):
     # ax.minorticks_on()
     return ax 
 
-dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/pressure/uwnd.mon.mean.nc')
-data = dataset['uwnd'].sel(level = 850).fillna(0)# * np.cos(np.radians(dataset['lat']))
+#dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/pressure/uwnd.mon.mean.nc')
+#data = dataset['uwnd'].sel(level = 850).fillna(0)# * np.cos(np.radians(dataset['lat']))
+dataset = psl.createClimoMonthly([1971, 2023], '8', ['air', 'shum'], ['Pressure', 'Pressure'], False)
+dataset = helper.thetae(dataset[0].sel(level = 850) + 273.15, 850, 1000, dataset[1].sel(level = 850) / 1000)
 #dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
 #data = dataset['sst']
 # dates = []
@@ -51,37 +55,36 @@ data = dataset['uwnd'].sel(level = 850).fillna(0)# * np.cos(np.radians(dataset['
 # data = dataset['brightness_temperature'].isel(time = slice(0, 444))
 # data = data.rename({'latitude' : 'lat', 'longitude' : 'lon'})
 # data = data.assign_coords(time = dates)
-data = data.fillna(0) * np.cos(np.radians(data['lat']))
+data = dataset.fillna(0) * np.cos(np.radians(dataset['lat']))
 #dataset = xr.open_dataset(r"C:\Users\deela\Downloads\R1CI1971-2023.nc")
 #data = dataset['__xarray_dataarray_variable__'].fillna(0) * np.cos(np.radians(dataset['lat']))
 print(data)
 #csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]].iloc[16:]
 
-# startYear = 1971
-# endYear = 2023
-# indexMonth = '9'
-# dataMonth = '7'
-# day = 365
-# day2 = 233
-# index = f'ACE in Box (to day {day})'
-# lats = [40, 60]
-# lons = [-70, -35]
-# boxXCoords = [lons[0], lons[1], lons[1], lons[0], lons[0]]
-# boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
-# csv = createClimoData([startYear, endYear], 'AL', lats, lons)
-# csv = csv[day]# - csv[day2]
-# print(csv)
-
 startYear = 1971
-endYear = 2020
-indexMonth = '7'
-dataMonth = '7'
-index = 'SSTAs in Box'
-lats = [40, 60]
-lons = [360-70, 360-35]
+endYear = 2023
+indexMonth = '8'
+dataMonth = '8'
+day = 365
+day2 = 233
+index = f'ACE in Box (to day {day})'
+lats = [0, 70]
+lons = [-120, -1]
 boxXCoords = [lons[0], lons[1], lons[1], lons[0], lons[0]]
 boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
-csv = timeseries(indexMonth, range(startYear, endYear + 1), slice(lats[1], lats[0]), slice(lons[0], lons[1]))[numToMonth(indexMonth)[0:3]]
+csv = createClimoData([startYear, endYear], 'AL', lats, lons)
+csv = csv[day]# - csv[day2]
+
+# startYear = 1971
+# endYear = 2020
+# indexMonth = '7'
+# dataMonth = '7'
+# index = 'SSTAs in Box'
+# lats = [40, 60]
+# lons = [360-70, 360-35]
+# boxXCoords = [lons[0], lons[1], lons[1], lons[0], lons[0]]
+# boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
+# csv = timeseries(indexMonth, range(startYear, endYear + 1), slice(lats[1], lats[0]), slice(lons[0], lons[1]))[numToMonth(indexMonth)[0:3]]
 
 # startYear = 1971
 # endYear = 2023
@@ -96,6 +99,7 @@ csv = timeseries(indexMonth, range(startYear, endYear + 1), slice(lats[1], lats[
 # csv = pcaSeries(startYear, endYear, lats, lons, indexMonth, eofNum)[numToMonth(indexMonth)[0:3]]
 
 fMonths = np.array([np.datetime64(f'{y}-{str(dataMonth).zfill(2)}-01') for y in range(startYear, endYear + 1)])
+print(fMonths)
 data = data.sel(time = fMonths)
 print(data)
 ogShape = data.shape

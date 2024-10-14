@@ -18,14 +18,21 @@ pd.options.mode.chained_assignment = None
 rcParams['font.family'] = 'Courier New'
 
 basin = 'AL'
-yearsUsed = [1971, 2024]
 
 if basin == 'EP':
     link = 'https://www.aoml.noaa.gov/hrd/hurdat/hurdat2-nepac.html'
 else:
     link = 'https://www.aoml.noaa.gov/hrd/hurdat/hurdat2.html'
 
-link = urlopen(link)
+try:
+    link = urlopen(link)
+except:
+    if basin == 'EP':
+        link = 'https://www.nhc.noaa.gov/data/hurdat/hurdat2-nepac-1949-2023-042624.txt'
+    else:
+        link = 'https://www.nhc.noaa.gov/data/hurdat/hurdat2-1851-2023-051124.txt'
+
+    link = urlopen(link)
 soup = BeautifulSoup(link, 'html.parser')
 lines = soup.get_text().split('\n')
 

@@ -579,3 +579,18 @@ def pressure():
     (100/100, "#000000")])
     
     return newcmp
+
+
+def mw():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/110, "#1a1a1a"),
+    (10/110, "#405580"),
+    (30/110, "#FFFFFF"),
+
+    (40/110, "#53994d"),
+    (60/110, "#e6e62e"),
+    (75/110, "#ff1919"),
+    (95/110, "#404040"),
+    (110/110, "#000000")])
+    
+    return newcmp

@@ -11,6 +11,21 @@ from matplotlib import rcParams
 warnings.filterwarnings("ignore")
 rcParams['font.family'] = 'Courier New'
 
+def labels(ax, flag = False):
+    ax.set_theta_zero_location("N")
+    ax.set_theta_direction(-1)
+    if flag == False:
+        ax.text(1 * np.pi / 4, 2, 'Downshear\nRight', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
+        ax.text(3 * np.pi / 4, 2, 'Upshear\nRight', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
+        ax.text(5 * np.pi / 4, 2, 'Upshear\nLeft', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
+        ax.text(7 * np.pi / 4, 2, 'Downshear\nLeft', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
+        
+        ax.annotate('', xy=(0, 0.5), xytext=(np.pi, 0.5),
+                arrowprops=dict(facecolor='black', edgecolor='black', width=1, headwidth=8, headlength=10, path_effects=[pe.withStroke(linewidth=2.25, foreground="white")]))
+
+    ax.set_yticklabels(['', '', 'RMW', '', '2xRMW', '', '3xRMW', '', ''], fontfamily = 'Courier New', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")])
+    ax.set_xticklabels(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'], fontfamily = 'Courier New', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")])
+
 def rePoPolar(dataset, offset = 0):
     x = dataset.lons.values
     y = dataset.lats.values
@@ -147,10 +162,19 @@ dec2, wind2 = makeComposites(dataset2, d2)
 dec = dec1 + dec2
 valid_nums = np.count_nonzero(~np.isnan(dec), axis = 0)
 
+quad = 'OuterRadii'
 cfadComposite = []
 for x in range(len(dec)):
     temp = dec[x]
     temp.values = np.where(valid_nums > (np.nanmax(valid_nums) / 2), temp.values, np.nan)
+    #temp = temp.sortby('theta')
+    temp = temp.sel(r = slice(1, 4))
+    # print(temp, np.nanmin(temp.theta.values), np.nanmax(temp.theta.values))
+
+    # fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize = (12, 9))
+    # c = plt.pcolormesh(temp.theta, temp.r, temp.sel(level = 3), cmap = cmap.tempAnoms())
+    # labels(ax)
+    # plt.show()
 
     grid1, grid2, data = CFAD(temp)
     cfadComposite.append(data)
@@ -163,9 +187,9 @@ fig, ax = plt.subplots(figsize = (8, 12))
 c = plt.pcolormesh(grid1, grid2, data, cmap = cmap.tempAnoms(), vmin = -0.10, vmax = 0.10)
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
-ax.set_title(f'TC-RADAR: Normalized Tilt Increase - Decrease2 CFAD\nVertical Velocity (>50% Valid Points)', fontweight='bold', fontsize=9, loc='left')
+ax.set_title(f'TC-RADAR: Normalized Tilt Increase - Decrease2 {quad} CFAD\nVertical Velocity (>50% Valid Points)', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'Deelan Jariwala', fontsize=9, loc='right') 
-plt.savefig(r"C:\Users\deela\Downloads\tdrcfad_vvel_" + t + ".png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\tdrcfaddiff_vvel_" + t + quad + ".png", dpi = 400, bbox_inches = 'tight')
 plt.show()
 
 # fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize = (12, 9))

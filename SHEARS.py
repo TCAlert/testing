@@ -52,29 +52,29 @@ def allShear(u, v):
 # Function that retrieves Himawari-9 tiles of the requested band and melds them together
 # Data is returned at full resolution, regardless of band
 bucket = 'noaa-nesdis-tcprimed-pds'
-product_name = 'v01r00'
+product_name = 'v01r01'
 def getStormFile(year, basin, storm, case):
     dataset = []
     
-    # s3_client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
-    # paginator = s3_client.get_paginator('list_objects_v2')
-    # prefix = f'{product_name}/final/{year}/{basin.upper()}/{storm}/'
+    s3_client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
+    paginator = s3_client.get_paginator('list_objects_v2')
+    prefix = f'{product_name}/final/{year}/{basin.upper()}/{storm}/'
 
-    # response_iterator = paginator.paginate(
-    #     Bucket = bucket,
-    #     Delimiter='/',
-    #     Prefix = prefix,
-    # )
-    # for page in response_iterator:
-    #     for object in page['Contents']:
-    #         if 'era5' in object['Key']:
-    #             file = object['Key']
-    #             print(file)
+    response_iterator = paginator.paginate(
+        Bucket = bucket,
+        Delimiter='/',
+        Prefix = prefix,
+    )
+    for page in response_iterator:
+        for object in page['Contents']:
+            if 'env' in object['Key']:
+                file = object['Key']
+                print(file)
           
-    # s3_client.download_file(bucket, file, r"C:\Users\deela\Downloads\tcprimed_era5\\" + basin + storm + year + ".nc") 
+    s3_client.download_file(bucket, file, r"D:\\tcprimed_era5v2\\" + basin + storm + year + ".nc") 
 
-    dataset = xr.open_dataset(r"D:\\tcprimed_era5\\" + basin + storm + year + ".nc", group = 'diagnostics')
-    stormdt = xr.open_dataset(r"D:\\tcprimed_era5\\" + basin + storm + year + ".nc", group = 'storm_metadata')
+    dataset = xr.open_dataset(r"D:\\tcprimed_era5v2\\" + basin + storm + year + ".nc", group = 'diagnostics')
+    stormdt = xr.open_dataset(r"D:\\tcprimed_era5v2\\" + basin + storm + year + ".nc", group = 'storm_metadata')
 
     vmax = stormdt['intensity'].values
     dwnd = stormdt['intensity_change'].sel(intensity_change_periods = np.timedelta64(86400000000000)).values
@@ -141,25 +141,25 @@ def getStormFile(year, basin, storm, case):
 
     return ds, case
 
-# basins = ['CP', 'EP', 'WP', 'IO', 'SH', 'AL']
-# case = 0
-# data = []
-# for y in range(1997, 2022):
-#     for basin in basins:
-#         for x in range(1, 70):
-#             try:
-#                 ds, case = getStormFile(f'{y}', f'{basin}', f'{str(x).zfill(2)}', case)
-#                 data.append(ds)
-#                 print(f'{basin}{str(x).zfill(2)}{str(y)}', case)
-#             except Exception as e:
-#                 print(e)
-#                 break
+basins = ['CP', 'EP', 'WP', 'IO', 'SH', 'AL']
+case = 0
+data = []
+for y in range(1987, 2024):
+    for basin in basins:
+        for x in range(1, 70):
+            try:
+                ds, case = getStormFile(f'{y}', f'{basin}', f'{str(x).zfill(2)}', case)
+                data.append(ds)
+                print(f'{basin}{str(x).zfill(2)}{str(y)}', case)
+            except Exception as e:
+                print(e)
+                pass
 
-# ds = xr.concat(data, dim = 'case')
+ds = xr.concat(data, dim = 'case')
 
-# ds.to_netcdf(r"C:\Users\deela\Downloads\SHEARS_1997-2021.nc")
+ds.to_netcdf(r"C:\Users\deela\Downloads\SHEARS_1987-2023.nc")
 
-dataset = xr.open_dataset(r"C:\Users\deela\Downloads\SHEARS_1997-2021.nc")
+dataset = xr.open_dataset(r"C:\Users\deela\Downloads\SHEARS_1987-2023.nc")
 dataset = dataset.where(dataset.system_type.isin(['TD', 'TS', 'HU', 'TY', 'ST', 'TC']), drop=True)
 dataset = dataset.where(dataset.landfall == False, drop=True)
 print(dataset)

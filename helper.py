@@ -67,7 +67,7 @@ def dirSpdToUV(direction, magnitude):
     return magnitude * np.cos(np.deg2rad(direction)), magnitude * np.sin(np.deg2rad(direction))
 
 def strip(l):
-    l = [x.strip() for x in l]
+    l = [x.strip() for x in l if x]
 
     return l 
 

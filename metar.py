@@ -116,5 +116,5 @@ def windPlot(station):
 
 #presPlot('gvnp')
 #tempPlot('gvnp')
-windPlot('kmia')
+windPlot('mmmd')
 #plt.show()

@@ -110,7 +110,7 @@ def run(satellite, date, time, lat, lon, band, cmp = None, zoom = 2, num = 0):
     cbar.set_label(cmp.upper())
     plt.title(f'{satellite} Channel {ch.zfill(2)} Brightness Temperature\nTime: {time}' , fontweight='bold', fontsize=10, loc='left')
     plt.title(f'{res}\nDeelan Jariwala', fontsize=10, loc='right')
-    plt.savefig(r"C:\Users\deela\Downloads\goesloop\\17july_" + str(counter) + ".png", dpi = 150, bbox_inches = 'tight')
+    plt.savefig(r"C:\Users\deela\Downloads\goesloop\\25sept_" + str(counter) + ".png", dpi = 150, bbox_inches = 'tight')
     #plt.show()
     plt.close()
     dataset.close()
@@ -118,10 +118,10 @@ def run(satellite, date, time, lat, lon, band, cmp = None, zoom = 2, num = 0):
     return filename
 
 counter = 0
-for x in range(1, 7, 1):
+for x in range(3, 5, 1):
     for y in range(0, 24, 1):
         try:
             counter = counter + 1
-            run(12, f"09/{str(x)}/2007", f"{str(y).zfill(2)}00", "0", "0", "4", "irg", 'car', counter)
+            run(8, f"10/{str(x)}/1995", f"{str(y).zfill(2)}00", "0", "0", "3", "wv13", 'gom', counter)
         except:
             pass

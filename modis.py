@@ -60,7 +60,7 @@ def bT(radiance):
 
     return temp
 
-file = Dataset(r"C:\Users\deela\Downloads\\MYD021KM.A2005292.0710.061.2018026123012.hdf")
+file = Dataset(r"C:\Users\deela\Downloads\\MYD021KM.A2024278.0555.061.2024278153130.hdf")
 print(file.variables)
 
 data = file.variables['EV_1KM_Emissive'][:][11].data
@@ -97,10 +97,10 @@ cmp = 'ice'
 
 cmap, vmax, vmin = cmaps.irtables[cmp.lower()]
 
-ax = map(-82.3, 17, 1)
+ax = map(-82.3, 17, None)
 c = plt.pcolormesh(grid[0], grid[1], tempsgrid, vmin = vmin, vmax = vmax, cmap = cmap)
-plt.title(f'{satt} MODIS Band 31 Infrared Imagery\nTime: 10/19/2005 at 0710z' , fontweight='bold', fontsize=labelsize + 1, loc='left')
+plt.title(f'{satt} MODIS Band 31 Infrared Imagery\nTime: 10/04/2024 at 0555z' , fontweight='bold', fontsize=labelsize + 1, loc='left')
 plt.title(f'Deelan Jariwala', fontsize=labelsize + 1, loc='right')  
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
-plt.savefig(r"C:\Users\deela\Downloads\aquamodiswilmairg.png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\aquamodiskirkirg.png", dpi = 400, bbox_inches = 'tight')
 plt.show()

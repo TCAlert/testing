@@ -63,7 +63,7 @@ def calculate_degrees(dataset): # Adapted from https://www.star.nesdis.noaa.gov/
     return abi_lat, abi_lon
 
 def reproject(dataset, lats, lons, pos):   
-    size = 7.5         
+   size = 7.5         
     IR = dataset['CMI_C13'].data - 273.15#dataset['CMI_C04'].data
                         
     # Extents and interpolation for IR

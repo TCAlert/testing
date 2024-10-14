@@ -11,7 +11,7 @@ from helper import USREGIONS
 # Create a map using Cartopy
 def map(interval, labelsize):
     fig = plt.figure(figsize=(18, 9))
-
+                            
     # Add the map and set the extent
     ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=0))
     ax.set_frame_on(False)

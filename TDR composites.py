@@ -27,8 +27,8 @@ def labels(ax, flag = False):
     ax.set_xticklabels(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'], fontfamily = 'Courier New', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")])
 
 def rePoPolar(dataset, offset = 0):
-    x = dataset.lons.values
-    y = dataset.lats.values
+    x = dataset.longitude.values
+    y = dataset.latitude.values
     x, y = np.meshgrid(x, y)
 
     r = np.sqrt(x**2 + y**2)
@@ -61,14 +61,14 @@ def rePoPolar(dataset, offset = 0):
     return polar
 
 def getData(dataset, var, levels, case):
-    vmax = dataset['vmax_ships'].sel(num_cases = case, num_ships_times = 0).values
-    rmw = dataset['tc_rmw'].sel(num_cases = case, level = 3).values / 2
-    shd = 360 - dataset['sddc_ships'].sel(num_cases = case, num_ships_times = 0).values
+    vmax = dataset['vmax_ships'].sel(num_cases = case, ships_lag_times = 0).values
+    rmw = dataset['tc_rmw'].sel(num_cases = case, height = 3).values / 2
+    shd = 360 - dataset['sddc_ships'].sel(num_cases = case, ships_lag_times = 0).values
     print('Shear direction', shd)
     print('Radius of Max Wind:', rmw)
     data = []
     for x in range(len(var)):
-        temp = dataset[var[x]].sel(num_cases = case, level = levels[x])
+        temp = dataset[var[x]].sel(num_cases = case, height = levels[x])
     
         try:
             temp = temp.max(axis = 2)
@@ -94,14 +94,14 @@ def getData(dataset, var, levels, case):
     return data, vmax
 
 def makeComposites(dataset, list):
-    dataset = dataset.assign_coords(lons=((dataset.lons - 100)).sortby('lons'))
-    dataset = dataset.assign_coords(lats=((dataset.lats - 100)).sortby('lats'))
+    dataset = dataset.assign_coords(longitude=((dataset.longitude - 100)).sortby('longitude'))
+    dataset = dataset.assign_coords(latitue=((dataset.latitude - 100)).sortby('latitude'))
 
     refl = []
     vvel = []
     winds = []
     for x in range(len(list)):
-        dat, vmax = getData(dataset, ['swath_reflectivity', 'swath_vertical_velocity'], [3, [5, 5.5, 6, 6.5, 7, 7.5, 8]], list[x])
+        dat, vmax = getData(dataset, ['swath_reflectivity', 'swath_upward_air_velocity'], [3, [5, 5.5, 6, 6.5, 7, 7.5, 8]], list[x])
 
         refl.append(dat[0])
         vvel.append(dat[1])
@@ -111,14 +111,16 @@ def makeComposites(dataset, list):
 
 dataset1 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3k_1997_2019_xy_rel_swath_ships.nc")
 dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3k_2020_2022_xy_rel_swath_ships.nc")
-t = 'Decrease2'
+t = 'Decrease'
 
 if t == 'Decrease2':
+    # Decrease 10km (75kt)
     list1 = [155.0, 167.0, 223.0, 255.0, 282.0, 287.0, 306.0, 311.0, 319.0, 332.0, 347.0, 374.0, 376.0, 407.0, 413.0, 424.0, 427.0, 431.0, 451.0, 510.0, 524.0, 681.0]
     list2 = [10.0, 18.0, 29.0, 35.0, 55.0, 61.0, 164.0, 166.0, 186.0, 187.0, 197.0, 205.0, 229.0, 232.0, 245.0, 249.0, 255.0, 347.0, 352.0, 358.0, 420.0, 426.0, 464.0, 467.0, 468.0, 471.0] 
-    # Decrease 10km (all storms)
-    # list1 = [155.0, 167.0, 176.0, 223.0, 255.0, 282.0, 287.0, 306.0, 311.0, 319.0, 332.0, 347.0, 374.0, 376.0, 407.0, 413.0, 424.0, 427.0, 431.0, 438.0, 451.0, 465.0, 510.0, 524.0, 533.0, 536.0, 566.0, 570.0, 609.0, 655.0, 681.0]
-    # list2 = [10.0, 18.0, 24.0, 29.0, 35.0, 55.0, 61.0, 67.0, 87.0, 101.0, 108.0, 139.0, 148.0, 164.0, 166.0, 186.0, 187.0, 197.0, 205.0, 229.0, 232.0, 245.0, 249.0, 255.0, 347.0, 352.0, 358.0, 364.0, 374.0, 404.0, 420.0, 426.0, 464.0, 467.0, 468.0, 471.0]
+elif t == 'Decrease':
+    # Decrease 10km (all storms) 
+    list1 = [155.0, 167.0, 176.0, 223.0, 255.0, 282.0, 287.0, 306.0, 311.0, 319.0, 332.0, 347.0, 374.0, 376.0, 407.0, 413.0, 424.0, 427.0, 431.0, 438.0, 451.0, 465.0, 510.0, 524.0, 533.0, 536.0, 566.0, 570.0, 609.0, 655.0, 681.0]
+    list2 = [10.0, 18.0, 24.0, 29.0, 35.0, 55.0, 61.0, 67.0, 87.0, 101.0, 108.0, 139.0, 148.0, 164.0, 166.0, 186.0, 187.0, 197.0, 205.0, 229.0, 232.0, 245.0, 249.0, 255.0, 347.0, 352.0, 358.0, 364.0, 374.0, 404.0, 420.0, 426.0, 464.0, 467.0, 468.0, 471.0]
 elif t == 'Increase':
     # Increase 10km (all storms)
     list1 = [99.0, 168.0, 220.0, 284.0, 308.0, 312.0, 313.0, 345.0, 375.0, 402.0, 422.0, 425.0, 545.0, 561.0]

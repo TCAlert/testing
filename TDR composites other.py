@@ -110,9 +110,8 @@ def makeComposites(dataset, list):
     return refl, vvel, winds
 
 dataset1 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3k_1997_2019_xy_rel_swath_ships.nc")
-print(list(dataset1.variables))
 dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3k_2020_2022_xy_rel_swath_ships.nc")
-t = 'Increase'
+t = 'Decrease'
 
 if t == 'Decrease2':
     # Decrease 10km (75kt)

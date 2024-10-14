@@ -4,6 +4,9 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import cmaps as cmap 
 from scipy.ndimage import gaussian_filter
+import cartopy.mpl.ticker as cticker
+import cartopy.feature as cfeature
+import cartopy, cartopy.crs as ccrs
 np.set_printoptions(suppress=True)
 
 class Normalizer:
@@ -19,10 +22,30 @@ class Normalizer:
     def denormalize(self, data):
         return data * self.stdd + self.mean
 
+# Create a map using Cartopy
+def map(interval, labelsize):
+    fig = plt.figure(figsize=(18, 9))
+
+    # Add the map and set the extent
+    ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=180))
+    ax.set_frame_on(False)
+    
+    # Add state boundaries to plot
+    ax.add_feature(cfeature.COASTLINE.with_scale('50m'), linewidth = 0.5)
+    ax.add_feature(cfeature.BORDERS.with_scale('50m'), linewidth = 0.5)
+    ax.add_feature(cfeature.STATES.with_scale('50m'), linewidth = 0.5)
+    ax.set_xticks(np.arange(-180, 181, interval), crs=ccrs.PlateCarree())
+    ax.set_yticks(np.arange(-90, 91, interval), crs=ccrs.PlateCarree())
+    ax.yaxis.set_major_formatter(cticker.LatitudeFormatter())
+    ax.xaxis.set_major_formatter(cticker.LongitudeFormatter())
+    ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
+    ax.grid(linestyle = '--', alpha = 0.5, color = 'black', linewidth = 0.5, zorder = 9)
+
+    return ax 
+
 def bin(xPC, yPC, values):
-    print(values)
-    xBins = np.arange(-10, 10.25, 0.25)
-    yBins = np.arange(-10, 10.25, 0.25)
+    xBins = np.arange(45, 346, 1)
+    yBins = np.arange(-10, 81, 1)
     grid = np.meshgrid(xBins, yBins)
 
     data = []
@@ -40,9 +63,9 @@ def bin(xPC, yPC, values):
             nobs.append(len(subList))
     data = np.array(data)
     nobs = np.array(nobs)
-    print(np.nanmax(data), np.nanmin(data))
+    print(np.nanmax(data), np.nanmin(data), grid[0].shape)
 
-    return grid, np.array(data).reshape(grid[0].shape), np.array(nobs).reshape(grid[0].shape)
+    return [grid[0].T, grid[1].T], np.array(data.T).reshape(grid[0].T.shape), np.array(nobs.T).reshape(grid[0].T.shape)
 
 labelsize = 9
 name = 'All TCs'
@@ -57,35 +80,28 @@ dataset = dataset.where(dataset.rlhum.sel(upper = slice(300, 700)).mean('upper')
 dataset = dataset.where(dataset.lats > 0, drop = True)
 dataset = dataset.where(dataset.sst > 26, drop=True)
 validCases = dataset['case']
+lons = dataset['lons'].values
+lats = dataset['lats'].values
 print(dataset)
+print(np.nanmin(lons), np.nanmax(lons))
 
 data = np.stack([dataset['u_data'], dataset['v_data']], axis = 1)
 anom = np.nan_to_num((data - ds['climoMean'].values) / ds['climoStdd'].values)
 pcseries = np.dot(anom.reshape(24235, 28), EOFs.reshape(28, 28).T)
 
-variable = 'sh_mag'
+num = 3
 
-grid, data, nobs = bin(pcseries[:, 2], pcseries[:, 0], dataset[variable].sel(upper = 200, lower = 500))
-nobs = (nobs / np.nanmax(nobs)) * 1.75
+grid, data, nobs = bin(lons, lats, pcseries[:, num - 1])
+nobs = 10 * (nobs / np.nanmax(nobs))**1.4
 nobs = np.where(nobs > 1, 1, nobs)
 
-fig = plt.figure(figsize=(14, 12))
-ax = plt.axes()
-ax.set_frame_on(False)
-ax.tick_params(axis='both', labelsize=8, left = False, bottom = False)
-ax.grid(linestyle = '--', alpha = 0.5, color = 'black', linewidth = 0.5, zorder = 9)
-ax.set_xlabel(f'PC3 Series', weight = 'bold', size = 9)
-ax.set_ylabel('PC1 Series', weight = 'bold', size = 9)
-ax.axvline(color = 'black')
-ax.axhline(color = 'black')
+ax = map(20, labelsize)
 
-variable = '200-500mb_Shear'
+#c = plt.pcolormesh(grid[0], grid[1], data, cmap = cmap.tempAnoms(), vmin = -5, vmax = 5, alpha = nobs, transform = ccrs.PlateCarree(central_longitude=0))
+c = plt.contourf(grid[0], grid[1], data, cmap = cmap.tempAnoms(), levels = np.arange(-5, 5, 0.05), transform = ccrs.PlateCarree(central_longitude=0))
+cbar = plt.colorbar(c, orientation = 'horizontal', aspect = 100, pad = .08)
 
-s = plt.pcolormesh(grid[1], grid[0], data, cmap = cmap.probs2(), alpha = nobs, vmin = 0, vmax = 15)
-cbar = plt.colorbar(s, orientation = 'vertical', aspect = 50, pad = .02)
-cbar.set_label(variable)
-
-ax.set_title(f'SHEARS TC Hodograph PC1/PC3 Binned 24hr Change in VMax\n{name.upper()}', fontweight='bold', fontsize=labelsize, loc='left')  
+ax.set_title(f'SHEARS TC Hodograph PC{str(num)} Map\n2.5 Degree Bins', fontweight='bold', fontsize=labelsize, loc='left')  
 ax.set_title(f'Deelan Jariwala', fontsize=labelsize, loc='right')  
-plt.savefig(r"C:\Users\deela\Downloads\SHEARSPC13Binned_" +  variable + ".png", dpi = 400, bbox_inches = 'tight')
+#plt.savefig(r"C:\Users\deela\Downloads\SHEARSPC" + str(num) + "map.png", dpi = 400, bbox_inches = 'tight')
 plt.show()
