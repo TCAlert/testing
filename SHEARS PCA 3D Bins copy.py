@@ -4,20 +4,8 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import cmaps as cmap 
 from scipy.ndimage import gaussian_filter
+import csv
 np.set_printoptions(suppress=True)
-
-class Normalizer:
-    def __init__(self, data):
-        self.data = data
-        self.mean = data.mean(['case'])
-        self.stdd = data.std(['case'])
-
-    def normalize(self):
-        all_zscores = ((self.data - self.mean) / self.stdd)
-        return all_zscores.values
-
-    def denormalize(self, data):
-        return data * self.stdd + self.mean
 
 def bin(xPC, yPC, zPC, values, cases):
     xBins = np.arange(-40, 45, 5)
@@ -25,8 +13,6 @@ def bin(xPC, yPC, zPC, values, cases):
     zBins = np.arange(-40, 45, 5)
 
     data = []
-    bCase = []
-    nobs = []
     for x in range(len(xBins)):
         for y in range(len(yBins)):
             for z in range(len(zBins)):
@@ -36,17 +22,12 @@ def bin(xPC, yPC, zPC, values, cases):
                     try:
                         if (xPC[a] > xBins[x]) and (xPC[a] < xBins[x + 1]) and (yPC[a] > yBins[y]) and (yPC[a] < yBins[y + 1]) and (zPC[a] > zBins[z]) and (zPC[a] < zBins[z + 1]):
                             subList.append(values[a])
-                            subList2.append(cases[a].values)
+                            subList2.append(int(cases[a].values))
                     except:
                         pass
-                data.append(np.nanmean(subList))
-                bCase.append(subList2)
-                nobs.append(len(subList))
-    data = np.array(data)
-    nobs = np.array(nobs)
-    print(np.nanmax(data), np.nanmin(data))
-
-    return data.reshape(grid[0].shape), nobs.reshape(grid[0].shape), bCase
+                print([[xBins[x], yBins[y], zBins[z]], np.nanmean(subList), len(subList), subList2])
+                data.append([[xBins[x], yBins[y], zBins[z]], np.nanmean(subList), len(subList), subList2])
+    return data
 
 name = 'All TCs'
 ds = xr.open_dataset(r"C:\Users\deela\Downloads\SHEARS_EOF.nc")
@@ -67,20 +48,17 @@ pcseries = np.dot(anom.reshape(32250, 28), EOFs.reshape(28, 28).T)
 
 variable = 'delta_vmax'
 
-grid, data, nobs, cases = bin(pcseries[:, 0], pcseries[:, 1], pcseries[:, 2], dataset[variable], validCases)
-print(np.nanmax(nobs))
-nobs = (nobs)# / np.nanmax(nobs))
+data = bin(pcseries[:, 0], pcseries[:, 1], pcseries[:, 2], dataset[variable], validCases)
 
-temp = []
-for x in range(len(data)):
-    for y in range(len(data[x])):
-        for z in range(len(data[x][y])):
-            if np.isnan(data[x, y, z]):
-                pass
-            else:
-                temp.append([x - 5, y - 5, z - 5, nobs[x, y, z], data[x, y, z]])
+with open(r"C:\Users\deela\Downloads\EOFs\PCs.csv", "w") as f:
+    wr = csv.writer(f)
+    wr.writerows(data)
 
-temp = np.array(temp)
-temp = temp[temp[:, 4].argsort()[::-1]]
-for x in range(len(temp)):
-    print(temp[x])
+# temp = []
+# for x in range(len(data)):
+#     print(data[x])
+
+# temp = np.array(temp)
+# temp = temp[temp[:, 4].argsort()[::-1]]
+# for x in range(len(temp)):
+#     print(temp[x])

@@ -43,7 +43,7 @@ def spmap(ax, interval, labelsize):
     return ax 
 
 dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc")
-#dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3k_2020_2022_xy_rel_swath_ships.nc")
+#dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc")
 
 print(list(dataset.variables.keys()))
 
@@ -62,7 +62,7 @@ def retrieveStorm(name, year = None):
     return dataset.sel(num_cases = years['num_cases'].values)
 
 def panelPlot(dataset, caseNum):
-    data = dataset.sel(level = 3)
+    data = dataset.sel(height = 3)
     fig = plt.figure(figsize=(15, 12))
     gs = fig.add_gridspec(2, 2)
 
@@ -96,25 +96,25 @@ def panelPlot(dataset, caseNum):
     cbar.ax.tick_params(axis='both', labelsize=8, left = False, bottom = False)
     axes[2].text(0.5, 0.95, 'Wind Speed (kt)', fontweight = 'bold', fontsize = 8, horizontalalignment='center', verticalalignment='center', transform = axes[2].transAxes)
     
-    cv = axes[3].pcolormesh(lons, lats, data['swath_vertical_velocity'].values, cmap = cmap.tempAnoms3(), vmin = -5, vmax = 5, transform=ccrs.PlateCarree(central_longitude=0))
+    cv = axes[3].pcolormesh(lons, lats, data['swath_upward_air_velocity'].values, cmap = cmap.tempAnoms3(), vmin = -5, vmax = 5, transform=ccrs.PlateCarree(central_longitude=0))
     cbar = plt.colorbar(cv, ax = axes[3], orientation = 'vertical', aspect = 50, pad = .02)
     cbar.ax.tick_params(axis='both', labelsize=8, left = False, bottom = False)
     axes[3].text(0.5, 0.95, 'Vertical Velocity (m/s)', fontweight = 'bold', fontsize = 8, horizontalalignment='center', verticalalignment='center', transform = axes[3].transAxes)
     
     vc = axes[4].pcolormesh(lons, lats, data['swath_relative_vorticity'].values, cmap = cmap.probs(), vmin = 0, vmax = 0.005, transform=ccrs.PlateCarree(central_longitude=0))
-    axes[4].streamplot(lons, lats, data['swath_zonal_wind'].values, data['swath_meridional_wind'].values, linewidth = 1, density = 1, color = 'black', transform = ccrs.PlateCarree(central_longitude = 0))
+    axes[4].streamplot(lons, lats, data['swath_eastward_wind'].values, data['swath_northward_wind'].values, linewidth = 1, density = 1, color = 'black', transform = ccrs.PlateCarree(central_longitude = 0))
     cbar = plt.colorbar(vc, ax = axes[4], orientation = 'vertical', aspect = 50, pad = .02)
     cbar.ax.tick_params(axis='both', labelsize=8, left = False, bottom = False)
     axes[4].text(0.5, 0.95, 'Relative Vorticity (1/s)', fontweight = 'bold', fontsize = 8, horizontalalignment='center', verticalalignment='center', transform = axes[4].transAxes)
     
-    plt.savefig(r"C:\Users\deela\Downloads\TDR_Swaths\\" + date + ".png", dpi = 400, bbox_inches = 'tight')
+    plt.savefig(r"C:\Users\deela\Downloads\TDR_Swaths\\" + date + "2.png", dpi = 400, bbox_inches = 'tight')
     plt.show()
 name = 'Michael'
 year = 2018
 height = 3
 data = retrieveStorm(name, year)
 print(data.num_cases.values)
-refl = data['swath_wind_speed'].sel(level = height) * 1.94384
+refl = data['swath_wind_speed'].sel(height = height) * 1.94384
 
 ax = map(2, 9)
 #ax.set_extent([-120, 0, 0, 60])

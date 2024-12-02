@@ -42,6 +42,7 @@ def getSHIPS(dataset, params, hours):
 
 # Combine dataset using xarray:
 TDRData = xr.open_mfdataset([r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc", r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc"], concat_dim='num_cases', combine='nested')
+print(TDRData)
 MIRData = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_swath_mergIR_v3l.nc")
 
 rirb = MIRData["IR_brightness_recentered_grid"] # These are the IR brightness temps on a TC centered grid
@@ -120,7 +121,7 @@ for i in test_inds:
 
 print('Done.')
 
-print("Mean Error:   ", np.nanmean(np.abs(predictions - y[test_inds])))
+print("Mean Error  : ", np.nanmean(np.abs(predictions - y[test_inds])))
 print("Median Error: ", np.nanmedian(np.abs(predictions - y[test_inds])))
 
 # Print the importance of each "feature"/predictor:

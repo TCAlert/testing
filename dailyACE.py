@@ -3,9 +3,11 @@ import pandas as pd
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 from helper import dayOfYear
+from scipy import stats
 
-climoYears = [1980, 2023]
+climoYears = [2010, 2023]
 basin = 'AL'
 day = 0
 if basin == 'EP':
@@ -70,7 +72,7 @@ def yearData(data, year):
     return dates, daily, accum
 
 # Retrieve needed climatological data, formats, and plots it
-def createClimoData(climo, basin, lats = None, lons = None):
+def createClimoData(climo, basin, roll = 5, lats = None, lons = None):
     years = []
     for x in range(climo[0], climo[1] + 1):
         year = x
@@ -92,7 +94,7 @@ def createClimoData(climo, basin, lats = None, lons = None):
         years.append(daily)
 
     years = pd.DataFrame(years, index = range(climo[0], climo[1] + 1), columns = range(1, 366))
-    years = years.rolling(5, axis = 1, center = True).sum()
+    years = years.rolling(roll, axis = 1, center = True).sum()
 
     avg = []
     std = []
@@ -100,33 +102,66 @@ def createClimoData(climo, basin, lats = None, lons = None):
         avg.append(np.mean(years[x + 1]))
         std.append(np.std(years[x + 1]))
     
-    plt.plot(range(1, 366), avg)
-    plt.show()
 
-    years = (years)# - avg) / std
+    avg = (avg - np.nanmin(avg)) / (np.nanmax(avg) - np.nanmin(avg))
 
-    return years
+    # plt.plot(range(1, 366), avg)
+    # plt.show()
 
-dailyACEAnoms = createClimoData(climoYears, basin, [0, 70], [-120, -1])
-dailyACEAnoms.to_csv(r"C:\Users\deela\Downloads\dailyACE1980-2023.csv")
+    years = (years - avg) / std
 
-dataset = dailyACEAnoms.to_numpy()
+    return years, avg
 
-dates = []
-for x in range(len(dataset)):
-    for y in range(len(dataset[x])):
-        if dataset[x][y] > 15:
-            dates.append((x + 1981, y))
+roll = 28
+labelsize = 9
+dailyACEAnoms, avg1 = createClimoData(climoYears, basin, roll, [0, 70], [-120, -1])
+dailyACEAnoms, avg2 = createClimoData([1980, 2009], basin, roll, [0, 70], [-120, -1])
+avg1, avg2 = avg1[:348], avg2[:348]
+print(stats.kstest(np.nan_to_num(avg2), np.nan_to_num(avg1)))
 
-dates = np.array(dates)
-nDates = []
-for x in range(len(dates)):
-    try:
-        if dates[:, 1][x] + 1 == dates[:, 1][x + 1]:
-            pass
-        else:
-            date = dayOfYear(dates[:, 1][x], dates[x][0])            
-            nDates.append(date)
-    except:
-        pass
-print(nDates)
+dates = np.arange(f'1999-01-01', f'1999-12-15', dtype = 'datetime64[D]')
+print(len(dates))
+avgDiff = (avg1 - avg2)
+print(np.nanmean(avgDiff))
+
+fig = plt.figure(figsize=(14, 11))
+ax = plt.axes()
+
+ax.set_frame_on(False)
+ax.tick_params(axis='both', labelsize=8, left = False, bottom = False)
+ax.grid(linestyle = '--', alpha = 0.5, color = 'black', linewidth = 0.5, zorder = 9)
+ax.set_xlabel(f'Time', weight = 'bold', size = 9)
+ax.set_ylabel(f'Normalized ACE', weight = 'bold', size = 9)
+ax.xaxis.set_major_locator(mdates.MonthLocator(bymonth=np.arange(1, 13, 1)))
+ax.xaxis.set_major_formatter(mdates.DateFormatter('%b'))
+ax.axvline(x = dates[0], color = 'black')
+ax.axhline(color = 'black')
+
+ax.plot(dates, avgDiff, c = 'black', linewidth = 1)
+ax.fill_between(dates, avg1, 0, where=(avg1 > 0), color='blue', alpha=0.3)
+ax.fill_between(dates, avg2, 0, where=(avg2 > 0), color='red', alpha=0.3)
+ax.set_title(f'Change in Distribution of Seasonal NATL ACE (Rolling {roll} Day Average)\n2010-2023 (blue) minus 1980-2009 (red)', fontweight='bold', fontsize=labelsize, loc='left')  
+ax.set_title(f'Deelan Jariwala', fontsize=labelsize, loc='right')  
+plt.savefig(r"C:\Users\deela\Downloads\changeInACEDist.png", dpi = 400, bbox_inches = 'tight')
+plt.show()
+
+# dataset = dailyACEAnoms.to_numpy()
+
+# dates = []
+# for x in range(len(dataset)):
+#     for y in range(len(dataset[x])):
+#         if dataset[x][y] > 15:
+#             dates.append((x + 1981, y))
+
+# dates = np.array(dates)
+# nDates = []
+# for x in range(len(dates)):
+#     try:
+#         if dates[:, 1][x] + 1 == dates[:, 1][x + 1]:
+#             pass
+#         else:
+#             date = dayOfYear(dates[:, 1][x], dates[x][0])            
+#             nDates.append(date)
+#     except:
+#         pass
+# print(nDates)

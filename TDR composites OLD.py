@@ -77,6 +77,8 @@ def getData(dataset, var, levels, case):
 
         offset = (np.pi / 2) + np.deg2rad(shd)
         temp = rePoPolar(temp, offset)
+        plt.imshow(temp['data'])
+        plt.show()
         temp['r'] = temp['r'] / rmw
         rad = 4
         temp = temp['data'].sel(r = slice(0, rad))
@@ -84,11 +86,11 @@ def getData(dataset, var, levels, case):
         newR = np.linspace(0, rad, 200)
         temp = temp.interp(r = newR)
 
-        # fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
-        # ax.set_theta_zero_location("N")
-        # ax.set_theta_direction(-1)
-        # plt.pcolormesh(temp.theta, temp.r, temp.values)
-        # plt.show()
+        fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
+        ax.set_theta_zero_location("N")
+        ax.set_theta_direction(-1)
+        plt.pcolormesh(temp.theta, temp.r, temp.values)
+        plt.show()
 
         data.append(temp)    
     return data, vmax
@@ -111,7 +113,7 @@ def makeComposites(dataset, list):
 
 dataset1 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3k_1997_2019_xy_rel_swath_ships.nc")
 dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3k_2020_2022_xy_rel_swath_ships.nc")
-t = 'Decrease'
+t = 't'
 
 if t == 'Decrease2':
     # Decrease 10km (75kt)

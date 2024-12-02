@@ -9,7 +9,7 @@ from datetime import datetime
 from file import getGRIB
 
 def map(interval, labelsize):
-    fig = plt.figure(figsize=(18, 9))
+    fig = plt.figure(figsize=(18, 6))
 
     # Add the map and set the extent
     ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=0))
@@ -30,9 +30,9 @@ def map(interval, labelsize):
     return ax 
 
 year = 2024
-month = 7
-day = 9
-hour = 0
+month = 10
+day = 16
+hour = 00
 contour = 1
 link = f'https://nomads.ncep.noaa.gov/pub/data/nccf/com/cdas/prod/cdas.{year}{str(month).zfill(2)}{str(day).zfill(2)}/cdas.t{str(hour).zfill(2)}z.sstgrb.grib2'
 name = getGRIB(link, title = f'cdas.grib2')
@@ -42,8 +42,8 @@ cdas = cdas['t'] - 273
 print(cdas)
 
 oisst = xr.open_dataset(f"http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.oisst.v2.highres/sst.day.mean.{datetime.utcnow().year}.nc")
-print(oisst['time'])
 latest = oisst['time'][-1]
+print(latest)
 oisst = oisst['sst'].sel(time = latest)
 oisst = oisst[::4, ::4].isel(lat=slice(None, None, -1))
 #oisst = oisst.reindex(lon=list(cdas.longitude))
@@ -52,10 +52,10 @@ print(oisst)
 data = oisst.values - cdas.values
 print(data)
 
-ax = map(5, 5*1.5)
+ax = map(15, 5*1.5)
 bounds = [-100, -10, 0, 65]
 bounds = [bounds[0] - 1, bounds[1] + 1, bounds[2] - 1, bounds[3] + 1]
-ax.set_extent(bounds, crs = ccrs.PlateCarree())
+#ax.set_extent(bounds, crs = ccrs.PlateCarree())
 plt.contourf(cdas.longitude, cdas.latitude, data, levels = np.arange(-5, 5.125, .125), cmap= cmap.tempAnoms(), extend = 'both', transform=ccrs.PlateCarree(central_longitude=0))
 plt.colorbar(orientation = 'vertical', aspect = 50, pad = .02)
 ax.set_title(f'OISSTv2.1 and CDAS Sea Surface Temperature Difference (\u00b0C)\nTime: {year}-{str(month).zfill(2)}-{str(day).zfill(2)} at {str(hour).zfill(2)}00 UTC', fontweight='bold', fontsize=10, loc='left')

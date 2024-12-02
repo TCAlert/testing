@@ -1384,6 +1384,93 @@ def iru():
 
     return newcmp.reversed(), vmax, vmin
 
+def irv():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/130, "#000000"),
+    (50/130, "#6d6d6d"),
+    (60/130, "#5fbf5e"),
+    (70/130, "#0e495c"),
+    (80/130, "#07544b"),
+
+    (90/130, "#FFFF00"),
+    (95/130, "#ddb309"),
+    (100/130, "#ea0000"),
+    (110/130, "#700000"),
+    (120/130, "#000000"),
+    (130/130, "#FFFFFF")])
+
+    vmax = 30
+    vmin = -100
+
+    return newcmp.reversed(), vmax, vmin
+
+def irvo():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/130, "#000000"),
+    (50/130, "#6d6d6d"),
+    (60/130, "#5fbf5e"),
+    (70/130, "#0e495c"),
+    (75/130, "#07544b"),
+    (80/130, "#FFFF00"),
+    (85/130, "#ddb309"),
+    (100/130, "#ea0000"),
+    (110/130, "#700000"),
+    (120/130, "#000000"),
+    (130/130, "#FFFFFF")])
+
+    vmax = 30
+    vmin = -100
+
+    return newcmp.reversed(), vmax, vmin
+
+
+def mean():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/140, "#3b1e27"),
+    (7.5/140, "#231423"),
+    (12.5/140, "#0d0e23"),
+    (50/140, "#8e9cad"),
+    (60/140, "#FFFFFF"),
+    
+    (70/140, "#8a9cb2"),
+    (72.5/140, "#739ca3"),
+    (75/140, "#49915c"),
+    (80/140, "#8a9c78"),
+    (90/140, "#e6c72e"),
+    (100/140, "#bf6000"),
+    (110/140, "#91161a"),    
+    (115/140, "#ba69a8"),
+    (140/140, "#FFFFFF")])
+
+    vmax = 40
+    vmin = -100
+
+    return newcmp.reversed(), vmax, vmin
+
+def trueMean():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/140, "#3b1e27"),
+    (7.5/140, "#231423"),
+    (15/140, "#0d0e23"),
+    (50/140, "#8e9cad"),
+    (65/140, "#8a9cb2"),
+    (70/140, "#739ca3"),
+    (75/140, "#78927f"),
+    (80/140, "#8a9c78"),
+    (90/140, "#a1a12b"),
+    (100/140, "#a93c00"),
+    (105/140, "#991e05"),
+    (110/140, "#91161a"),
+    (115/140, "#c47da5"),
+    (120/140, "#ba69a8"),
+    (130/140, "#b897b1"),
+    (140/140, "#FFFFFF")])
+
+    vmax = 40
+    vmin = -100
+
+    return newcmp.reversed(), vmax, vmin
+
 def wind():
     newcmp = LinearSegmentedColormap.from_list("", [
     (0/130, "#000000"), 
@@ -1517,6 +1604,27 @@ def ice():
 
     vmax = 30
     vmin = -90
+
+    return newcmp.reversed(), vmax, vmin
+
+def ice2():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/130, '#000000'),
+    (40/130, '#d1d8e2'),
+
+    (45/130, '#0f63bc'),
+    (75/130, '#75d8d8'),
+
+    (90/130, '#0d9aaa'),
+    (100/130, '#0f6db9'),
+    (110/130, '#12247d'),
+    (120/130, '#857b33'),
+    (125/130, "#b39b24"),
+    (130/130, "#FFFFFF")])
+
+
+    vmax = 30
+    vmin = -100
 
     return newcmp.reversed(), vmax, vmin
 
@@ -2053,6 +2161,25 @@ def handwv():
 
     return newcmp.reversed(), vmax, vmin
 
+def handir():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/130, "#07080c"),
+    (10/130, "#061d47"),
+    (32.5/130, "#6b81b7"),
+    (60/130, "#FFFFFF"),
+
+    (70/130, "#ffe374"),
+    (95/130, "#7f3c1e"),
+    (100/130, "#27140d"),
+    (110/130, "#8c1612"),
+    (120/130, "#fa9e29"),
+    (130/130, "#f0fdf4")])
+
+    vmax = 30
+    vmin = -100
+
+    return newcmp.reversed(), vmax, vmin
+
 def wv7():
     newcmp = LinearSegmentedColormap.from_list("", [
     (0/90, "#5d5e7f"),
@@ -2193,6 +2320,27 @@ def wv13():
 
     return newcmp.reversed(), vmax, vmin
 
+def wv135():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/90, "#b58555"),
+    (15/90, "#1a1a1a"),
+    (25/90, "#405580"),
+    (40/90, "#FFFFFF"),
+
+    (50/90, "#188080"),
+    (60/90, "#ebce47"),
+    (65/90, "#cc7014"),
+    (70/90, "#bf1313"),
+    (75/90, "#800d29"),
+    (77.5/90, "#1a1a1a"),
+    (87.5/90, "#e6e6e6"),
+    (90/90, "#FFFFFF")])
+    
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin
+
 def halloween():
     newcmp = LinearSegmentedColormap.from_list("", [
     (0/90, "#8a36e1"),
@@ -2210,21 +2358,91 @@ def halloween():
 
     return newcmp.reversed(), vmax, vmin
 
+def wv14():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/90, "#FBCA0C"),
+    (10/90, "#bf303a"),
+    (20/90, "#1a1a1a"),
+    
+    (40/90, "#FFFFFF"),
+    (50/90, "#a1a1e6"),
+    (60/90, "#0f5499"),
+    (70/90, "#12b3b3"),
+    (80/90, "#7ee67e"),
+    (85/90, "#e6e6a1"),
+    (90/90, "#FFFFFF")])
+    
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin
+
+
+def simple():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/90, "#545454"),
+    (15/90, "#000000"),
+    (30/90, "#6060bf"),
+    (45/90, "#ffffff"),
+    (67.5/90, "#ff0000"),
+    (90/90, "#000000")])
+    
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin
+
+def simple2():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/90, "#ffdd00"),
+    (15/90, "#000000"),
+    (45/90, "#ffffff"),
+    (67.5/90, "#6060bf"),
+    (75/90, "#402080"),
+    (80/90, "#201040"),
+    (90/90, "#30bfbf")])
+    
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin
+
+# def testwv():
+#     newcmp = LinearSegmentedColormap.from_list("", [    
+#     (0/90, "#b55555"),
+#     (7.5/90, "#b58555"),
+#     (15/90, "#090926"),
+#     (35/90, "#ffffff"),
+
+#     (45/90, "#4c8032"),
+#     (50/90, "#ffff29"),
+
+#     (60/90, "#ff2929"),
+#     (70/90, "#000000"),
+#     (72.5/90, "#482966"),
+#     (80/90, "#e673e6"),
+#     (90/90, "#efe6eb")])
+
+#     vmax = 0
+#     vmin = -90
+
+#     return newcmp.reversed(), vmax, vmin
+
 def testwv():
     newcmp = LinearSegmentedColormap.from_list("", [    
-    (0/90, "#b55555"),
-    (7.5/90, "#b58555"),
-    (15/90, "#090926"),
-    (35/90, "#ffffff"),
+    (0.0, "#ceac55"), 
+    (10/90, "#bf5858"),
+    (20/90, "#070704"), 
 
-    (45/90, "#4c8032"),
-    (50/90, "#ffff29"),
+    (30/90, "#b3b3b3"),
 
-    (60/90, "#ff2929"),
-    (70/90, "#000000"),
-    (72.5/90, "#482966"),
-    (80/90, "#e673e6"),
-    (90/90, "#efe6eb")])
+    (40/90, "#156899"),
+    (50/90, "#64BDDF"),
+    
+    (60/90, "#FFFFFF"),
+    (70/90, "#FBCA0C"),
+    (80/90, "#D92028"),
+    (90/90, "#03062F")])
 
     vmax = 0
     vmin = -90
@@ -2358,6 +2576,10 @@ wvtables = {
     'wv11'  : wv11(),
     'wv12'  : wv12(),
     'wv13'  : wv13(),
+    'wv13.5'  : wv135(),
+    'wv14'  : wv14(),
+    'simple': simple(),
+    'simple2': simple2(),
     'test'  : testwv(),
     'watermelon'   : watermelon(),
     'halloween'    : halloween(),
@@ -2394,6 +2616,7 @@ irtables = {
     'nhc'     :nhc(),
     'wu'      :wu(),
     'shrek'   :shrek(),
+    'hand'    :handir(),
     'ryglicki':ryglicki(),
     'candy'   :candy(),
     'bl'      :blhot(),
@@ -2402,6 +2625,7 @@ irtables = {
     'lava'    :lava(),
     'ice'     :ice(),
     'icy'     :icy(),
+    'ice2'    :ice2(),
     'santa'   :santa(),
     'gay'     :gay(),
     'test'    :testir(),
@@ -2434,6 +2658,8 @@ irtables = {
     'irs'     :irs(),
     'irt'     :irt(),
     'iru'     :iru(),
+    'irv'     :irv(),
+    'mean'    :mean(),
     'wind'    :wind(),
     'wind2'   :wind2(),
     'icup'    :icup(),
@@ -2442,3 +2668,19 @@ irtables = {
     'ncdc'    :ncdc(),
     'ref'     :ref(),
     'irca'    :ca()}
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+X, Y = np.meshgrid(np.arange(0, 100), np.arange(0, 100))
+
+cmaps: list = wvtables.values()  # TODO list of colormaps. Please set!
+names: list = list(wvtables.keys())
+fig, axs = plt.subplots(len(cmaps), 1, figsize=(10, len(cmaps)), dpi=200, constrained_layout=True)
+for i, cmap in enumerate(cmaps):
+    axs[i].pcolormesh(X, Y, X, cmap=cmap[0])
+    axs[i].set_xticks([])
+    axs[i].set_yticks([])
+    axs[i].set_ylabel(names[i])
+
+plt.savefig(r"C:\Users\deela\Downloads\wvcolormaps.png", dpi=200)

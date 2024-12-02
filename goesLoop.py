@@ -30,8 +30,8 @@ def getData(satellite, band, year, day, hour, n):
             l.append(files[x])
     
     for x in range(len(l)):
-        fs.get(l[x], r"C:\Users\deela\Downloads\goesfile.nc")
-        data = xr.open_dataset(r"C:\Users\deela\Downloads\goesfile.nc")
+        fs.get(l[x], r"C:\Users\deela\Downloads\goesLoopfile.nc")
+        data = xr.open_dataset(r"C:\Users\deela\Downloads\goesLoopfile.nc")
     
         dat = data['CMI']
         center = data['geospatial_lat_lon_extent'].geospatial_lon_center
@@ -56,7 +56,7 @@ def stormwv(storm, data, center, time, n, cmp = 'wv'):
 
     plt.figure(figsize = figSize)
     ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=0))
-    ax.set_extent(extent, crs=ccrs.PlateCarree())
+    ax.set_extent([-150, -110, 27.5, 60], crs=ccrs.PlateCarree())
 
     # Add coastlines, borders and gridlines
     ax.coastlines(resolution='10m', color='black', linewidth=0.8)
@@ -69,19 +69,19 @@ def stormwv(storm, data, center, time, n, cmp = 'wv'):
     plt.colorbar(orientation = 'vertical', aspect = 50, pad = .02)
     plt.title(f'{title} Channel {band.zfill(2)} Water Vapor\nSatellite Image: {time}' , fontweight='bold', fontsize=10, loc='left')
     plt.title(f'{storm.upper()}\nDeelan Jariwala', fontsize=10, loc='right')
-    plt.savefig(r"C:\Users\deela\Downloads\miltonLoop\\" + str(n) + "_.png", dpi = 100, bbox_inches = 'tight')
+    plt.savefig(r"C:\Users\deela\Downloads\bombLoop\\" + str(n) + "_.png", dpi = 100, bbox_inches = 'tight')
     #plt.show()
     plt.close()
     data.close()
 
-dates = np.arange(281, 282, 1)
-hours = np.arange(6, 21, 1)
+dates = np.arange(325, 326, 1)
+hours = np.arange(6, 7, 1)
 
-n = 0
+n = 181
 for x in range(len(dates)):
     for y in range(len(hours)):
         print(n)
-        try:
-            n = getData('16', '09', 2024, dates[x], hours[y], n)
-        except:
-            pass
+        #try:
+        n = getData('18', '09', 2024, dates[x], hours[y], n)
+        #except:
+        #    pass

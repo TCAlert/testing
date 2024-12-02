@@ -14,7 +14,7 @@ storm = 'AL25'
 y = '2005'
 
 # open variable data
-dataset = xr.open_dataset(r"C:\Users\deela\Downloads\SHEARS_1997-2021.nc")
+dataset = xr.open_dataset(r"C:\Users\deela\Downloads\SHEARS_1987-2023.nc")
 dataset = dataset.where(dataset.atcf == storm, drop = True)
 year = [str(x).split('-')[0] for x in dataset.time.values]
 dataset = dataset.assign(year = (['case'], year))
@@ -24,7 +24,7 @@ shearData = dataset['u_data']
 shearData.values = np.nan_to_num(shearData.values)
 
 eofData = xr.open_dataset(r"C:\Users\deela\Downloads\SHEARS_EOF_u.nc")
-anom = np.nan_to_num((shearData.values - eofData['climoMean'].values))# / eofData['climoStdd'].values)
+anom = np.nan_to_num((shearData.values))# - eofData['climoMean'].values))# / eofData['climoStdd'].values)
 
 eofs = []
 for x in range(len(eofData.eof.num.values)):

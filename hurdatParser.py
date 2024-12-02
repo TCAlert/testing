@@ -291,12 +291,12 @@ def database():
         data.append(tempDict)
     return data
 
-def retrieveStorm(dataset, storm = None, ID = None):
+def retrieveStorm(dataset, storm = None):
     for x in range(len(dataset)):
         if (dataset[x]['Name'] == storm[0].upper()) and (dataset[x]['Year'] == storm[1]):
             data = dataset[x]
             break 
-        elif (dataset[x]['ID'].lower() == ID) or (dataset[x]['ID'].upper() == ID):
+        elif (dataset[x]['ID'].upper() == storm[0].upper()):
             data = dataset[x]
             break 
         else:

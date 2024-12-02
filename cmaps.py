@@ -2,6 +2,32 @@ import numpy as np
 from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 
+def tempC():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/120, "#4d2417"),
+    (10/120, "#840f09"),
+    (14/120, "#ce3f1b"),
+    (17.5/120, "#e8b05f"),
+    (22.5/120, "#e6d874"),
+    (30/120, "#71b634"),
+    (35/120, "#21843f"),
+    (40/120, "#21432b"),
+    (40/120, "#66b0db"),
+    (44/120, "#206493"),
+    (46/120, "#385484"),
+    (47/120, "#434c7d"),
+    (52/120, "#7970f0"),
+    (57.5/120, "#e7dbfe"),
+    (62.5/120, "#9053e6"),
+    (70/120, "#661180"),
+    (75/120, "#40162e"),
+    (80/120, "#bf41b9"),
+    (90/120, "#FFFFFF"),
+    (100/120, "#ff809f"),
+    (120/120, "#ff1953")])
+
+    return newcmp.reversed()
+
 def temperature():
     newcmp = LinearSegmentedColormap.from_list("", [
     (0/230, "#FFFFFF"),
@@ -135,6 +161,17 @@ def tempAnoms3():
     (15/20, "#4d4dff"),
     (17.5/20, "#252580"),
     (20/20, "#d3b3f2")])
+
+    vmin = -5
+    vmax = 5
+
+    return newcmp.reversed()
+
+def tempAnoms4():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/20, "#ff4d4d"),
+    (10/20, "#000000"),
+    (20/20, "#4d4dff")])
 
     vmin = -5
     vmax = 5

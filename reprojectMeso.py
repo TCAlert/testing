@@ -63,7 +63,7 @@ def calculate_degrees(dataset): # Adapted from https://www.star.nesdis.noaa.gov/
     return abi_lat, abi_lon
 
 def reproject(dataset, lats, lons, pos):   
-   size = 7.5         
+    size = 7.5         
     IR = dataset['CMI_C13'].data - 273.15#dataset['CMI_C04'].data
                         
     # Extents and interpolation for IR
@@ -106,11 +106,11 @@ def stormir(lons, lats, data, pos, time, cmap = 'irg'):
         rand = random.randrange(0, len(cmaps.irtables.keys()), 1)
         cmap = list(cmaps.irtables.keys())[rand]
         
-    ds = xr.Dataset({'data'    : (["lons", "lats"], data)}, 
-        coords =   {"lons"  : lons,
-                    "lats": lats})
+    # ds = xr.Dataset({'data'    : (["lons", "lats"], data)}, 
+    #     coords =   {"lons"  : lons,
+    #                 "lats": lats})
 
-    ds.to_netcdf(r"C:\Users\deela\Downloads\dm_test_data.nc")
+    # ds.to_netcdf(r"C:\Users\deela\Downloads\dm_test_data.nc")
 
     cmap, vmax, vmin = cmaps.irtables[cmap.lower()]
     plt.pcolormesh(lons, lats, data, vmin = vmin, vmax = vmax, cmap = cmap)

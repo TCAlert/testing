@@ -98,6 +98,7 @@ def getStormFile(year, basin, storm, case):
     lats = dataset['center_latitude'].values
     uData = dataset['u_wind'].sel(regions = 1, level = levels)
     vData = dataset['v_wind'].sel(regions = 1, level = levels)
+    empi = dataset['potential_intensity_theoretical'].sel(region = 0).values
     tcsst = (dataset['sst'].values - 273.15).flatten()
     rlhum = dataset['relative_humidity'].sel(regions = 0, level = levels).values
     times = dataset.time.values
@@ -123,6 +124,7 @@ def getStormFile(year, basin, storm, case):
                     'u_data'     : (["case", "upper"], uData.values),
                     'v_data'     : (["case", "upper"], vData.values),
                     'sst'        : (["case"], tcsst),
+                    'mpi'        : (["case"], empi),
                     'lons'       : (["case"], lons),
                     'lats'       : (["case"], lats),
                     'dist_land'  : (["case"], dstl),

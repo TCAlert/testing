@@ -17,20 +17,35 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 c = cds.Client()
 
 def retrieve(type, level, date, lat, lon): 
-    c.retrieve(
-        'reanalysis-era5-pressure-levels',
-        {
-            'product_type'  : 'reanalysis',
-            'variable'      : type,
-            'pressure_level': level,
-            'year'          : f'{date[0]}',
-            'month'         : f'{date[1]}',
-            'day'           : f'{date[2]}',
-            'time'          : f'{date[3]}:00',
-            'data_format'        : 'netcdf',                 # Supported format: grib and netcdf. Default: grib
-            'area'          : [lat + 9, lon - 11, lat - 9, lon + 11], # North, West, South, East.          Default: global
-        },
-        r"C:\Users\deela\Downloads\era5.nc")                          # Output file. Adapt as you wish.
+    if "mean_sea_level_pressure" in type:
+        c.retrieve(
+            'reanalysis-era5-single-levels',
+            {
+                'product_type'  : 'reanalysis',
+                'variable'      : type,
+                'year'          : f'{date[0]}',
+                'month'         : f'{date[1]}',
+                'day'           : f'{date[2]}',
+                'time'          : f'{date[3]}:00',
+                'data_format'   : 'netcdf',                               # Supported format: grib and netcdf. Default: grib
+                'area'          : [lat + 9, lon - 11, lat - 9, lon + 11], # North, West, South, East.          Default: global
+            },
+            r"C:\Users\deela\Downloads\era5.nc")                          # Output file. Adapt as you wish.
+    else:
+        c.retrieve(
+            'reanalysis-era5-pressure-levels',
+            {
+                'product_type'  : 'reanalysis',
+                'variable'      : type,
+                'pressure_level': level,
+                'year'          : f'{date[0]}',
+                'month'         : f'{date[1]}',
+                'day'           : f'{date[2]}',
+                'time'          : f'{date[3]}:00',
+                'data_format'   : 'netcdf',                               # Supported format: grib and netcdf. Default: grib
+                'area'          : [lat + 9, lon - 11, lat - 9, lon + 11], # North, West, South, East.          Default: global
+            },
+            r"C:\Users\deela\Downloads\era5.nc")                          # Output file. Adapt as you wish.
 
 
 def Gradient2D(data):
@@ -78,10 +93,10 @@ def stationPlot(ax, lat, lon, u, v, slp = None, temp = None, dews = None):
             pass
 
 def plot(data, year, month, day, hour, level = '1000', name = None, t = 'wind'):
-    stormData = hurdatParser.retrieveStorm(hurdatParser.database(), [name, str(year)])['Storm Data']
-    stormData = stormData[(stormData['Time'] == np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hour).zfill(2)}'))]
-    lat, lon = stormData['Latitude'].values[0], stormData['Longitude'].values[0]
-    # lat, lon = 28.5, -94
+    # stormData = hurdatParser.retrieveStorm(hurdatParser.database(), [name, str(year)])['Storm Data']
+    # stormData = stormData[(stormData['Time'] == np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hour).zfill(2)}'))]
+    # lat, lon = stormData['Latitude'].values[0], stormData['Longitude'].values[0]
+    lat, lon = 40, -70
 
     data = data[(data['YR'] == year) & (data['MO'] == month) & (data['DY'] == day) & (data['HR'] == hour) & (data['LAT'] > lat - 6) & (data['LAT'] < lat + 6) & (data['LON (W)'] > lon - 7.5) & (data['LON (W)'] < lon + 7.5)]
     windDir = data['D']
@@ -114,10 +129,9 @@ def plot(data, year, month, day, hour, level = '1000', name = None, t = 'wind'):
     elif t.lower() == 'temp':
         retrieve(['temperature'], level, [year, str(month).zfill(2), str(day).zfill(2), str(hour).zfill(2)], lat, lon)
         data = xr.open_dataset(r"C:\Users\deela\Downloads\era5.nc")
-        temp = (data['t']).squeeze()
-        temp = ((temp - 273.15) * (9 / 5)) + 32
-        c = ax.contourf(temp.longitude, temp.latitude, temp, levels = np.arange(-100, 130.25, .25), cmap = cmap.temperature())
-        title = f'{level}mb Air Temperature (F)'
+        temp = (data['t']).squeeze() - 273
+        c = ax.contourf(temp.longitude, temp.latitude, temp, levels = np.arange(-80, 40.25, .25), cmap = cmap.tempC(), extend = 'both')
+        title = f'{level}mb Air Temperature (C)'
     elif t.lower() == 'tempadv':
         retrieve(['temperature', 'u_component_of_wind', 'v_component_of_wind'], level, [year, str(month).zfill(2), str(day).zfill(2), str(hour).zfill(2)], lat, lon)
         data = xr.open_dataset(r"C:\Users\deela\Downloads\era5.nc")
@@ -139,7 +153,7 @@ def plot(data, year, month, day, hour, level = '1000', name = None, t = 'wind'):
         tempe = (data['t']).squeeze()
         thetae = helper.thetae(tempe, level, 1000, sphum)
         
-        c = ax.contourf(thetae.longitude, thetae.latitude, thetae, levels = np.arange(280, 341, 1), cmap = 'terrain_r', extend = 'both')
+        c = ax.contourf(thetae.longitude, thetae.latitude, thetae, levels = np.arange(-40 + 273, 80.25 + 273, .25), cmap = cmap.tempC(), extend = 'both')
         ax.streamplot(uData.longitude, vData.latitude, uData.values, vData.values, linewidth = 1, density = 1, color = 'black', transform = ccrs.PlateCarree(central_longitude = 0))
         title = f'{level}mb Theta-E (K)'
     elif t.lower() == 'divergence':
@@ -157,27 +171,45 @@ def plot(data, year, month, day, hour, level = '1000', name = None, t = 'wind'):
         c = ax.contourf(fxx.longitude, fyy.latitude, mag, levels = np.arange(-25, 25.25, .25), cmap = cmap.tempAnoms(), extend = 'both')
         ax.streamplot(uData.longitude, vData.latitude, uData.values, vData.values, linewidth = 1, density = 1, color = 'black', transform = ccrs.PlateCarree(central_longitude = 0))
         title = f'{level}mb Divergence (Smoothed)'
+    elif t.lower() == 'mslp':
+        retrieve(['mean_sea_level_pressure'], level, [year, str(month).zfill(2), str(day).zfill(2), str(hour).zfill(2)], lat, lon)
+        data = xr.open_dataset(r"C:\Users\deela\Downloads\era5.nc")
+        temp = (data['msl']).squeeze() / 100
+        c = ax.contourf(temp.longitude, temp.latitude, temp, levels = np.arange(960, 1030.25, .25), extend = 'both', cmap = cmap.mw().reversed())
+        f = ax.contour(temp.longitude, temp.latitude, temp, levels = np.arange(900, 1035, 5), linewidths = 1.5, colors = "black")
+        ax.contour(temp.longitude, temp.latitude, temp, levels = np.arange(902.5, 1032.5, 5), linewidths = .75, colors = "black")
+        plt.clabel(f, inline=1, fontsize=10, fmt='%1.0f')
+        title = f'Mean Sea Level Pressure'
 
     plt.title(f'ICOADS Ship Observations\nDate: {str(year)}-{str(month).zfill(2)}-{str(day).zfill(2)} at {str(hour).zfill(2)}00z' , fontweight='bold', fontsize=labelsize + 1, loc='left')
     plt.title(f'{str(name).upper()}', fontsize = labelsize + 1, loc = 'center')
     plt.title(f'Deelan Jariwala\nERA5 {title}', fontsize=labelsize + 1, loc='right')  
     cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
     cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
-    plt.savefig(r"C:\Users\deela\Downloads\ " + name + title + ".png", dpi = 400, bbox_inches = 'tight')
-    
-data = pd.read_csv(r"C:\Users\deela\Downloads\AL04 ICOADS - data.csv")
-year, month, day, hour = 1974, 9, 5, 00
-level = 200
+    # plt.savefig(r"C:\Users\deela\Downloads\carmen\\" + name + title + str(year) + str(month).zfill(2) + str(day).zfill(2) + str(hour).zfill(2) + ".png", dpi = 400, bbox_inches = 'tight')
+    plt.show()
 
-# plot(data, year, month, day, hour, level, 'UNNAMED', 'wind')
-# print('Wind done')
-# plot(data, year, month, day, hour, level, 'UNNAMED', 'temp')
-# print('Temp done')
-# plot(data, year, month, day, hour, level, 'UNNAMED', 'tempAdv')
-# print('Advection done')
-# plot(data, year, month, day, hour, level, 'UNNAMED', 'thetae')
-# print('Theta-E done')
-# plot(data, year, month, day, hour, level, 'Carmen', 'divergence')
-# print('Divergence done')
+data = pd.read_csv(r"C:\Users\deela\Downloads\carmen - data.csv")
+for x in list(np.arange(1, 11)):
+    for y in range(0, 24, 6):
+        year, month, day, hour = 1974, 9, x, y
+        level = 850
 
-plt.show()
+        try:
+            # plot(data, year, month, day, hour, level, 'AL101974', 'wind')
+            # print('Wind done')
+            # plot(data, year, month, day, hour, level, 'Alex', 'thetae')
+            # print('Temp done')
+            # plot(data, year, month, day, hour, level, 'UNNAMED', 'tempAdv')
+            # print('Advection done')
+            # plot(data, year, month, day, hour, level, 'UNNAMED', 'thetae')
+            # print('Theta-E done')
+            # plot(data, year, month, day, hour, level, 'Carmen', 'divergence')
+            # print('Divergence done')
+            # plot(data, year, month, day, hour, level, 'Unnamed', 'mslp')
+            # print('mslp done')
+            #plot(data, year, month, day, hour, level, 'AL081974', 'temp')
+            #print('Temperature done')
+            plot(data, '2018', '01', '04', '1200', '850', 'Unnamed', 'tempAdv')
+        except:
+            pass

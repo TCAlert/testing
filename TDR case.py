@@ -16,7 +16,9 @@ def getData(dataset, var, levels, case):
     vmax = dataset['vmax_ships'].sel(num_cases = case, num_ships_times = 0).values
     rmw = dataset['tc_rmw'].sel(num_cases = case, level = 3).values / 2
     shd = 360 - dataset['sddc_ships'].sel(num_cases = case, num_ships_times = 0).values
-    return vmax
+    tilt = np.nanmax(dataset['tc_tilt_magnitude'].sel(num_cases = case, level = [5, 5.5, 6.0, 6.5]).values)
+
+    return tilt
 
 def makeComposites(dataset, list):
     dataset = dataset.assign_coords(lons=((dataset.lons - 100)).sortby('lons'))
@@ -25,6 +27,7 @@ def makeComposites(dataset, list):
     winds = []
     for x in range(len(list)):
         vmax = getData(dataset, ['swath_reflectivity', 'swath_vertical_velocity'], [3, [5, 5.5, 6, 6.5, 7, 7.5, 8]], list[x])
+        print(vmax)
 
         winds.append(vmax)
 
@@ -32,8 +35,7 @@ def makeComposites(dataset, list):
 
 dataset1 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3k_1997_2019_xy_rel_swath_ships.nc")
 dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3k_2020_2022_xy_rel_swath_ships.nc")
-print(dataset2.variables)
-t = 'Decrease2'
+t = 'Increase'
 
 if t == 'Decrease2':
     # Decrease, 10km, <75kt
@@ -76,5 +78,5 @@ ax.set_yticks(np.arange(0, 15, 1))
 plt.title(f'TC-RADAR: Tilt {t} Maximum Sustained Wind Histogram\nNumber of Valid Datapoints: {len(wind)}' , fontweight='bold', fontsize=labelsize + 1, loc='left')
 plt.title(f'Deelan Jariwala', fontsize=labelsize + 1, loc='right')  
 plt.hist(wind, bins = np.arange(20, 135, 5), color = '#9f80ff', alpha = 0.75)
-plt.savefig(r"C:\Users\deela\Downloads\tdrcasedist" + t + ".png", dpi = 400, bbox_inches = 'tight')
+#plt.savefig(r"C:\Users\deela\Downloads\tdrcasedist" + t + ".png", dpi = 400, bbox_inches = 'tight')
 plt.show()
