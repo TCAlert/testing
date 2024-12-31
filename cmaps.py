@@ -578,7 +578,7 @@ def reflectivity():
     vmin = -10
     vmax = 70
     
-    return newcmp
+    return newcmp, vmin, vmax
 
 def reflectivity2():
     newcmp = LinearSegmentedColormap.from_list("", [ 

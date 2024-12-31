@@ -98,7 +98,8 @@ def plot(data, year, month, day, hour, level = '1000', name = None, t = 'wind'):
     # lat, lon = stormData['Latitude'].values[0], stormData['Longitude'].values[0]
     lat, lon = 40, -70
 
-    data = data[(data['YR'] == year) & (data['MO'] == month) & (data['DY'] == day) & (data['HR'] == hour) & (data['LAT'] > lat - 6) & (data['LAT'] < lat + 6) & (data['LON (W)'] > lon - 7.5) & (data['LON (W)'] < lon + 7.5)]
+    data = data[(data['YR'].astype(str) == year) & (data['MO'].astype(str) == month) & (data['DY'].astype(str) == day) & (data['HR'] == float(hour)) & (data['LAT'] > lat - 6) & (data['LAT'] < lat + 6) & (data['LON (W)'] > lon - 7.5) & (data['LON (W)'] < lon + 7.5)]
+    print(data)
     windDir = data['D']
     windSpd = data['W (kts)']
     seaLevP = data['SLP']
@@ -187,15 +188,17 @@ def plot(data, year, month, day, hour, level = '1000', name = None, t = 'wind'):
     cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
     cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
     # plt.savefig(r"C:\Users\deela\Downloads\carmen\\" + name + title + str(year) + str(month).zfill(2) + str(day).zfill(2) + str(hour).zfill(2) + ".png", dpi = 400, bbox_inches = 'tight')
+    plt.savefig(r"C:\Users\deela\Downloads\unnamed1994.png", dpi = 400, bbox_inches = 'tight')
     plt.show()
 
-data = pd.read_csv(r"C:\Users\deela\Downloads\carmen - data.csv")
-for x in list(np.arange(1, 11)):
-    for y in range(0, 24, 6):
-        year, month, day, hour = 1974, 9, x, y
-        level = 850
+data = pd.read_csv(r"C:\Users\deela\Downloads\\1994 - unnamed.csv")
+print(data)
+# for x in list(np.arange(1, 11)):
+#     for y in range(0, 24, 6):
+#         year, month, day, hour = 1974, 9, x, y
+#         level = 850
 
-        try:
+        #try:
             # plot(data, year, month, day, hour, level, 'AL101974', 'wind')
             # print('Wind done')
             # plot(data, year, month, day, hour, level, 'Alex', 'thetae')
@@ -210,6 +213,6 @@ for x in list(np.arange(1, 11)):
             # print('mslp done')
             #plot(data, year, month, day, hour, level, 'AL081974', 'temp')
             #print('Temperature done')
-            plot(data, '2018', '01', '04', '1200', '850', 'Unnamed', 'tempAdv')
-        except:
-            pass
+plot(data, '1994', '12', '23', '12', 200, 'Unnamed', 'temp')
+        #except:
+        #    pass

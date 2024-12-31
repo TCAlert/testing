@@ -7,6 +7,8 @@ from scipy.ndimage import gaussian_filter
 import pandas
 from sklearn import linear_model
 import scipy
+from matplotlib import patheffects as pe
+from sklearn.ensemble import RandomForestRegressor
 np.set_printoptions(suppress=True)
 
 def genShear(u, v):
@@ -27,13 +29,17 @@ def regression(input, output):
     testIn = input[25000:]
     testOut = output[25000:]
 
-    regr = linear_model.LinearRegression()
-    regr.fit(trainIn, trainOut)
+    # regr = linear_model.LinearRegression()
+    # regr.fit(trainIn, trainOut)
+    # predictTest = regr.predict(testIn)
 
+    regr = RandomForestRegressor(n_estimators=100)
+    regr.fit(trainIn, trainOut) 
     predictTest = regr.predict(testIn)
 
     corr, sig = scipy.stats.pearsonr(predictTest, testOut)
-    error = np.mean(np.abs(predictTest - testOut))
+    # error = np.sqrt(np.mean((predictTest - testOut)**2))
+    # error = np.mean(np.abs(predictTest - testOut))
     # plt.scatter(predictTest, testOut)
     # plt.show()
 
@@ -65,21 +71,21 @@ anom = np.nan_to_num((data))
 pcseries = np.dot(anom.reshape(32250, 28), EOFs.reshape(28, 28).T)
 
 variable = 'delta_vmax'
-gShear = norm(genShear(dataset['u_data'].values, dataset['v_data'].values))
-dShear = norm(dataset['sh_mag'].sel(upper = 200, lower = 850))
-uShear = norm(dataset['sh_mag'].sel(upper = 200, lower = 500))
-mShear = norm(dataset['sh_mag'].sel(upper = 500, lower = 850))
-vmax = norm(np.nan_to_num(dataset['vmax']))
-dist = norm(np.nan_to_num(dataset['dist_land']))
-rhlm = norm(np.nan_to_num(dataset.rlhum.sel(upper = slice(300, 700)).mean('upper')))
-sst = norm(np.nan_to_num(dataset.sst))
-mpi = norm(np.nan_to_num(dataset.mpi))
+gShear = genShear(dataset['u_data'].values, dataset['v_data'].values)
+dShear = dataset['sh_mag'].sel(upper = 200, lower = 850)
+uShear = dataset['sh_mag'].sel(upper = 200, lower = 500)
+mShear = dataset['sh_mag'].sel(upper = 500, lower = 850)
+vmax = np.nan_to_num(dataset['vmax'])
+dist = np.nan_to_num(dataset['dist_land'])
+rhlm = np.nan_to_num(dataset.rlhum.sel(upper = slice(300, 700)).mean('upper'))
+sst = np.nan_to_num(dataset.sst)
+mpi = np.nan_to_num(dataset.mpi)
 
 corrList = []
 variables = [pcseries[:, 0], pcseries[:, 1], pcseries[:, 2], np.nan_to_num(dataset['vmax']), np.nan_to_num(dataset.rlhum.sel(upper = slice(300, 700)).mean('upper')), np.nan_to_num(dataset.sst), np.nan_to_num(dataset.mpi), dShear, uShear, mShear, gShear, np.nan_to_num(dataset[variable])]
 
 xList = [[], [pcseries[:, 0]], [pcseries[:, 1]], [pcseries[:, 2]], [pcseries[:, 0], pcseries[:, 1]], [pcseries[:, 1], pcseries[:, 2]], [pcseries[:, 0], pcseries[:, 2]], [pcseries[:, 0], pcseries[:, 1], pcseries[:, 2]]]
-yList = [[], [gShear], [dShear], [gShear, dShear], [gShear, dist, vmax, sst, mpi], [dShear, dist, vmax, sst, mpi], [gShear, dShear, dist, vmax, sst, mpi], [dist, vmax, sst, mpi]]
+yList = [[], [gShear], [dShear], [gShear, dShear], [gShear, dist, vmax, sst, mpi, rhlm], [dShear, dist, vmax, sst, mpi, rhlm], [gShear, dShear, dist, vmax, sst, mpi, rhlm], [dist, vmax, sst, mpi, rhlm]]
 
 for x in range(len(xList)):
     for y in range(len(yList)):
@@ -90,19 +96,24 @@ for x in range(len(xList)):
             corr = 0
         corrList.append(corr)
 
-corrList = np.array(corrList).reshape(len(xList), len(yList))
+corrList = np.transpose(np.array(corrList).reshape(len(xList), len(yList)))
+corrList = corrList - corrList[:, [0]]
 
 fig = plt.figure(figsize=(14, 12))
 ax = plt.axes()
 ax.set_frame_on(False)
 ax.set_xticklabels(['', 'None', 'PC1', 'PC2', 'PC3', 'PC1, PC2', 'PC2, PC3', 'PC1, PC3', 'PC1, PC2, PC3']) 
-ax.set_yticklabels(['', 'None', 'GSHR', 'DSHR', 'GSHR, DSHR', 'GSHR, EXTRA', 'DSHR, EXTRA', 'GSHR, DSHR, EXTRA', 'EXTRA']) 
+ax.set_yticklabels(['', 'None', 'GSHR', 'DSHR', 'GSHR\nDSHR', 'GSHR\nEXTRA', 'DSHR\nEXTRA', 'GSHR\nDSHR\nEXTRA', 'EXTRA']) 
 
-s = plt.pcolormesh(np.arange(len(xList)), np.arange(len(yList)), corrList, cmap = cmap.probs2(), vmin = 0, vmax = .35)
+s = plt.pcolormesh(np.arange(len(xList)), np.arange(len(yList)), corrList, cmap = cmap.probs2(), vmin = 0, vmax = 0.5)
+for x in range(len(xList)):
+    for y in range(len(yList)):
+        plt.text(y, x, f'{(round(corrList[x][y], 3))}', size=12, color='black', weight = 'bold', horizontalalignment = 'center', verticalalignment = 'center', path_effects=[pe.withStroke(linewidth = 1, foreground="white")])#, transform = ccrs.PlateCarree(central_longitude = 0))
+
 cbar = plt.colorbar(s, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.set_label("R^2")
 
 ax.set_title(f'Table of Predictors/R^2', fontweight='bold', fontsize=labelsize, loc='left')  
-ax.set_title(f'Deelan Jariwala', fontsize=labelsize, loc='right')  
-plt.savefig(r"C:\Users\deela\Downloads\EOFs\r2matrix.png", dpi = 400, bbox_inches = 'tight')
+ax.set_title(f'RF\nDeelan Jariwala', fontsize=labelsize, loc='right')  
+plt.savefig(r"C:\Users\deela\Downloads\EOFs\rfcorrmatrix3.png", dpi = 400, bbox_inches = 'tight')
 plt.show()

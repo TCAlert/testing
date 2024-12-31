@@ -42,10 +42,10 @@ def map(interval, labelsize):
 
 #dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/pressure/uwnd.mon.mean.nc')
 #data = dataset['uwnd'].sel(level = 850).fillna(0)# * np.cos(np.radians(dataset['lat']))
-dataset = psl.createClimoMonthly([1971, 2023], '8', ['air', 'shum'], ['Pressure', 'Pressure'], False)
-dataset = helper.thetae(dataset[0].sel(level = 850) + 273.15, 850, 1000, dataset[1].sel(level = 850) / 1000)
-#dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
-#data = dataset['sst']
+# dataset = psl.createClimoMonthly([1971, 2023], '8', ['air', 'shum'], ['Pressure', 'Pressure'], False)
+# dataset = helper.thetae(dataset[0].sel(level = 850) + 273.15, 850, 1000, dataset[1].sel(level = 850) / 1000)
+dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
+dataset = dataset['sst']
 # dates = []
 # for x in range(1987, 2024):
 #     for y in range(1, 13):
@@ -59,21 +59,27 @@ data = dataset.fillna(0) * np.cos(np.radians(dataset['lat']))
 #dataset = xr.open_dataset(r"C:\Users\deela\Downloads\R1CI1971-2023.nc")
 #data = dataset['__xarray_dataarray_variable__'].fillna(0) * np.cos(np.radians(dataset['lat']))
 print(data)
-#csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]].iloc[16:]
 
-startYear = 1971
-endYear = 2023
-indexMonth = '8'
-dataMonth = '8'
-day = 365
-day2 = 233
-index = f'ACE in Box (to day {day})'
-lats = [0, 70]
-lons = [-120, -1]
-boxXCoords = [lons[0], lons[1], lons[1], lons[0], lons[0]]
-boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
-csv = createClimoData([startYear, endYear], 'AL', lats, lons)
-csv = csv[day]# - csv[day2]
+index = 'ewrs'
+indexMonth = '12'
+dataMonth = '12'
+startYear = 1950
+endYear = 2020
+csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]]
+
+# startYear = 1971
+# endYear = 2023
+# indexMonth = '8'
+# dataMonth = '8'
+# day = 365
+# day2 = 233
+# index = f'ACE in Box (to day {day})'
+# lats = [0, 70]
+# lons = [-120, -1]
+# boxXCoords = [lons[0], lons[1], lons[1], lons[0], lons[0]]
+# boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
+# csv = createClimoData([startYear, endYear], 'AL', lats, lons)
+# csv = csv[day]# - csv[day2]
 
 # startYear = 1971
 # endYear = 2020
@@ -149,5 +155,5 @@ ax.set_title(f'{numToMonth(dataMonth)}', fontsize=9, loc='center')
 ax.set_title(f'Significant Values Hatched\nDeelan Jariwala', fontsize=9, loc='right') 
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
-plt.savefig(r"C:\Users\deela\Downloads\correlationPlot" + dataMonth + ".png", dpi = 400, bbox_inches = 'tight')
+# plt.savefig(r"C:\Users\deela\Downloads\correlationPlot" + dataMonth + ".png", dpi = 400, bbox_inches = 'tight')
 plt.show()

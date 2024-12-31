@@ -1,31 +1,21 @@
-
-import matplotlib.pyplot as plt
+import bz2
 import numpy as np 
-import gzip 
 import satcmaps as cmap 
-import pandas as pd
+import matplotlib.pyplot as plt
+import cartopy, cartopy.crs as ccrs  # Plot maps
+import xarray as xr 
+from datetime import datetime 
+import cartopy.feature as cfeature
 
-def conv(dat, t = "IR"):
-    conv = pd.read_csv(r"C:\Users\deela\Downloads\\gms_conversions - " + t + ".csv")
-    mapping = dict(zip(conv['BRIT'], conv['TEMP']))
-    for x in range(len(dat)):
-        for y in range(len(dat[x])):
-            try:
-                dat[x][y] = mapping[round(dat[x][y])]
-            except:
-                dat[x][y] = 0
-    
-    return dat
+# Specify the input .bz2 file and output file
+file = r"C:\Users\deela\Downloads\HS_H08_20150707_0200_B13_FLDK_R20_S0101.DAT.bz2"
 
-file = r"C:\Users\deela\Downloads\check.txt"
-newFile = r"C:\Users\deela\Downloads\Z00001"
-
-with open(newFile, 'rb') as data:
+# Decompress the .bz2 file
+with bz2.BZ2File(file, 'rb') as data:
     decoded_data = data.read()
+    print("Header (raw):", decoded_data)#np.frombuffer(decoded_data, dtype=np.uint8)[:64])
 
-    with open(file, 'w', encoding="utf-8") as f:
-        f.write(decoded_data.decode('utf-8', errors='ignore'))
-    decoded_data = np.frombuffer(decoded_data, dtype=np.uint8)[:29600].reshape(20, 1480)
+    decoded_data = np.frombuffer(decoded_data, dtype=np.uint8).reshape(20, 1480)
     # decoded_data = (conv(decoded_data, 'IR') - 273.15)#[:, 249:3424]
 
     cmp, vmax, vmin = cmap.irtables['irg']
