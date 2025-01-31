@@ -54,30 +54,31 @@ def allShear(u, v):
 bucket = 'noaa-nesdis-tcprimed-pds'
 product_name = 'v01r01'
 def getStormFile(year, basin, storm, case):
-    dataset = []
+    # dataset = []
     
-    s3_client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
-    paginator = s3_client.get_paginator('list_objects_v2')
-    prefix = f'{product_name}/final/{year}/{basin.upper()}/{storm}/'
+    # s3_client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
+    # paginator = s3_client.get_paginator('list_objects_v2')
+    # prefix = f'{product_name}/final/{year}/{basin.upper()}/{storm}/'
 
-    response_iterator = paginator.paginate(
-        Bucket = bucket,
-        Delimiter='/',
-        Prefix = prefix,
-    )
-    for page in response_iterator:
-        for object in page['Contents']:
-            if 'env' in object['Key']:
-                file = object['Key']
-                print(file)
+    # response_iterator = paginator.paginate(
+    #     Bucket = bucket,
+    #     Delimiter='/',
+    #     Prefix = prefix,
+    # )
+    # for page in response_iterator:
+    #     for object in page['Contents']:
+    #         if 'env' in object['Key']:
+    #             file = object['Key']
+    #             print(file)
           
-    s3_client.download_file(bucket, file, r"D:\\tcprimed_era5v2\\" + basin + storm + year + ".nc") 
+    # s3_client.download_file(bucket, file, r"D:\\tcprimed_era5v2\\" + basin + storm + year + ".nc") 
 
     dataset = xr.open_dataset(r"D:\\tcprimed_era5v2\\" + basin + storm + year + ".nc", group = 'diagnostics')
     stormdt = xr.open_dataset(r"D:\\tcprimed_era5v2\\" + basin + storm + year + ".nc", group = 'storm_metadata')
 
     vmax = stormdt['intensity'].values
     dwnd = stormdt['intensity_change'].sel(intensity_change_periods = np.timedelta64(86400000000000)).values
+    bwnd = stormdt['intensity_change'].sel(intensity_change_periods = np.timedelta64(-86400000000000)).values
     mslp = stormdt['central_min_pressure'].values
     type = stormdt['development_level'].values
     vspd = stormdt['storm_speed_meridional_component'].values
@@ -98,6 +99,8 @@ def getStormFile(year, basin, storm, case):
     lats = dataset['center_latitude'].values
     uData = dataset['u_wind'].sel(regions = 1, level = levels)
     vData = dataset['v_wind'].sel(regions = 1, level = levels)
+    tmpr = dataset['temperature'].sel(regions = 0, level = levels)
+    divr = dataset['divergence'].sel(level = levels).squeeze()
     empi = dataset['potential_intensity_theoretical'].sel(region = 0).values
     tcsst = (dataset['sst'].values - 273.15).flatten()
     rlhum = dataset['relative_humidity'].sel(regions = 0, level = levels).values
@@ -123,6 +126,8 @@ def getStormFile(year, basin, storm, case):
                     'rlhum'      : (["case", "upper"], rlhum),
                     'u_data'     : (["case", "upper"], uData.values),
                     'v_data'     : (["case", "upper"], vData.values),
+                    'temperature': (["case", "upper"], tmpr.values),
+                    'divergence' : (["case", "upper"], divr.values),
                     'sst'        : (["case"], tcsst),
                     'mpi'        : (["case"], empi),
                     'lons'       : (["case"], lons),
@@ -132,7 +137,8 @@ def getStormFile(year, basin, storm, case):
                     'time'       : (["case"], times),
                     'vmax'       : (['case'], vmax),
                     'mslp'       : (['case'], mslp),
-                    'delta_vmax' : (['case'], dwnd),
+                    'fdelta_vmax': (['case'], dwnd),
+                    'bdelta_vmax': (['case'], bwnd),
                     'system_type': (['case'], type),
                     'uspd'       : (['case'], uspd),
                     'vspd'       : (['case'], vspd),
@@ -155,7 +161,7 @@ for y in range(1987, 2024):
                 print(f'{basin}{str(x).zfill(2)}{str(y)}', case)
             except Exception as e:
                 print(e)
-                pass
+            #    pass
 
 ds = xr.concat(data, dim = 'case')
 
@@ -180,7 +186,7 @@ ax.grid()
 # Note that the vectors in the plot are normalized by the magnitude of the shear
 c = ax.contourf(test.upper, test.lower, test.values * 1.944, cmap = cmap.shear(), levels = np.arange(0, 80, .1), extend = 'max')
 
-ax.set_title(f'SHEARS Mean TC Wind Shear (m/s)\nClimatology: 1997-2021', fontweight='bold', fontsize=10, loc='left')
+ax.set_title(f'SHEARS Mean TC Wind Shear (kts)\nClimatology: 1987-2023', fontweight='bold', fontsize=10, loc='left')
 ax.set_title('Deelan Jariwala', fontsize=10, loc='right') 
 
 cb = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)

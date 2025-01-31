@@ -79,7 +79,7 @@ bPres = []
 bWind = []
 times = []
 for x in range(len(test)):
-    if test[x][0].strip() == 'AL022024' and test[x][4].strip() in ['TD', 'TS', 'HU', 'SD', 'SS']:
+    if test[x][0].strip() == 'AL142024' and test[x][4].strip() in ['TD', 'TS', 'HU', 'SD', 'SS']:
         bWind.append(int(test[x][7]))
         bPres.append(int(test[x][8]))
         times.append(f'{test[x][1].strip()} at {test[x][2].strip()}z')
@@ -88,8 +88,8 @@ ax.plot(bWind, bPres, linewidth = 2.5, color = '#002600', zorder = 15, path_effe
 ax.scatter(bWind, bPres, s = 68, color = 'green', linewidth = .5, edgecolor = 'white', zorder = 15, path_effects=[pe.withStroke(linewidth=1.25, foreground="white")])
 
 plt.title(f'HURDAT2 Atlantic Pressure and Wind Scatterplot\nYears Plotted: 1851-2023', color = '#d9d9d9', fontweight='bold', fontsize=10, loc='left')
-plt.title(f'Hurricane BERYL Overlaid (As Of: {times[-1]})', color = '#d9d9d9', fontsize=9, loc='center')  
+plt.title(f'Hurricane MILTON Overlaid (As Of: {times[-1]})', color = '#d9d9d9', fontsize=9, loc='center')  
 plt.title('Deelan Jariwala', color = '#d9d9d9', fontsize=10, loc='right')
-plt.savefig(r"C:\Users\deela\Downloads\wprscatterberyl.png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\wprscatter.png", dpi = 400, bbox_inches = 'tight')
 
 plt.show()

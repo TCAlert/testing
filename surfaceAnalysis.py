@@ -93,10 +93,10 @@ def stationPlot(ax, lat, lon, u, v, slp = None, temp = None, dews = None):
             pass
 
 def plot(data, year, month, day, hour, level = '1000', name = None, t = 'wind'):
-    # stormData = hurdatParser.retrieveStorm(hurdatParser.database(), [name, str(year)])['Storm Data']
-    # stormData = stormData[(stormData['Time'] == np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hour).zfill(2)}'))]
-    # lat, lon = stormData['Latitude'].values[0], stormData['Longitude'].values[0]
-    lat, lon = 40, -70
+    stormData = hurdatParser.retrieveStorm(hurdatParser.database(), [name, str(year)])['Storm Data']
+    stormData = stormData[(stormData['Time'] == np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hour).zfill(2)}'))]
+    lat, lon = stormData['Latitude'].values[0], stormData['Longitude'].values[0]
+    # lat, lon = 40, -70
 
     data = data[(data['YR'].astype(str) == year) & (data['MO'].astype(str) == month) & (data['DY'].astype(str) == day) & (data['HR'] == float(hour)) & (data['LAT'] > lat - 6) & (data['LAT'] < lat + 6) & (data['LON (W)'] > lon - 7.5) & (data['LON (W)'] < lon + 7.5)]
     print(data)
@@ -188,7 +188,7 @@ def plot(data, year, month, day, hour, level = '1000', name = None, t = 'wind'):
     cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
     cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
     # plt.savefig(r"C:\Users\deela\Downloads\carmen\\" + name + title + str(year) + str(month).zfill(2) + str(day).zfill(2) + str(hour).zfill(2) + ".png", dpi = 400, bbox_inches = 'tight')
-    plt.savefig(r"C:\Users\deela\Downloads\unnamed1994.png", dpi = 400, bbox_inches = 'tight')
+    #plt.savefig(r"C:\Users\deela\Downloads\unnamed1994.png", dpi = 400, bbox_inches = 'tight')
     plt.show()
 
 data = pd.read_csv(r"C:\Users\deela\Downloads\\1994 - unnamed.csv")
@@ -213,6 +213,6 @@ print(data)
             # print('mslp done')
             #plot(data, year, month, day, hour, level, 'AL081974', 'temp')
             #print('Temperature done')
-plot(data, '1994', '12', '23', '12', 200, 'Unnamed', 'temp')
+plot(data, '1974', '09', '08', '12', 200, 'Carmen', 'divergence')
         #except:
         #    pass

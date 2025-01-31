@@ -90,6 +90,25 @@ print(f"EOF matrix shape: {EOFs.shape}")
 
 explained_variance = pca.explained_variance_ratio_
 print(f"Explained variance: {explained_variance}")
+fig = plt.figure(figsize=(8, 8))
+
+ax = plt.axes()
+ax.set_frame_on(False)
+# Add state boundaries to plot
+ax.tick_params(axis='both', labelsize=8, left = False, bottom = False)
+ax.grid(linestyle = '--', alpha = 0.5, linewidth = 0.5, zorder = 9)
+ax.set_ylabel('Variance Explained (%)', weight = 'bold', size = 9)
+ax.set_xlabel('EOF #', weight = 'bold', size = 9)
+
+
+plt.plot(explained_variance * 100, linewidth = 3, color = 'blue', alpha = 0.75)
+plt.scatter(range(len(explained_variance)), explained_variance * 100, c = 'red', alpha = 0.75, zorder = 10)
+for x in range(len(explained_variance)):
+    plt.annotate(f'{round(explained_variance[x] * 100, 1)}%', (x + 0.25, (explained_variance[x] + .01) * 100), size = 7)
+plt.title(f'Variance Explained by EOF', fontweight='bold', fontsize=labelsize, loc='left')  
+plt.title(f'\nDeelan Jariwala', fontsize=labelsize, loc='right')  
+plt.savefig(r"C:\Users\deela\Downloads\EOFS\varianceexplained.png", dpi = 400, bbox_inches = 'tight')
+plt.show()
 
 pcseries = []
 mean = []
@@ -160,7 +179,7 @@ ds = xr.Dataset({'eof'    : (["num", "component", "level"], EOFs),
                 "component": [0, 1],
                 "level": dataset.upper.values})
 
-ds.to_netcdf(r"C:\Users\deela\Downloads\SHEARS_EOF.nc")
+# ds.to_netcdf(r"C:\Users\deela\Downloads\SHEARS_EOF.nc")
 
 # name = 'All TCs'
 

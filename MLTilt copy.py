@@ -53,7 +53,7 @@ tc_year = TDRData["swath_year"].values
 swath_flight_id = TDRData["mission_ID"].values
 swath_storm_name = TDRData["storm_name"].values
 
-vmax_init, pres_init, shdc_init, shgc_init = getSHIPS(TDRData, ["vmax_ships", "pres_ships", "shdc_ships", "shgc_ships"], [0, 0, 0, 0])
+vmax_init, pres_init, shdc_init, shgc_init, pw5u_init = getSHIPS(TDRData, ["vmax_ships", "pres_ships", "shdc_ships", "shgc_ships", "pw5u_ships"], [0, 0, 0, 0, 0])
 
 # Establish the variable we wish to predict (in this case the max vortex tilt magnitude in the middle troposphere):
 vTiltMax = np.nanmax(TDRData["tc_tilt_magnitude"].sel(height = [5, 5.5, 6.0, 6.5]).values, axis = 1)
@@ -91,7 +91,7 @@ print(np.shape(std_core_irb))
 
 # Let's re-create our features array to include these core variables:
 # Establish the variables we wish to train on:
-features = np.transpose(np.array([pres_init, shgc_init, min_irb, avg_irb, std_irb, testPred])) # We transpose the array to be in the order that the RF package likes
+features = np.transpose(np.array([pres_init, shgc_init, pw5u_init, min_irb, avg_irb, std_irb, testPred])) # We transpose the array to be in the order that the RF package likes
 features = np.nan_to_num(features)
 
 print(np.shape(features))
@@ -101,13 +101,13 @@ y = np.copy(vTiltMax)
 print(np.shape(y))
 
 # Let's train on the years of interest and we must also make sure we have real data there (not a NaN):
-train_inds = np.where((tc_year < 2023) & (y >= 0.))[0]
+train_inds = np.where((tc_year < 2023) & (y >= 0.) & (vmax_init < 75))[0]
 
 # We will test our model on cases in 2023:
-test_inds  = np.where(tc_year == 2023)[0]
+test_inds  = np.where((tc_year == 2023) & (vmax_init < 75))[0]
 
-print('The number of training cases is:',np.shape(train_inds))
-print('The number of testing cases is:',np.shape(test_inds))
+print('The number of training cases is:', np.shape(train_inds))
+print('The number of testing cases is:', np.shape(test_inds))
 
 rf = RandomForestRegressor(n_estimators=100)
 rf.fit(features[train_inds,:],y[train_inds]) 
@@ -126,5 +126,3 @@ print("Median Error: ", np.nanmedian(np.abs(predictions - y[test_inds])))
 
 # Print the importance of each "feature"/predictor:
 print(rf.feature_importances_)
-
-# In this instance, we can see the second feature has the highest value (MSLP)

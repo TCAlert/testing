@@ -126,14 +126,14 @@ def map(lon, lat, s = 5, center = 0):
 
     return ax
 
-year = '2024'
-month = '10'
-day = '10'
-hour = '16'
+year = '2025'
+month = '01'
+day = '19'
+hour = '20'
 
-data = getData(year, month, day, hour)
-sLat = 23.4
-sLon = -50.75
+data = getData(year, month, day, hour, 'Australia')
+sLat = -20.5
+sLon = 113.3
 s = 10
 
 print(data)
@@ -172,7 +172,7 @@ for x in range(len(data)):
         pass
 plt.title(f'GOES-16 AMVs\nTime: {year}-{month}-{day} at {hour}:00 UTC' , fontweight='bold', fontsize=10, loc='left')
 plt.title(f'Deelan Jariwala', fontsize=10, loc='right')
-plt.savefig(r"C:\Users\deela\Downloads\amvtest.png", dpi = 250, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\amvtest2.png", dpi = 250, bbox_inches = 'tight')
 plt.show()
 
 res = .5
@@ -185,22 +185,22 @@ ds = xr.Dataset({'u' : (["latitude", "longitude"], u),
        coords = {"latitude": np.arange(sLat - s, sLat + s, res),
                  "longitude": np.arange(sLon - s, sLon + s, res)})
 
-ds.to_netcdf(r"C:\Users\deela\Downloads\amvtest.nc")
+#ds.to_netcdf(r"C:\Users\deela\Downloads\amvtest.nc")
 
 fxx, fxy = Gradient2D(ds['u'])
 fyx, fyy = Gradient2D(ds['v'])
 # mag = fyx - fxy
 mag = fxx + fyy
-#mag = gaussian_filter(mag, sigma = 1)
+mag = gaussian_filter(mag, sigma = 1)
 
 ax = map(sLon, sLat)
 ax.barbs(grid[1], grid[0], u, v, fill_empty = True, length = 5, sizes=dict(emptybarb = 0.15), zorder = 15, path_effects=[pe.withStroke(linewidth=2, foreground="white")])
-plt.pcolormesh(ds['u'].longitude, ds['u'].latitude, mag, cmap = cmap.tempAnoms(), vmin = -10, vmax = 10)
-#plt.contourf(ds['u'].longitude[:-1], ds['u'].latitude[:-1], mag, cmap = cmap.tempAnoms(), levels = np.arange(-10, 10.1, .1), extend = 'both')
+#plt.pcolormesh(ds['u'].longitude, ds['u'].latitude, mag, cmap = cmap.tempAnoms(), vmin = -10, vmax = 10)
+plt.contourf(ds['u'].longitude[:-1], ds['u'].latitude[:-1], mag, cmap = cmap.tempAnoms(), levels = np.arange(-10, 10.1, .1), extend = 'both')
 
 cbar = plt.colorbar(orientation = 'vertical', aspect = 50, pad = .02)
 cbar.set_label('Divergence')
 plt.title(f'GOES-16 Gridded AMV Attempt\nTime: {year}-{month}-{day} at {hour}:00 UTC' , fontweight='bold', fontsize=10, loc='left')
 plt.title(f'0.5Deg\nDeelan Jariwala', fontsize=10, loc='right')
-plt.savefig(r"C:\Users\deela\Downloads\amvtestGridded.png", dpi = 250, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\amvtestGridded2.png", dpi = 250, bbox_inches = 'tight')
 plt.show()

@@ -92,16 +92,16 @@ pcseries = np.dot(anom.reshape(32250, 28), EOFs.reshape(28, 28).T)
 num = 1
 
 grid, data, nobs = bin(lons, lats, pcseries[:, num - 1])
-nobs = 10 * (nobs / np.nanmax(nobs))**1.4
-nobs = np.where(nobs > 1, 1, nobs)
+#nobs = 10 * (nobs / np.nanmax(nobs))**1.4
+#nobs = np.where(nobs > 1, 1, nobs)
 
 ax = map(20, labelsize)
 
-c = plt.pcolormesh(grid[0], grid[1], data, cmap = cmap.tempAnoms(), vmin = -15, vmax = 15, alpha = nobs, transform = ccrs.PlateCarree(central_longitude=0))
+c = plt.pcolormesh(grid[0], grid[1], nobs, cmap = cmap.probs(), vmin = 0, vmax = 100, transform = ccrs.PlateCarree(central_longitude=0))
 #c = plt.pcolormesh(grid[0], grid[1], data, cmap = cmap.tempAnoms(), levels = np.arange(-15, 15.25, 0.25), transform = ccrs.PlateCarree(central_longitude=0))
 cbar = plt.colorbar(c, orientation = 'horizontal', aspect = 100, pad = .08)
 
-ax.set_title(f'SHEARS TC Hodograph PC{str(num)} Map\n2.5 Degree Bins', fontweight='bold', fontsize=labelsize, loc='left')  
+ax.set_title(f'SHEARS TC Hodograph Cases Map\n2.5 Degree Bins', fontweight='bold', fontsize=labelsize, loc='left')  
 ax.set_title(f'Deelan Jariwala', fontsize=labelsize, loc='right')  
-plt.savefig(r"C:\Users\deela\Downloads\EOFs\SHEARSPC" + str(num) + "map2.png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\EOFs\SHEARSPCCasesMap.png", dpi = 400, bbox_inches = 'tight')
 plt.show()
