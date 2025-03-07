@@ -29,13 +29,13 @@ def regression(input, output):
     testIn = input[25000:]
     testOut = output[25000:]
 
-    # regr = linear_model.LinearRegression()
-    # regr.fit(trainIn, trainOut)
-    # predictTest = regr.predict(testIn)
-
-    regr = RandomForestRegressor(n_estimators=100, n_jobs=-1)
-    regr.fit(trainIn, trainOut) 
+    regr = linear_model.LinearRegression()
+    regr.fit(trainIn, trainOut)
     predictTest = regr.predict(testIn)
+
+    # regr = RandomForestRegressor(n_estimators=100, n_jobs=-1)
+    # regr.fit(trainIn, trainOut) 
+    # predictTest = regr.predict(testIn)
 
     corr, sig = scipy.stats.pearsonr(predictTest, testOut)
     # error = np.sqrt(np.mean((predictTest - testOut)**2))
@@ -112,7 +112,7 @@ ax.set_frame_on(False)
 ax.set_xticklabels(['', 'None', 'PC1', 'PC2', 'PC3', 'PC1, PC2', 'PC2, PC3', 'PC1, PC3', 'PC1, PC2, PC3']) 
 ax.set_yticklabels(['', 'None', 'GSHR', 'DSHR', 'GSHR\nDSHR', 'GSHR\nEXTRA', 'DSHR\nEXTRA', 'GSHR\nDSHR\nEXTRA', 'EXTRA']) 
 
-s = plt.pcolormesh(np.arange(len(xList)), np.arange(len(yList)), corrList, cmap = cmap.probs2(), vmin = 0, vmax = 0.05)
+s = plt.pcolormesh(np.arange(len(xList)), np.arange(len(yList)), corrList, cmap = cmap.probs(), vmin = 0, vmax = 0.05)
 for x in range(len(xList)):
     for y in range(len(yList)):
         plt.text(y, x, f'{(round(corrList[x][y], 3))}', size=12, color='black', weight = 'bold', horizontalalignment = 'center', verticalalignment = 'center', path_effects=[pe.withStroke(linewidth = 1, foreground="white")])#, transform = ccrs.PlateCarree(central_longitude = 0))
@@ -121,6 +121,6 @@ cbar = plt.colorbar(s, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.set_label("R^2")
 
 ax.set_title(f'Table of Predictors/R^2', fontweight='bold', fontsize=labelsize, loc='left')  
-ax.set_title(f'RF\nDeelan Jariwala', fontsize=labelsize, loc='right')
-plt.savefig(r"C:\Users\deela\Downloads\EOFs\RFR2matrix2NEW.png", dpi = 400, bbox_inches = 'tight')
+ax.set_title(f'\nDeelan Jariwala', fontsize=labelsize, loc='right')
+plt.savefig(r"C:\Users\deela\Downloads\EOFs\R2matrixfinalSubtract.png", dpi = 400, bbox_inches = 'tight')
 plt.show()

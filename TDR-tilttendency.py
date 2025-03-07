@@ -121,7 +121,7 @@ for times in iTimes:
             while y < len(times):
                 delta = np.timedelta64(times[y] - times[x], 'h')
                 tChange = round(iTilts[counter][y] - iTilts[counter][x], 2)
-                if tChange >= 5 and delta >= 6 and delta <= 18 and iTilts[counter][x] > 10:# and iWinds[counter][x] < 75:
+                if tChange >= 5 and delta >= 6 and delta <= 26 and iTilts[counter][x] > 10:# and iWinds[counter][x] < 75:
                     data = [0, 0]#getData(dataset, ['swath_reflectivity', 'swath_vertical_velocity'], [3, [5, 5.5, 6, 6.5, 7, 7.5, 8]], iCases[counter][x])
 
                     print(f'{str(iCases[counter][x])[:-2]:5s}{str(iCases[counter][y])[:-2]:5s}{str(iNames[counter][x].split('_')[0]):15s}{str(times[x]):20s}{str(times[y]):20s}{str(delta):10s}{str(iTilts[counter][x]):15s}{str(iTilts[counter][y]):15s}{str(tChange):15s}{str(iWinds[counter][y]):10s}{str(round(data[0], 1)):15s}{str(round(data[1], 1)):15s}')

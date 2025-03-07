@@ -31,7 +31,7 @@ def std(dataset, average):
     return stddev
 
 def timeseries(month, years, sd = False):
-    dataset = ((xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')['sst']).sel(lat = slice(50, 40), lon = slice(170, 200))).mean(['lat', 'lon'])
+    dataset = ((xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')['sst']).sel(lat = slice(20, 10), lon = slice(270, 340))).mean(['lat', 'lon'])
     print(dataset)
     allData = []
     anomalies = []
@@ -55,18 +55,18 @@ def timeseries(month, years, sd = False):
     ax.set_ylabel('Temperature (\u00b0C)', weight = 'bold', size = 9)
     ax.set_xlabel('Year', weight = 'bold', size = 9)
 
-    ax.plot(years[29:], climos[29:], linewidth = 2.5, color = '#404040', label = '30-Year Sliding Climatology')
+    ax.plot(years[:], climos[:], linewidth = 2.5, color = '#404040', label = '30-Year Sliding Climatology')
     ax.plot(years[:], sst[:], linewidth = 2, color = '#bf3030', label = 'Sea Surface Temperature')
     ax.scatter(years[-1], sst[-1], color = 'black', zorder = 10)
     ax.text(years[-1] + 5, sst[-1], f'{round(float(sst[-1]), 1)}C', size=10, color='#404040', horizontalalignment = 'center', verticalalignment = 'center', path_effects=[pe.withStroke(linewidth=1.5, foreground="white")])
 
     plt.legend()
 
-    plt.title(f'ERSSTv5 Sea Surface Temperatures\n40N to 50N, 170E to 160W' , fontweight='bold', fontsize=10, loc='left')
+    plt.title(f'ERSSTv5 Sea Surface Temperatures\n10N to 20N, 90W to 20W' , fontweight='bold', fontsize=10, loc='left')
     plt.title(f'{helper.numToMonth(month)}', fontsize = 10, loc = 'center')
     plt.title('Deelan Jariwala', fontsize=10, loc='right')  
     plt.savefig(r"C:\Users\deela\Downloads\ersstlineplot.png", dpi = 400, bbox_inches = 'tight')
 
     plt.show()
 
-timeseries(month='6', years=range(1854, 2024))
+timeseries(month='9', years=range(1924, 2024))

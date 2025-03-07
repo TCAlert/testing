@@ -42,8 +42,9 @@ def spmap(ax, interval, labelsize):
 
     return ax 
 
-dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc")
-#dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc")
+# dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc")
+# print(dataset)
+dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc")
 
 print(list(dataset.variables.keys()))
 
@@ -61,8 +62,8 @@ def retrieveStorm(name, year = None):
     
     return dataset.sel(num_cases = years['num_cases'].values)
 
-def panelPlot(dataset, caseNum):
-    data = dataset.sel(height = 3)
+def panelPlot(dataset, caseNum, height):
+    data = dataset.sel(height = height)
     fig = plt.figure(figsize=(15, 12))
     gs = fig.add_gridspec(2, 2)
 
@@ -86,7 +87,7 @@ def panelPlot(dataset, caseNum):
     axes[0].set_title(f'{date} (Case #{int(caseNum)})', fontsize=10, loc='center')
     axes[0].set_title(f'Deelan Jariwala', fontsize=10, loc='right') 
 
-    cr = axes[1].pcolormesh(lons, lats, data['swath_reflectivity'].values, cmap = cmap.reflectivity(), vmin = 0, vmax = 50, transform=ccrs.PlateCarree(central_longitude=0))
+    cr = axes[1].pcolormesh(lons, lats, data['swath_reflectivity'].values, cmap = cmap.reflectivity2(), vmin = 0, vmax = 50, transform=ccrs.PlateCarree(central_longitude=0))
     cbar = plt.colorbar(cr, ax = axes[1], orientation = 'vertical', aspect = 50, pad = .02)
     cbar.ax.tick_params(axis='both', labelsize=8, left = False, bottom = False)
     axes[1].text(0.5, 0.95, 'Reflectivity (dBZ)', fontweight = 'bold', fontsize = 8, horizontalalignment='center', verticalalignment='center', transform = axes[1].transAxes)
@@ -107,28 +108,34 @@ def panelPlot(dataset, caseNum):
     cbar.ax.tick_params(axis='both', labelsize=8, left = False, bottom = False)
     axes[4].text(0.5, 0.95, 'Relative Vorticity (1/s)', fontweight = 'bold', fontsize = 8, horizontalalignment='center', verticalalignment='center', transform = axes[4].transAxes)
     
-    plt.savefig(r"C:\Users\deela\Downloads\TDR_Swaths\\" + date + "2.png", dpi = 400, bbox_inches = 'tight')
+    plt.savefig(r"C:\Users\deela\Downloads\TDR_Swaths\\" + date + ".png", dpi = 400, bbox_inches = 'tight')
     plt.show()
-name = 'Michael'
-year = 2018
-height = 3
-data = retrieveStorm(name, year)
-print(data.num_cases.values)
-refl = data['swath_wind_speed'].sel(height = height) * 1.94384
+name = 'IDK'
+year = 2023
+height = 2
+# data = retrieveStorm(name, year)
+# print(data.num_cases.values)
+# refl = data['swath_wind_speed'].sel(height = height) * 1.94384
 
-ax = map(2, 9)
+# ax = map(2, 9)
 #ax.set_extent([-120, 0, 0, 60])
-for x in range(len(refl.num_cases)):
-    case = refl.num_cases[x].values
-    panelPlot(data.sel(num_cases = case), case)
-    temp = refl.sel(num_cases = refl.num_cases[x])
-    lats = data['original_latitudes'].sel(num_cases = refl.num_cases[x])
-    lons = data['original_longitudes'].sel(num_cases = refl.num_cases[x])
-    c = plt.pcolormesh(lons, lats, temp.values, cmap = cmap.wind(), vmin = 0, vmax = 160, transform=ccrs.PlateCarree(central_longitude=0))
-ax.set_title(f'TC-RADAR: Tail Doppler Radar {height}km Reflectivity\n{name} {year}', fontweight='bold', fontsize=9, loc='left')
-ax.set_title(f'Deelan Jariwala', fontsize=9, loc='right') 
-cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
-cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
-cbar.set_ticks(np.arange(0, 170, 10))
-plt.savefig(r"C:\Users\deela\Downloads\tdrtest.png", dpi = 400, bbox_inches = 'tight')
-plt.show()
+# for x in range(len(refl.num_cases)):
+#     case = refl.num_cases[x].values
+#     panelPlot(data.sel(num_cases = case), case)
+#     temp = refl.sel(num_cases = refl.num_cases[x])
+#     lats = data['original_latitudes'].sel(num_cases = refl.num_cases[x])
+#     lons = data['original_longitudes'].sel(num_cases = refl.num_cases[x])
+#     c = plt.pcolormesh(lons, lats, temp.values, cmap = cmap.wind(), vmin = 0, vmax = 160, transform=ccrs.PlateCarree(central_longitude=0))
+# ax.set_title(f'TC-RADAR: Tail Doppler Radar {height}km Reflectivity\n{name} {year}', fontweight='bold', fontsize=9, loc='left')
+# ax.set_title(f'Deelan Jariwala', fontsize=9, loc='right') 
+# cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
+# cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
+# cbar.set_ticks(np.arange(0, 170, 10))
+# plt.savefig(r"C:\Users\deela\Downloads\tdrtest.png", dpi = 400, bbox_inches = 'tight')
+# plt.show()
+
+
+cases = [1131 - 710]
+# ax = map(2, 9)
+for x in range(len(cases)):
+    panelPlot(dataset.sel(num_cases = cases[x]), cases[x], height)

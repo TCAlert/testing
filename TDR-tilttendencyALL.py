@@ -57,8 +57,8 @@ def getData(dataset, var, levels, case):
         data.append(float(temp.mean().values))    
     return data
 
-#dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc")
-dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc")
+dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc")
+#dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc")
 # dataset = xr.open_mfdataset([r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc", r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc"], concat_dim='num_cases', combine='nested')
 dataset = dataset.assign_coords(longitude=((dataset.longitude - 100)).sortby('longitude'))
 dataset = dataset.assign_coords(latitude=((dataset.latitude - 100)).sortby('latitude'))
@@ -103,12 +103,13 @@ for x in range(len(iNames)):
             iTimes[x].append(times[y])
             iCases[x].append(cases[y])
 
-print(f'\n{"Case":10s}{"Name":15s}{"Start":20s}{"End":20s}{"Elapsed":10s}{"Start Tilt":15s}{"Final Tilt":15s}{"Tilt Change":15s}{"Wind":10s}{"RMW Refl.":15s}{"RMW VVel.":15s}')
+print(f'\n{"Case":10s}{"Name":15s}{"Start":20s}{"End":20s}{"Elapsed":10s}{"Start Tilt":15s}{"Final Tilt":15s}{"Tilt Change":15s}{'TChange / STilt':25s}{"Wind":10s}')
 
 stormTilt = []
 startTime = []
 scaseList = []
 tchangeList = []
+dTiltRatio = []
 counter = 0
 for times in iTimes: 
     dTilt = []
@@ -117,30 +118,35 @@ for times in iTimes:
     while x < len(times):
         try:
             y = x + 1
+            bestY = None
+            bestDelta = 0.0
+            maxAbsTiltChange = 0.0
+            tiltChange = 0.0
             while y < len(times):
                 delta = np.timedelta64(times[y] - times[x], 'h')
                 tChange = round(iTilts[counter][y] - iTilts[counter][x], 2)
                 if delta >= 6 and delta <= 26 and iWinds[counter][x] <= 75 and iTilts[counter][x] > 20:# and tChange <= -22.82: 
-                    data = [0, 0]#getData(dataset, ['swath_reflectivity', 'swath_vertical_velocity'], [3, [5, 5.5, 6, 6.5, 7, 7.5, 8]], iCases[counter][x])
-
-                    print(f'{str(iCases[counter][x])[:-2]:5s}{str(iCases[counter][y])[:-2]:5s}{str(iNames[counter][x].split('_')[0]):15s}{str(times[x]):20s}{str(times[y]):20s}{str(delta):10s}{str(iTilts[counter][x]):15s}{str(iTilts[counter][y]):15s}{str(tChange):15s}{str(iWinds[counter][y]):10s}{str(round(data[0], 1)):15s}{str(round(data[1], 1)):15s}')
-                    scaseList.append((float(iCases[counter][x]), float(iCases[counter][y])))
-                    #scaseList.append(float(iCases[counter][x]))
-                    tchangeList.append(tChange)
-                    sTime.append(times[x])
-                    dTilt.append(tChange)
-                    x = y
-                    break
-                else:
-                    y = y + 1
-            else:
-                x += 1
+                    if abs(tChange) > maxAbsTiltChange:
+                        bestY = y
+                        bestDelta = delta
+                        maxAbsTiltChange = abs(tChange)
+                        tiltChange = tChange
+                y = y + 1
+            data = [0, 0]
+            print(f'{str(iCases[counter][x])[:-2]:5s}{str(iCases[counter][bestY])[:-2]:5s}{str(iNames[counter][x].split('_')[0]):15s}{str(times[x]):20s}{str(times[bestY]):20s}{str(bestDelta):10s}{str(iTilts[counter][x]):15s}{str(iTilts[counter][bestY]):15s}{str(tiltChange):15s}{str(tiltChange / iTilts[counter][x]):25s}{str(iWinds[counter][bestY]):10s}')
+            scaseList.append(float(iCases[counter][x]))#(float(iCases[counter][x]), float(iCases[counter][bestY])))
+            tchangeList.append(tChange)
+            sTime.append(times[x])
+            dTilt.append(tChange)
+            dTiltRatio.append(tiltChange / iTilts[counter][x])
+            x = bestY
         except Exception as e:
-            print(e)
-            x = y
+            #print(e)
+            x = x + 1
             pass
     counter = counter + 1
     stormTilt.append(dTilt)
     startTime.append(sTime)
 print(scaseList)
 print(tchangeList)
+print(dTiltRatio)

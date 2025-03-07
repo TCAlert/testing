@@ -180,7 +180,7 @@ def getData(year):
     for x in range(len(lines)):
         temp = lines[x].split(',')
         if basin in temp[0] and int(temp[0][4:8]) in year:
-            advNum = int(temp[2])
+            advNum = int(temp[2]) + 1
             stormData = lines[x + 1 : x + advNum]
             for y in range(len(stormData)):
                 stormData[y] = (f'{temp[0]},' + (stormData[y][:71])).split(',')
@@ -233,31 +233,35 @@ def stormObjects(l):
         for y in range(len(l[x]['Wind'])):
             l[x]['ID'][y] = f'{l[x]["ID"][y][0:4]}{l[x]["Date"][y][0:4]}'
             l[x]['Time'][y] = np.datetime64(f'{l[x]["Date"][y][0:4]}-{l[x]["Date"][y][4:6]}-{l[x]["Date"][y][6:8]}T{l[x]["Time"][y][1:3]}')
+            if l[x]['Wind'][y] > 34:
+                r34.append((l[x]['R34NE'][y] + l[x]['R34SE'][y] + l[x]['R34NW'][y] + l[x]['R34SW'][y]) / 4)
+            else:
+                r34.append(0)
+
             try:
-                if l[x]['Wind'][y] > 34:
-                    r34.append((l[x]['R34NE'][y] + l[x]['R34SE'][y] + l[x]['R34NW'][y] + l[x]['R34SW'][y]) / 4)
-                else:
-                    r34.append(0)
-                
                 if (y - 4 >= 0) and ((l[x]['Wind'][y] - l[x]['Wind'][y - 4]) >= 30):
                     ri.append(True)
                 else:
                     ri.append(False)
+            except:
+                ri.append(False)
                 
+            try:
                 if (y - 1) >= 0:
                     d = helper.distance([l[x]['Latitude'][y], l[x]['Longitude'][y]], [l[x]['Latitude'][y - 1], l[x]['Longitude'][y - 1]])
                     speed.append(round(d / 6, 1))
                 else:
                     speed.append(np.nan)
+            except:
+                speed.append(np.nan)
 
+            try:
                 if (y - 4) >= 0:
                     change.append(l[x]['Wind'][y] - l[x]['Wind'][y - 4])
                 else:
                     change.append(np.nan)
             except:
-                speed.append(np.nan)
                 change.append(0)
-                ri.append(False)
 
         l[x] = l[x].drop('Date', axis = 1)
         l[x]['Speed'] = speed

@@ -27,8 +27,8 @@ def labels(ax, flag = False):
     ax.set_xticklabels(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'], fontfamily = 'Courier New', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")])
 
 def rePoPolar(dataset, offset = 0):
-    x = dataset.lons.values
-    y = dataset.lats.values
+    x = dataset.longitude.values
+    y = dataset.latitude.values
     x, y = np.meshgrid(x, y)
 
     r = np.sqrt(x**2 + y**2)
@@ -61,9 +61,9 @@ def rePoPolar(dataset, offset = 0):
     return polar
 
 def getData(dataset, var, levels, case):
-    vmax = dataset['vmax_ships'].sel(num_cases = case, num_ships_times = 0).values
-    rmw = dataset['tc_rmw'].sel(num_cases = case, level = 3).values / 2
-    shd = 360 - dataset['sddc_ships'].sel(num_cases = case, num_ships_times = 0).values
+    vmax = dataset['vmax_ships'].sel(num_cases = case, ships_lag_times = 0).values
+    rmw = dataset['tc_rmw'].sel(num_cases = case, height = 3).values / 2
+    shd = 360 - dataset['sddc_ships'].sel(num_cases = case, ships_lag_times = 0).values
     print("Case: ", case)
     print('Shear direction', shd)
     print('Radius of Max Wind:', rmw, '\n')
@@ -71,7 +71,7 @@ def getData(dataset, var, levels, case):
     for x in range(len(var)):
         allLevels = []
         for y in levels:
-            temp = dataset[var[x]].sel(num_cases = case, level = y)
+            temp = dataset[var[x]].sel(num_cases = case, height = y)
 
             offset = (np.pi / 2) + np.deg2rad(shd)
             temp = rePoPolar(temp, offset)
@@ -94,13 +94,13 @@ def getData(dataset, var, levels, case):
     return data, vmax
 
 def makeComposites(dataset, list):
-    dataset = dataset.assign_coords(lons=((dataset.lons - 100)).sortby('lons'))
-    dataset = dataset.assign_coords(lats=((dataset.lats - 100)).sortby('lats'))
+    dataset = dataset.assign_coords(longitude=((dataset.longitude - 100)).sortby('longitude'))
+    dataset = dataset.assign_coords(latitude=((dataset.latitude - 100)).sortby('latitude'))
 
     refl = []
     winds = []
     for x in range(len(list)):
-        dat, vmax = getData(dataset, ['swath_vertical_velocity'], np.arange(0.5, 10.5, .5), list[x])
+        dat, vmax = getData(dataset, ['swath_upward_air_velocity'], np.arange(0.5, 10.5, .5), list[x])
 
         refl.append(dat[0])
         winds.append(vmax)
@@ -133,16 +133,23 @@ def CFAD(data):
 
     return grid[0], grid[1], cfad
 
-dataset1 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3k_1997_2019_xy_rel_swath_ships.nc")
-dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3k_2020_2022_xy_rel_swath_ships.nc")
+dataset1 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc")
+dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc")
 t = 'difference'
+quad = 'Upshear Right'
 
-d1 = [155.0, 167.0, 223.0, 255.0, 282.0, 287.0, 306.0, 311.0, 319.0, 332.0, 347.0, 374.0, 376.0, 407.0, 413.0, 424.0, 427.0, 431.0, 451.0, 510.0, 524.0, 681.0]
-d2 = [10.0, 18.0, 29.0, 35.0, 55.0, 61.0, 164.0, 166.0, 186.0, 187.0, 197.0, 205.0, 229.0, 232.0, 245.0, 249.0, 255.0, 347.0, 352.0, 358.0, 420.0, 426.0, 464.0, 467.0, 468.0, 471.0] 
-    # Increase 10km (all storms)
-i1 = [99.0, 168.0, 220.0, 284.0, 308.0, 312.0, 313.0, 345.0, 375.0, 402.0, 422.0, 425.0, 545.0, 561.0]
-i2 = [21.0, 26.0, 32.0, 37.0, 58.0, 129.0, 142.0, 149.0, 164.0, 226.0, 349.0, 358.0, 464.0, 474.0]
-
+# if t == 'Alignment':
+d1 = [225,251,252,253,254,333,334,347,374,376,377,407,408,409,410,413,414,603,604,605,672]
+list2 = [719,752,765,767,794,878,879,939,941,957,968,969,970,971,1057,1073,1101,1131,1148,1177,1178,1179,1180,1191,1192,1220,1222,1223,1224,1226,1227,1228,1301,1302,1305]
+d2 = [x - 710 for x in list2]
+# elif t == 'Misalignment':
+i1 = [148,149,222,224,339,340,341,342,343,344,382,383,384,402,423,424,425,426,427,429,430,431,545,600,601]
+list2 = [742,744,745,747,869,898,899,918,919,930,934,935,936,1040,1049,1175,1195,1197,1201,1217,1218]
+i2 = [x - 710 for x in list2]
+# else:
+#     list1 = [488, 489]
+#     list2 = []
+    
 inc1, wind1 = makeComposites(dataset1, i1)
 inc2, wind2 = makeComposites(dataset2, i2)
 inc = inc1 + inc2
@@ -152,6 +159,13 @@ cfadComposite = []
 for x in range(len(inc)):
     temp = inc[x]
     temp.values = np.where(valid_nums > (np.nanmax(valid_nums) / 2), temp.values, np.nan)
+    temp = temp.sortby('theta')
+    temp = temp.sel(theta = slice(np.pi / 2, np.pi)) # Upshear Right
+    # temp = temp.sel(theta = slice(-np.pi / 2, 0))    # Downshear Left
+    # temp = temp.sel(theta = slice(0, np.pi / 2))     # Downshear Right
+    # temp = temp.sel(theta = slice(-np.pi, -np.pi / 2)) # Upshear Left
+
+    # temp = temp.sel(r = slice(0, 1))
 
     grid1, grid2, data = CFAD(temp)
     cfadComposite.append(data)
@@ -162,34 +176,32 @@ dec2, wind2 = makeComposites(dataset2, d2)
 dec = dec1 + dec2
 valid_nums = np.count_nonzero(~np.isnan(dec), axis = 0)
 
-quad = 'OuterRadii'
 cfadComposite = []
 for x in range(len(dec)):
     temp = dec[x]
     temp.values = np.where(valid_nums > (np.nanmax(valid_nums) / 2), temp.values, np.nan)
-    #temp = temp.sortby('theta')
-    temp = temp.sel(r = slice(1, 4))
-    # print(temp, np.nanmin(temp.theta.values), np.nanmax(temp.theta.values))
+    temp = temp.sortby('theta')
+    temp = temp.sel(theta = slice(np.pi / 2, np.pi)) # Upshear Right
+    # temp = temp.sel(theta = slice(-np.pi / 2, 0))    # Downshear Left
+    # temp = temp.sel(theta = slice(0, np.pi / 2))     # Downshear Right
+    # temp = temp.sel(theta = slice(-np.pi, -np.pi / 2)) # Upshear Left
 
-    # fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize = (12, 9))
-    # c = plt.pcolormesh(temp.theta, temp.r, temp.sel(level = 3), cmap = cmap.tempAnoms())
-    # labels(ax)
-    # plt.show()
+    # temp = temp.sel(r = slice(0, 1))
 
     grid1, grid2, data = CFAD(temp)
     cfadComposite.append(data)
 decCFAD = np.nanmean(cfadComposite, axis = 0)
 
-data = incCFAD - decCFAD
+data = decCFAD - incCFAD
 
 #data = gaussian_filter(data, sigma = 3)
 fig, ax = plt.subplots(figsize = (8, 12))
 c = plt.pcolormesh(grid1, grid2, data, cmap = cmap.tempAnoms(), vmin = -0.10, vmax = 0.10)
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
-ax.set_title(f'TC-RADAR: Normalized Tilt Increase - Decrease2 {quad} CFAD\nVertical Velocity (>50% Valid Points)', fontweight='bold', fontsize=9, loc='left')
+ax.set_title(f'TC-RADAR: Normalized Tilt Alignnment - Misalignment {quad} CFAD\nVertical Velocity (>50% Valid Points)', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'Deelan Jariwala', fontsize=9, loc='right') 
-plt.savefig(r"C:\Users\deela\Downloads\tdrcfaddiff_vvel_" + t + quad + ".png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\TCTiltProject\tdrcfaddiff_vvel_" + t + quad + ".png", dpi = 400, bbox_inches = 'tight')
 plt.show()
 
 # fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize = (12, 9))
