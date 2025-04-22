@@ -60,13 +60,13 @@ def bT(radiance):
 
     return temp
 
-file = Dataset(r"C:\Users\deela\Downloads\\MYD021KM.A2024278.0555.061.2024278153130.hdf")
+file = Dataset(r"C:\Users\deela\Downloads\\MOD021KM.A2004066.0655.061.2017199022223.hdf")
 print(file.variables)
 
 data = file.variables['EV_1KM_Emissive'][:][11].data
 lons = file['Longitude'][:].data
 lats = file['Latitude'][:].data
-satt = 'Aqua'
+satt = 'Terra'
 
 if satt == 'Aqua':
     data = (data - 2035.9332) * 5.71001263e-04
@@ -93,14 +93,17 @@ grid = np.meshgrid(np.arange(minlon, maxlon, resolution), np.arange(minlat, maxl
 tempsgrid = griddata((lons.ravel(), lats.ravel(), ), data.ravel(), (grid[0].ravel(), grid[1].ravel()))
 tempsgrid.shape = grid[1].shape
 
-cmp = 'ice'
+cmp = 'cloudy'
 
 cmap, vmax, vmin = cmaps.irtables[cmp.lower()]
 
+plt.imshow(tempsgrid, vmin = vmin, vmax = vmax, cmap = cmap)
+plt.show()
+
 ax = map(-82.3, 17, None)
 c = plt.pcolormesh(grid[0], grid[1], tempsgrid, vmin = vmin, vmax = vmax, cmap = cmap)
-plt.title(f'{satt} MODIS Band 31 Infrared Imagery\nTime: 10/04/2024 at 0555z' , fontweight='bold', fontsize=labelsize + 1, loc='left')
+plt.title(f'{satt} MODIS Band 31 Infrared Imagery\nTime: 03/06/2004 at 0655z' , fontweight='bold', fontsize=labelsize + 1, loc='left')
 plt.title(f'Deelan Jariwala', fontsize=labelsize + 1, loc='right')  
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
-plt.savefig(r"C:\Users\deela\Downloads\aquamodiskirkirg.png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\terramodisgafilo2004.png", dpi = 400, bbox_inches = 'tight')
 plt.show()

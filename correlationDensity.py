@@ -12,6 +12,7 @@ from scipy.signal import detrend
 from scipy.ndimage import gaussian_filter
 import matplotlib as mpl
 from ersstTimeseriesGenerator import timeseries 
+from correlationPCA import pcaSeries
 mpl.rcParams['hatch.linewidth'] = 0.5
 mpl.rcParams['font.family'] = 'Courier New'
 
@@ -47,18 +48,33 @@ def yearlySum(data):
 
     return data
 
+# startYear = 1978
+# endYear = 2023
+# indexMonth = '10'
+# dataMonth = '1'
+# index = 'SSTAs in Box'
+# type = 'ACE'
+# lats = [40, 60]
+# lons = [-70, -35]
+# boxXCoords = [lons[0], lons[1], lons[1], lons[0], lons[0]]
+# boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
+# csv = timeseries(indexMonth, range(startYear, endYear + 1), slice(lats[1], lats[0]), slice(360 + lons[0], 360 + lons[1]))[numToMonth(indexMonth)[0:3]]
+# #csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]]
+
 startYear = 1978
 endYear = 2023
-indexMonth = '10'
+indexMonth = '3'
 dataMonth = '1'
-index = 'SSTAs in Box'
+eofNum = 2
+index = f'EOF{eofNum} of Box'
 type = 'ACE'
-lats = [40, 60]
-lons = [-70, -35]
-boxXCoords = [lons[0], lons[1], lons[1], lons[0], lons[0]]
+lats = [0, 70]
+lons = [280, 360]
+boxXCoords = [lons[0] - 360, lons[1] - 360, lons[1] - 360, lons[0] - 360, lons[0] - 360]
 boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
-csv = timeseries(indexMonth, range(startYear, endYear + 1), slice(lats[1], lats[0]), slice(360 + lons[0], 360 + lons[1]))[numToMonth(indexMonth)[0:3]]
-#csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]]
+csv = pcaSeries(startYear, endYear, lats, lons, indexMonth, eofNum)[numToMonth(indexMonth)[0:3]]
+
+
 dataset = xr.open_dataset(r"C:\Users\deela\Downloads\HURDAT2DensityALL.nc")
 data = dataset[type]
 print(data.shape)
@@ -89,7 +105,7 @@ data = data.mean('time')
 data.values = np.reshape(corrData, (ogShape[1], ogShape[2]))
 dataset['sig'] = ((ogShape[1], ogShape[2]), np.reshape(signData, (ogShape[1], ogShape[2])))
 
-data.to_netcdf(r"C:\Users\deela\Downloads\HarrisonFile.nc")
+# data.to_netcdf(r"C:\Users\deela\Downloads\HarrisonFile.nc")
 
 ax = map(20, 9)
 ax.set_extent([180, 359.9, 0, 70], crs = ccrs.PlateCarree(central_longitude = 0))
@@ -106,9 +122,9 @@ try:
 except:
     pass
 
-for collection in h.collections:
-    collection.set_edgecolor('#262626')
-    collection.set_linewidth(0)
+# for collection in h.collections:
+#     collection.set_edgecolor('#262626')
+#     collection.set_linewidth(0)
 
 ax.set_title(f'HURDAT2 {type} Density Correlation with {numToMonth(indexMonth)} {index.upper()}\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'Full Year', fontsize=9, loc='center') 

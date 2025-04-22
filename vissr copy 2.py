@@ -18,16 +18,33 @@ def conv(dat, t = "IR"):
     return dat
 
 file = r"C:\Users\deela\Downloads\check.txt"
-newFile = r"C:\Users\deela\Downloads\ESMR_AdjustedTB_N_1974244.bin.Z"
+newFile = r"C:\Users\deela\Downloads\Nimbus5-ESMR_1975m1120t195723_DS95.TAP"
 
 with open(newFile, 'rb') as data:
     decoded_data = data.read()
 
     with open(file, 'w', encoding="utf-8") as f:
         f.write(decoded_data.decode('utf-8', errors='ignore'))
-    print(np.frombuffer(decoded_data, dtype=np.uint16).shape)
-    decoded_data = np.frombuffer(decoded_data, dtype=np.uint16)[:136192].reshape(448, 304)
-    # decoded_data = (conv(decoded_data, 'IR') - 273.15)#[:, 249:3424]
+    print(np.frombuffer(decoded_data, dtype='>u2').shape)
+    decoded_data = np.frombuffer(decoded_data, dtype='>u2')#.reshape(3052, 155)
+
+    # Assuming blocks are full-sized, estimate expected shape
+    block_size = 28000 // 2  # 28000 bytes → 14000 2-byte words
+    header_footer_size = 4 // 2  # 4 bytes → 2 words
+    record_size = 560 // 2  # 560 bytes → 280 words
+
+    # Extracting data while skipping headers/footers
+    blocks = []
+    i = 0
+    while i < len(decoded_data):
+        if i + block_size > len(decoded_data):  # Handle partial block
+            break
+        block = decoded_data[i + header_footer_size : i + block_size - header_footer_size]
+        blocks.append(block)
+        i += block_size
+
+    # Convert to numpy array
+    decoded_data = np.concatenate(blocks).reshape(-1, record_size)
 
     cmp, vmax, vmin = cmap.irtables['irg']
     # lat = 760.8

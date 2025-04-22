@@ -70,7 +70,7 @@ def anomalies(month, years, sd = False):
     ax = map(20, labelsize)    
     #ax.set_extent([240, 359, 0, 70])
 
-    plt.contourf(data.lon, data.lat, allData, origin='lower', levels = np.arange(-5, 5, .1), cmap = cmap.tempAnoms(), extend = 'both', transform=ccrs.PlateCarree(central_longitude=0))
+    plt.contourf(data.lon, data.lat, allData, origin='lower', levels = np.arange(-1, 1, .01), cmap = cmap.tempAnoms(), extend = 'both', transform=ccrs.PlateCarree(central_longitude=0))
     plt.title(f'ERSSTv5 {title}\n30-Year Sliding Climatology' , fontweight='bold', fontsize=labelsize, loc='left')
     plt.title(f'{helper.numToMonth(month)} {str(years)}', fontsize = labelsize, loc = 'center')
     plt.title('Deelan Jariwala', fontsize=labelsize, loc='right')  
@@ -103,5 +103,7 @@ def anomalies(month, years, sd = False):
 # print(years)
     
 #anomalies('9', years)#[2010, 1999, 2020, 1995, 1955, 2017, 2022, 2021, 1988, 1942, 1889, 1856, 1998])
-analogs = [1878, 1926, 1933, 1942, 1995, 1998, 2005, 2010, 2020]
-anomalies('9', [2024])#, True)
+#analogs = [1876, 1887, 1901, 1915, 1919, 1927, 1928, 1932, 1949, 1952, 2001, 2012, 2013, 2017]
+# analogs = '1876 1880 1882 1887 1901 1919 1928 1949 1962 1996 2000 2017'.split(' ')
+analogs = np.arange(2000, 2025, 1)
+anomalies('9', analogs)#, True)

@@ -60,12 +60,12 @@ data = dataset.fillna(0) * np.cos(np.radians(dataset['lat']))
 #data = dataset['__xarray_dataarray_variable__'].fillna(0) * np.cos(np.radians(dataset['lat']))
 print(data)
 
-index = 'ewrs'
-indexMonth = '12'
-dataMonth = '12'
-startYear = 1950
-endYear = 2020
-csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]]
+# index = 'ewrs'
+# indexMonth = '12'
+# dataMonth = '12'
+# startYear = 1950
+# endYear = 2020
+# csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]]
 
 # startYear = 1971
 # endYear = 2023
@@ -92,17 +92,17 @@ csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[nu
 # boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
 # csv = timeseries(indexMonth, range(startYear, endYear + 1), slice(lats[1], lats[0]), slice(lons[0], lons[1]))[numToMonth(indexMonth)[0:3]]
 
-# startYear = 1971
-# endYear = 2023
-# indexMonth = '4'
-# dataMonth = '4'
-# eofNum = 1
-# index = f'EOF{eofNum} of Box'
-# lats = [-20, 65]
-# lons = [120, 360]
-# boxXCoords = [lons[0] - 360, lons[1] - 360, lons[1] - 360, lons[0] - 360, lons[0] - 360]
-# boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
-# csv = pcaSeries(startYear, endYear, lats, lons, indexMonth, eofNum)[numToMonth(indexMonth)[0:3]]
+startYear = 1971
+endYear = 2023
+indexMonth = '9'
+dataMonth = '9'
+eofNum = 2
+index = f'EOF{eofNum} of Box'
+lats = [0, 70]
+lons = [280, 360]
+boxXCoords = [lons[0] - 360, lons[1] - 360, lons[1] - 360, lons[0] - 360, lons[0] - 360]
+boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
+csv = pcaSeries(startYear, endYear, lats, lons, indexMonth, eofNum)[numToMonth(indexMonth)[0:3]]
 
 fMonths = np.array([np.datetime64(f'{y}-{str(dataMonth).zfill(2)}-01') for y in range(startYear, endYear + 1)])
 print(fMonths)
@@ -126,12 +126,12 @@ for x in range(temp.shape[1]):
 print(np.array(corrData).shape)
 data = data.mean('time')
 data.values = np.reshape(corrData, (ogShape[1], ogShape[2]))
-dataset['sig'] = ((ogShape[1], ogShape[2]), np.reshape(signData, (ogShape[1], ogShape[2])))
+# dataset['sig'] = ((ogShape[1], ogShape[2]), np.reshape(signData, (ogShape[1], ogShape[2])))
 
 ax = map(20, 9)
 #ax.set_extent([240, 359.9, -20, 50], crs = ccrs.PlateCarree())
 c = plt.contourf(data.lon, data.lat, data.values, cmap = cmap.tempAnoms3(), levels = np.arange(-1, 1.1, .1), extend = 'both', transform = ccrs.PlateCarree(central_longitude = 0))
-h = plt.contourf(data.lon, data.lat, dataset['sig'].values, colors = 'none', levels = np.arange(0, 0.06, 0.01), hatches = ['...'], transform = ccrs.PlateCarree(central_longitude = 0))
+# h = plt.contourf(data.lon, data.lat, dataset['sig'].values, colors = 'none', levels = np.arange(0, 0.06, 0.01), hatches = ['...'], transform = ccrs.PlateCarree(central_longitude = 0))
 
 try:
     for y in range(len(boxXCoords)):
@@ -143,17 +143,17 @@ try:
 except:
     pass
 
-for collection in h.collections:
-    collection.set_edgecolor('#262626')
-    collection.set_linewidth(0)
+# for collection in h.collections:
+#     collection.set_edgecolor('#262626')
+#     collection.set_linewidth(0)
 
-ax.set_title(f'NCEP/NCAR R1 850mb Zonal Wind Correlation with {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
-#ax.set_title(f'ERSSTv5 Correlation with {numToMonth(indexMonth)} {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
+# ax.set_title(f'NCEP/NCAR R1 850mb Zonal Wind Correlation with {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
+ax.set_title(f'ERSSTv5 Correlation with {numToMonth(indexMonth)} {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
 #ax.set_title(f'AMSU Tropopause (TTS) Brightness Temp. Correlation with {numToMonth(indexMonth)} {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
-#ax.set_title(f'ERSSTv5 Correlation with {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
+# ax.set_title(f'ERSSTv5 Correlation with {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'{numToMonth(dataMonth)}', fontsize=9, loc='center') 
 ax.set_title(f'Significant Values Hatched\nDeelan Jariwala', fontsize=9, loc='right') 
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
-# plt.savefig(r"C:\Users\deela\Downloads\correlationPlot" + dataMonth + ".png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\correlationPlot" + dataMonth + "_" + index + ".png", dpi = 400, bbox_inches = 'tight')
 plt.show()

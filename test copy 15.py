@@ -26,9 +26,10 @@ def map(interval, labelsize):
 
     return ax 
 
-data = xr.open_dataset(r"C:\Users\deela\Downloads\NSIDC-0630-EASE2_T3.125km-NIMBUS7_SMMR-1978300-37H-D-SIR-JPL-v1.3.nc", decode_cf=False)
+data = xr.open_dataset(r"C:\Users\deela\Downloads\poes.NOAA-2.halftone.north.IRday.1974.09.01.nc")
+print(data)
 
-test = data['TB']
+test = data['IR_count_raw']
 # ax = map(15, 9)
-plt.imshow(test.squeeze(), vmin = 1.25e4, vmax = 2.75e4, cmap = cmaps.mw())#, transform = ccrs.PlateCarree(central_longitude = 0))
+plt.imshow(test.squeeze(), cmap = cmaps.mw().reversed())#, transform = ccrs.PlateCarree(central_longitude = 0))
 plt.show()

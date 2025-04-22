@@ -7,7 +7,7 @@ import matplotlib.dates as mdates
 from helper import dayOfYear
 from scipy import stats
 
-climoYears = [2010, 2023]
+climoYears = [2024, 2024]#2010, 2024]
 basin = 'AL'
 day = 0
 if basin == 'EP':
@@ -140,7 +140,7 @@ ax.axhline(color = 'black')
 ax.plot(dates, avgDiff, c = 'black', linewidth = 1)
 ax.fill_between(dates, avg1, 0, where=(avg1 > 0), color='blue', alpha=0.3)
 ax.fill_between(dates, avg2, 0, where=(avg2 > 0), color='red', alpha=0.3)
-ax.set_title(f'Change in Distribution of Seasonal NATL ACE (Rolling {roll} Day Average)\n2010-2023 (blue) minus 1980-2009 (red)', fontweight='bold', fontsize=labelsize, loc='left')  
+ax.set_title(f'Change in Distribution of Seasonal NATL ACE (Rolling {roll} Day Average)\n2010-2024 (blue) minus 1980-2009 (red)', fontweight='bold', fontsize=labelsize, loc='left')  
 ax.set_title(f'Deelan Jariwala', fontsize=labelsize, loc='right')  
 plt.savefig(r"C:\Users\deela\Downloads\changeInACEDist.png", dpi = 400, bbox_inches = 'tight')
 plt.show()

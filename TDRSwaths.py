@@ -43,7 +43,6 @@ def spmap(ax, interval, labelsize):
     return ax 
 
 # dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc")
-# print(dataset)
 dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc")
 
 print(list(dataset.variables.keys()))
@@ -111,8 +110,8 @@ def panelPlot(dataset, caseNum, height):
     plt.savefig(r"C:\Users\deela\Downloads\TDR_Swaths\\" + date + ".png", dpi = 400, bbox_inches = 'tight')
     plt.show()
 name = 'IDK'
-year = 2023
-height = 2
+year = 2022
+height = 6
 # data = retrieveStorm(name, year)
 # print(data.num_cases.values)
 # refl = data['swath_wind_speed'].sel(height = height) * 1.94384
@@ -135,7 +134,7 @@ height = 2
 # plt.show()
 
 
-cases = [1131 - 710]
+cases = [1051 - 710]
 # ax = map(2, 9)
 for x in range(len(cases)):
     panelPlot(dataset.sel(num_cases = cases[x]), cases[x], height)

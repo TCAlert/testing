@@ -75,14 +75,22 @@ def get_zscores(data, months):
 
 labelsize = 9
 months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-startYear = 1971
-endYear = 2023
-numOfEOFS = 6
-extent = [0, 70, 270, 360]
+startYear = 1950
+endYear = 2024
+startPC = 1950
+endPC = 2024
+numOfEOFS = 4
+extent = [20, 60, 110, 260]
 
+months1 = []
 for x in range(len(months)):
-    months[x] = [np.datetime64(f'{y}-{str(months[x]).zfill(2)}-01') for y in range(startYear, endYear + 1)]
-fMonths = np.array(months).flatten()
+    months1.append([np.datetime64(f'{y}-{str(months[x]).zfill(2)}-01') for y in range(startYear, endYear + 1)])
+fMonths = np.array(months1).flatten()
+
+months2 = []
+for x in range(len(months)):
+    months2.append([np.datetime64(f'{y}-{str(months[x]).zfill(2)}-01') for y in range(startPC, endPC + 1)])
+fMonths2 = np.array(months2).flatten()
 
 # open variable data
 dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
@@ -96,10 +104,15 @@ else:
 
 data = dataset['sst'] * np.cos(np.radians(dataset['lat']))
 data = data.sel(lat=slice(extent[1], extent[0]), lon=slice(extent[2], extent[3])) 
+print(data)
 detrendedData = detrend_data(data)
 detrended = detrendedData.sel(time = fMonths)
-zscoreData = get_zscores(detrended, months)
+zscoreData = get_zscores(detrended, months1)
 zscores = np.nan_to_num(zscoreData.to_numpy())
+
+detrended2 = detrendedData.sel(time = fMonths2)
+zscoreData2 = get_zscores(detrended2, months2)
+zscores2 = np.nan_to_num(zscoreData2.to_numpy())
 print(f"Initial shape: {zscores.shape}")
 
 # Flatten the 3D array to a 2D matrix (time, space)
@@ -123,7 +136,9 @@ explained_variance = pca.explained_variance_ratio_
 print(f"Explained variance: {explained_variance}")
 
 for i in range(numOfEOFS):
+    shape = zscores2.shape
     EOF = EOFs[i]
+
     fig = plt.figure(figsize=(12, 12))
     gs = fig.add_gridspec(4, 1, wspace = 0, hspace = 0)
     axes = [fig.add_subplot(gs[3, 0]),
@@ -139,27 +154,25 @@ for i in range(numOfEOFS):
     axes[0].set_xlabel('Time', weight = 'bold', size = 9)
     axes[0].axhline(color = 'black')
 
-    test = PCs[:, i]
-    print(fMonths)
-    test = test[fMonths.argsort()]
+    temp = zscores2.reshape(shape[0], shape[1] * shape[2])
+    temp = np.dot(temp, EOF.flatten())#PCs[:, i]
+    test = temp[fMonths2.argsort()]
     m, s = np.mean(test), np.std(test)
     test = np.array([(x - m) / s for x in test])
-    sortedMonths = np.sort(fMonths)
-    for x in range(len(test)):
-       print(sortedMonths[x], test[x])
+    sortedMonths = np.sort(fMonths2)
+    # for x in range(len(test)):
+    #    print(sortedMonths[x], test[x])
 
-    reshaped_array = PCs.T[i].reshape(len(months), -1)
+    reshaped_array = temp.reshape(len(months2), -1)#PCs.T[i].reshape(len(months), -1)
     sums = []
     for j in range(len(reshaped_array[0])):
         sums.append(np.sum(reshaped_array[:, j], axis = 0))
     m, s = np.mean(sums), np.std(sums)
     sums = [(x - m) / s for x in sums]
-    contributions = np.array([list(range(startYear, endYear + 1)), sums]).T
-    contributions = contributions[contributions[:, 1].argsort()]
     #print(contributions)
 
     axes[0].plot(sortedMonths, test, linewidth = 2, color = '#404040', label = f'PC{i + 1} Monthly Timeseries')
-    years = range(startYear, endYear + 1)
+    years = range(startPC, endPC + 1)
     years = [np.datetime64(f'{year}-01-01') for year in years]
     axes[0].plot(years, sums, linewidth = 2, color = '#d94c4c', label = f'PC{i + 1} Yearly Timeseries')
     axes[0].legend()
@@ -170,7 +183,7 @@ for i in range(numOfEOFS):
 
     plt.title(f'ERSSTv5 EOF{i + 1} (Detrended and Normalized)\nExplained variance: {round(float(explained_variance[i]) * 100, 1)}%' , fontweight='bold', fontsize=labelsize, loc='left')
     plt.title(f'Full Year {startYear}-{endYear}', fontsize = labelsize, loc = 'center')
-    plt.title(f'Deelan Jariwala\nCredit to Nikhil Trivedi', fontsize=labelsize, loc='right')  
+    plt.title(f'Deelan Jariwala', fontsize=labelsize, loc='right')  
     cbar = plt.colorbar(c, orientation = 'horizontal', aspect = 100, pad = .08)
     cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
     cbar.set_ticks(np.arange(-1, 1.1, 0.1))

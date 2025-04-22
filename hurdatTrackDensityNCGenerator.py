@@ -16,10 +16,10 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 pd.options.mode.chained_assignment = None
 
-basin = 'EP'
-climoYears = np.arange(1949 , 2024)
+basin = 'AL'
+climoYears = np.arange(1851, 2025)
 months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-bounds = [-180, -80, 0, 70]
+bounds = [-100, 0, 0, 70]
 interval = 1
 
 if basin == 'EP':
@@ -30,6 +30,10 @@ else:
 link = urlopen(link)
 soup = BeautifulSoup(link, 'html.parser')
 lines = soup.get_text().split('\n')
+
+with open(r"C:\Users\deela\Downloads\hurdat2025.txt", 'r') as file:
+    content = file.read()
+lines = content.split('\n')
 
 # Helper Functions
 class helper():
@@ -258,5 +262,5 @@ ds = xr.Dataset({'track' : (["time", "latitude", "longitude"], dataset[:, 0]),
 print(ds)
 plt.pcolormesh(ds.longitude, ds.latitude, ds['ACE'].mean('time'))
 plt.show()
-ds.to_netcdf(r"C:\Users\deela\Downloads\HURDAT2DensityEPAC.nc")
+ds.to_netcdf(r"C:\Users\deela\Downloads\HURDAT2DensityNATL.nc")
 

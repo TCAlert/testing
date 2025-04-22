@@ -29,21 +29,21 @@ def map(interval, labelsize):
 
     return ax 
 
-# natl = xr.open_dataset(r"C:\Users\deela\Downloads\HURDAT2Density1x1.nc")
+# natl = xr.open_dataset(r"C:\Users\deela\Downloads\HURDAT2DensityNATL.nc")
 # epac = xr.open_dataset(r"C:\Users\deela\Downloads\HURDAT2DensityEPAC.nc")
 # print(natl, epac)
 # data = xr.concat([natl, epac], dim = 'basin')
 # data = data.sum(dim = 'basin')
-# data.to_netcdf(r"C:\Users\deela\Downloads\HURDAT2DensityALL.nc")
-data = xr.open_dataset(r"C:\Users\deela\Downloads\HURDAT2DensityALL.nc")
+# data.to_netcdf(r"C:\Users\deela\Downloads\HURDAT2DensityALL2025.nc")
+data = xr.open_dataset(r"C:\Users\deela\Downloads\HURDAT2DensityALL2025.nc")
 print(data)
 
 ax = map(10, 9)
 ax.set_extent([-177.5, -2.5, 2.5, 67.5], crs = ccrs.PlateCarree())
-c = ax.imshow(data['ACE'].mean('time'), origin='lower', cmap = cmap.probs(), vmin = 0)
-ax.set_title(f'HURDAT2 ACE Density Composite', fontweight='bold', fontsize=9, loc='left')
-ax.set_title(f'Atlantic: 1851-2023 | East Pacific: 1949-2023', fontsize=9, loc='center') 
+c = ax.imshow(data['24hrChange'].mean('time'), origin='lower', cmap = cmap.tempAnoms3(), vmin = -0.5, vmax = 0.5)
+ax.set_title(f'HURDAT2 24hrChange Density Composite', fontweight='bold', fontsize=9, loc='left')
+ax.set_title(f'Atlantic: 1851-2024 | East Pacific: 1949-2024', fontsize=9, loc='center') 
 ax.set_title(f'1\u00b0x1\u00b0\nDeelan Jariwala', fontsize=9, loc='right') 
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
-plt.savefig(r"C:\Users\deela\Downloads\hurdat2climo.png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\hurdat2climo24hrChange.png", dpi = 400, bbox_inches = 'tight')
 plt.show()

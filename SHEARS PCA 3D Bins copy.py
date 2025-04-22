@@ -46,7 +46,7 @@ data = np.stack([dataset['u_data'], dataset['v_data']], axis = 1)
 anom = np.nan_to_num((data))
 pcseries = np.dot(anom.reshape(32250, 28), EOFs.reshape(28, 28).T)
 
-variable = 'delta_vmax'
+variable = 'delta_vmax'    
 
 data = bin(pcseries[:, 0], pcseries[:, 1], pcseries[:, 2], dataset[variable], validCases)
 
