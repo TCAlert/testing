@@ -1988,6 +1988,7 @@ def ref():
     
     return newcmp.reversed(), vmax, vmin
 
+
 def whaticouldvedone():
     num1 = 25
     num2 = 55
@@ -2979,6 +2980,26 @@ def ref1():
 
     vmin = -10
     vmax = 70
+    
+    return newcmp, vmin, vmax
+
+def tdr():
+    newcmp = LinearSegmentedColormap.from_list("", [ 
+            (0/50, "#000000"),
+            (5/50, "#000000"),
+            (10/50, "#005580"),
+            (17.5/50, "#80ff80"),
+            (27.5/50, "#004000"),
+            (30/50, "#d9d921"),
+            (37.5/50, "#d95e21"),
+
+            (37.5/50, "#d92121"),
+            (45/50, "#4d1717"),
+            
+            (45/50, "#4d1732"),
+            (50/50, "#e6b8cf")])
+    vmin = 0
+    vmax = 50
     
     return newcmp, vmin, vmax
 

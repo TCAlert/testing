@@ -137,3 +137,34 @@ def CtoF(temperature):
 
 def FtoC(temperature):
     return (temperature - 32) * (5/9)
+
+# def trapezoidalRule(x, y):
+#     total = 0
+#     for i in range(len(x) - 1):
+#         temp = (x[i + 1] - x[i]) * ((y[i + 1] + y[i]) / 2)
+#         total += temp
+    
+#     return total
+
+# def helicity(hgts, uwnd, vwnd, uMotion, vMotion):
+#     duwnd = np.diff(uwnd)
+#     dvwnd = np.diff(vwnd)
+
+#     total = []
+#     for x in range(len(duwnd)):
+#         total.append(((uwnd[x] - uMotion) * duwnd[x]) - ((vwnd[x] - vMotion) * dvwnd[x]))
+
+#     return trapezoidalRule(hgts[1:], total)
+
+def trapezoidalRule(x, y):
+        return np.sum((x[1:] - x[:-1]) * (y[1:] + y[:-1]) / 2)
+
+def helicity(hgts, uwnd, vwnd, uMotion, vMotion):
+    duwnd = np.diff(uwnd)
+    dvwnd = np.diff(vwnd)
+
+    uwnd = uwnd[:-1] - uMotion
+    vwnd = vwnd[:-1] - vMotion
+ 
+#    return trapezoidalRule(hgts, (uwnd * dvwnd) - (vwnd * duwnd))
+    return np.trapz((vwnd * duwnd) - (uwnd * dvwnd), hgts[:-1])

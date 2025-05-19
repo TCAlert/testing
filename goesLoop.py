@@ -39,13 +39,13 @@ def getData(satellite, band, year, day, hour, n):
         time = (data.time_coverage_start).split('T')
         time = f"{time[0]} at {time[1][:5]} UTC"
         
-        stormwv('gom', dat, center, time, n + x + 1, 'codywv')
+        stormwv('nwatl', dat, center, time, n + x + 1, 'wv14')
         
         data.close()
 
     return n + len(l)
 
-def stormwv(storm, data, center, time, n, cmp = 'codywv'):
+def stormwv(storm, data, center, time, n, cmp = 'wv14'):
     band = '09'
     try:
         extent, figSize = REGIONS[storm.upper()]
@@ -56,7 +56,7 @@ def stormwv(storm, data, center, time, n, cmp = 'codywv'):
 
     plt.figure(figsize = figSize)
     ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=0))
-    ax.set_extent([-75, -50, 2.5, 22.5], crs=ccrs.PlateCarree())
+    ax.set_extent(extent, crs=ccrs.PlateCarree())
 
     # Add coastlines, borders and gridlines
     ax.coastlines(resolution='10m', color='black', linewidth=0.8)
@@ -67,15 +67,15 @@ def stormwv(storm, data, center, time, n, cmp = 'codywv'):
     cmp, vmax, vmin = cmaps.wvtables[cmp.lower()]
     plt.imshow(data - 273, origin = 'upper', transform = ccrs.Geostationary(central_longitude = center, satellite_height=35786023.0), vmin = vmin, vmax = vmax, cmap = cmp)
     plt.colorbar(orientation = 'vertical', aspect = 50, pad = .02)
-    plt.title(f'{title} Channel {band.zfill(2)} Water Vapor\nSatellite Image: {time}' , fontweight='bold', fontsize=10, loc='left')
-    plt.title(f'{storm.upper()}\nDeelan Jariwala', fontsize=10, loc='right')
-    plt.savefig(r"C:\Users\deela\Downloads\berylloop\\" + str(n) + "_.png", dpi = 100, bbox_inches = 'tight')
-    # plt.show()
+    plt.title(f'{title} Channel {band.zfill(2)} Brightness Temperature\nSatellite Image: {time}' , fontweight='bold', fontsize=10, loc='left')
+    plt.title(f'2km\nDeelan Jariwala', fontsize=10, loc='right')
+    plt.savefig(r"C:\Users\deela\Downloads\fiona\\" + str(n) + "_.png", dpi = 100, bbox_inches = 'tight')
+    #plt.show()
     plt.close()
     data.close()
 
-dates = np.arange(183, 184, 1)
-hours = np.arange(0, 33, 1)
+dates = np.arange(266, 267, 1)
+hours = np.arange(3, 28, 1)
 
 n = 0
 for x in range(len(dates)):
@@ -84,4 +84,4 @@ for x in range(len(dates)):
         if hours[y] == 24:
             hours[y:] = hours[y:] - 24
             dates[x] = dates[x] + 1
-        n = getData('16', '09', 2024, dates[x], hours[y], n)
+        n = getData('16', '09', 2022, dates[x], hours[y], n)

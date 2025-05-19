@@ -8,6 +8,8 @@ import warnings
 import matplotlib.patheffects as pe
 from scipy.ndimage import gaussian_filter
 from matplotlib import rcParams
+from helper import helicity 
+
 warnings.filterwarnings("ignore")
 rcParams['font.family'] = 'Courier New'
 
@@ -60,6 +62,31 @@ def rePoPolar(dataset, offset = 0):
 
     return polar
 
+def computeHelicity(dataset):
+    data = dataset.sel(height = slice(0.5, 3))
+    umotion = dataset['swath_eastward_wind'].sel(height = slice(0.5, 6.5)).mean(['height']).astype('float32')
+    vmotion = dataset['swath_northward_wind'].sel(height = slice(0.5, 6.5)).mean(['height']).astype('float32')
+
+    hgts = data.height
+    print(hgts.values)
+    arr1 = []
+    for x in range(len(dataset.longitude)):
+        arr2 = []
+        for y in range(len(dataset.latitude)):
+            uM = umotion.sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).values
+            vM = vmotion.sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).values
+            uwnd = data['swath_eastward_wind'].sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).astype('float32').values
+            vwnd = data['swath_northward_wind'].sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).astype('float32').values
+            if np.isnan(uwnd).any():
+                temp = np.nan
+            else:
+                temp = helicity(hgts, uwnd, vwnd, uM, vM)
+            arr2.append(temp)
+        arr1.append(arr2)
+    srh = np.array(arr1)
+
+    return srh.T
+
 def getData(dataset, var, levels, case):
     vmax = dataset['vmax_ships'].sel(num_cases = case, ships_lag_times = 0).values
     rmw = dataset['tc_rmw'].sel(num_cases = case, height = 3).values / 2
@@ -71,6 +98,7 @@ def getData(dataset, var, levels, case):
     data = []
     for x in range(len(var)):
         temp = dataset[var[x]].sel(num_cases = case, height = levels[x])
+        temp.values = computeHelicity(dataset.sel(num_cases = case))
     
         try:
             temp = temp.max(axis = 2)
@@ -100,21 +128,18 @@ def makeComposites(dataset, list):
     dataset = dataset.assign_coords(latitude=((dataset.latitude - 100)).sortby('latitude'))
 
     refl = []
-    vvel = []
     winds = []
     for x in range(len(list)):
-        dat, vmax = getData(dataset, ['swath_reflectivity', 'swath_upward_air_velocity'], [3, [5, 5.5, 6, 6.5, 7, 7.5, 8]], list[x])
+        dat, vmax = getData(dataset, ['swath_reflectivity'], [0.5], list[x])
 
         refl.append(dat[0])
-        vvel.append(dat[1])
         winds.append(vmax)
 
-    return refl, vvel, winds
+    return refl, winds
 
 dataset1 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc")
-print(dataset1.num_cases.values)
 dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc")
-t = 'Test'
+t = 'Alignment'
 
 # if t == 'Decrease2':
 #     # Decrease 10km (<75kt)
@@ -142,21 +167,19 @@ if t == 'Non-Aligning':
     list2 = [x - 710 for x in list2]
 if t == 'Test':
     list1 = []
-    list2 = [1224]
+    list2 = [1101, 1131]
     list2 = [x - 710 for x in list2]
-refl1, vvel1, wind1 = makeComposites(dataset1, list1)
-refl2, vvel2, wind2 = makeComposites(dataset2, list2)
+refl1, wind1 = makeComposites(dataset1, list1)
+refl2, wind2 = makeComposites(dataset2, list2)
 
 refl = refl1 + refl2
-vvel = vvel1 + vvel2
 wind = wind1 + wind2
 meanWind = np.nanmean(wind)
 mediWind = np.nanmedian(wind)
 print(meanWind, mediWind)
-test = xr.merge(refl, compat = 'override')
+# test = xr.merge(refl, compat = 'override')
+test = xr.concat(refl, dim='case')
 test = test.interp(theta = np.linspace(-1 * np.pi, np.pi, 2000))
-test['data'].plot()
-plt.show()
 print(test)
 tCoords = test.theta
 
@@ -174,36 +197,13 @@ data = np.nanmean(refl, axis = 0)
 #data = gaussian_filter(data, sigma = 3)
 data = np.where(valid_nums > (np.nanmax(valid_nums) / 3), data, np.nan)
 fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize = (12, 9))
-c = plt.pcolormesh(tCoords, refl[0].r, data, cmap = cmap.reflectivity2(), vmin = 0, vmax = 50)
+c = plt.pcolormesh(tCoords, refl[0].r, data, cmap = cmap.tempAnoms3(), vmin = -25, vmax = 25)
 labels(ax)
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
-ax.set_title(f'TC-RADAR: Normalized Tilt {t} Composite (>33% Valid Points)\n3km Reflectivity', fontweight='bold', fontsize=9, loc='left')
+ax.set_title(f'TC-RADAR: Normalized Tilt {t} Composite (>33% Valid Points)\n0.5-3km Storm-Relative Helicity', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'Mean VMax: {str(int(meanWind))}kt\nDeelan Jariwala', fontsize=9, loc='right') 
-plt.savefig(r"C:\Users\deela\Downloads\TCTiltProject\NEWtdrcomp_refl_" + t + ".png", dpi = 400, bbox_inches = 'tight')
-
-data = np.nanmean(vvel, axis = 0)
-#data = gaussian_filter(data, sigma = 3)
-data = np.where(valid_nums > (np.nanmax(valid_nums) / 3), data, np.nan)
-fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize = (12, 9))
-c = plt.pcolormesh(tCoords, refl[0].r, data, cmap = cmap.tempAnoms3(), vmin = -2, vmax = 2)
-labels(ax)
-cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
-cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
-ax.set_title(f'TC-RADAR: Normalized Tilt {t} Composite (>33% Valid Points)\n5-8km Max Vertical Velocity', fontweight='bold', fontsize=9, loc='left')
-ax.set_title(f'Mean VMax: {str(int(meanWind))}kt\nDeelan Jariwala', fontsize=9, loc='right') 
-plt.savefig(r"C:\Users\deela\Downloads\TCTiltProject\NEWtdrcomp_vvel_" + t + ".png", dpi = 400, bbox_inches = 'tight')
-
-data = np.nanstd(vvel, axis = 0)
-data = np.where(valid_nums > (np.nanmax(valid_nums) / 3), data, np.nan)
-fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize = (12, 9))
-c = plt.pcolormesh(tCoords, refl[0].r, data, cmap = cmap.probs2(), vmin = 0, vmax = 6)
-labels(ax, True)
-cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
-cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
-ax.set_title(f'TC-RADAR: Normalized Tilt {t} Composite\n5-8km Max Vertical Velocity Standard Deviation', fontweight='bold', fontsize=9, loc='left')
-ax.set_title(f'Mean VMax: {str(int(meanWind))}kt\nDeelan Jariwala', fontsize=9, loc='right') 
-plt.savefig(r"C:\Users\deela\Downloads\TCTiltProject\NEWtdrcomp_vvelstd_" + t + ".png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\TCTiltProject\NEWtdrcomp_hel_" + t + ".png", dpi = 400, bbox_inches = 'tight')
 
 data = np.nanstd(refl, axis = 0)
 data = np.where(valid_nums > (np.nanmax(valid_nums) / 3), data, np.nan)
@@ -212,7 +212,7 @@ c = plt.pcolormesh(tCoords, refl[0].r, data, cmap = cmap.probs2(), vmin = 0, vma
 labels(ax, True)
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
-ax.set_title(f'TC-RADAR: Normalized Tilt {t} Composite\n3km Reflectivity Standard Deviation', fontweight='bold', fontsize=9, loc='left')
+ax.set_title(f'TC-RADAR: Normalized Tilt {t} Composite\n0.5-3km Storm-Relative Helicity Standard Deviation', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'Mean VMax: {str(int(meanWind))}kt\nDeelan Jariwala', fontsize=9, loc='right') 
-plt.savefig(r"C:\Users\deela\Downloads\TCTiltProject\NEWtdrcomp_reflstd_" + t + ".png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\TCTiltProject\NEWtdrcomp_helstd_" + t + ".png", dpi = 400, bbox_inches = 'tight')
 plt.show()

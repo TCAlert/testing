@@ -134,7 +134,7 @@ height = 6
 # plt.show()
 
 
-cases = [1051 - 710]
+cases = [1224 - 710]
 # ax = map(2, 9)
 for x in range(len(cases)):
     panelPlot(dataset.sel(num_cases = cases[x]), cases[x], height)

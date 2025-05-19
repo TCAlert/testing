@@ -15,10 +15,10 @@ def labels(ax, flag = False):
     ax.set_theta_zero_location("N")
     ax.set_theta_direction(-1)
     if flag == False:
-        ax.text(1 * np.pi / 4, 2, 'Downshear\nRight', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
-        ax.text(3 * np.pi / 4, 2, 'Upshear\nRight', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
-        ax.text(5 * np.pi / 4, 2, 'Upshear\nLeft', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
-        ax.text(7 * np.pi / 4, 2, 'Downshear\nLeft', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
+        ax.text(1 * np.pi / 4, 2, 'Downtilt\nRight', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
+        ax.text(3 * np.pi / 4, 2, 'Uptilt\nRight', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
+        ax.text(5 * np.pi / 4, 2, 'Uptilt\nLeft', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
+        ax.text(7 * np.pi / 4, 2, 'Downtilt\nLeft', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
         
         ax.annotate('', xy=(0, 0.5), xytext=(np.pi, 0.5),
                 arrowprops=dict(facecolor='black', edgecolor='black', width=1, headwidth=8, headlength=10, path_effects=[pe.withStroke(linewidth=2.25, foreground="white")]))
@@ -63,7 +63,8 @@ def rePoPolar(dataset, offset = 0):
 def getData(dataset, var, levels, case):
     vmax = dataset['vmax_ships'].sel(num_cases = case, ships_lag_times = 0).values
     rmw = dataset['tc_rmw'].sel(num_cases = case, height = 3).values / 2
-    shd = 360 - dataset['sddc_ships'].sel(num_cases = case, ships_lag_times = 0).values
+    # shd = 360 - dataset['sddc_ships'].sel(num_cases = case, ships_lag_times = 0).values
+    shd = 180 - np.nanmax(dataset['tc_tilt_direction'].sel(num_cases = case, height = [5, 5.5, 6.0, 6.5]).values) * (180 / np.pi)
     print("Case: ", case)
     print('Shear direction', shd)
     print('Radius of Max Wind:', rmw, '\n')
@@ -136,7 +137,7 @@ def CFAD(data):
 dataset1 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc")
 dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc")
 t = 'difference'
-quad = 'Upshear Right'
+quad = 'Uptilt Left'
 
 # if t == 'Alignment':
 d1 = [225,251,252,253,254,333,334,347,374,376,377,407,408,409,410,413,414,603,604,605,672]
@@ -158,12 +159,14 @@ valid_nums = np.count_nonzero(~np.isnan(inc), axis = 0)
 cfadComposite = []
 for x in range(len(inc)):
     temp = inc[x]
-    temp.values = np.where(valid_nums > (np.nanmax(valid_nums) / 2), temp.values, np.nan)
+    temp.values = np.where(valid_nums > (np.nanmax(valid_nums) / 3), temp.values, np.nan)
     temp = temp.sortby('theta')
-    temp = temp.sel(theta = slice(np.pi / 2, np.pi)) # Upshear Right
+    # temp = temp.sel(theta = slice(np.pi / 2, np.pi)) # Upshear Right
     # temp = temp.sel(theta = slice(-np.pi / 2, 0))    # Downshear Left
     # temp = temp.sel(theta = slice(0, np.pi / 2))     # Downshear Right
-    # temp = temp.sel(theta = slice(-np.pi, -np.pi / 2)) # Upshear Left
+    temp = temp.sel(theta = slice(-np.pi, -np.pi / 2)) # Upshear Left
+    # temp = temp.sel(theta = slice(-np.pi, 0)) # Left of Shear/Tilt
+    # temp = temp.sel(theta = slice(0, np.pi))    # Right of Shear/Tilt
 
     # temp = temp.sel(r = slice(0, 1))
 
@@ -179,12 +182,14 @@ valid_nums = np.count_nonzero(~np.isnan(dec), axis = 0)
 cfadComposite = []
 for x in range(len(dec)):
     temp = dec[x]
-    temp.values = np.where(valid_nums > (np.nanmax(valid_nums) / 2), temp.values, np.nan)
+    temp.values = np.where(valid_nums > (np.nanmax(valid_nums) / 3), temp.values, np.nan)
     temp = temp.sortby('theta')
-    temp = temp.sel(theta = slice(np.pi / 2, np.pi)) # Upshear Right
+    # temp = temp.sel(theta = slice(np.pi / 2, np.pi)) # Upshear Right
     # temp = temp.sel(theta = slice(-np.pi / 2, 0))    # Downshear Left
     # temp = temp.sel(theta = slice(0, np.pi / 2))     # Downshear Right
-    # temp = temp.sel(theta = slice(-np.pi, -np.pi / 2)) # Upshear Left
+    temp = temp.sel(theta = slice(-np.pi, -np.pi / 2)) # Upshear Left
+    # temp = temp.sel(theta = slice(-np.pi, 0)) # Left of Shear/Tilt
+    # temp = temp.sel(theta = slice(0, np.pi))    # Right of Shear/Tilt
 
     # temp = temp.sel(r = slice(0, 1))
 
@@ -199,9 +204,9 @@ fig, ax = plt.subplots(figsize = (8, 12))
 c = plt.pcolormesh(grid1, grid2, data, cmap = cmap.tempAnoms(), vmin = -0.10, vmax = 0.10)
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
-ax.set_title(f'TC-RADAR: Normalized Tilt Alignnment - Misalignment {quad} CFAD\nVertical Velocity (>50% Valid Points)', fontweight='bold', fontsize=9, loc='left')
+ax.set_title(f'TC-RADAR: Normalized Tilt Alignnment - Non-Aligning {quad} CFAD\nVertical Velocity (>33% Valid Points)', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'Deelan Jariwala', fontsize=9, loc='right') 
-plt.savefig(r"C:\Users\deela\Downloads\TCTiltProject\tdrcfaddiff_vvel_" + t + quad + ".png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\TCTiltProject\NEWtdrcfaddiff_vvel_" + t + quad + ".png", dpi = 400, bbox_inches = 'tight')
 plt.show()
 
 # fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize = (12, 9))
