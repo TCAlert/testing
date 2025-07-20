@@ -51,7 +51,7 @@ def makeMap(axes, lat, lon):
         axes[x].add_feature(cfeature.STATES.with_scale('50m'), linewidth = 1, zorder = 20)
         gl = axes[x].gridlines(crs=ccrs.PlateCarree(central_longitude = 0), zorder = 20, draw_labels = True, linewidth = 0.5, color='black', alpha=0.5, linestyle='--', transform = ccrs.PlateCarree(central_longitude=180))
         gl.xlabel_style, gl.ylabel_style = {'size': 8}, {'size': 8}
-        gl.xlabels_top = False 
+        gl.labels_top = False 
 
         if lon < 0:
             lon = 360 + lon

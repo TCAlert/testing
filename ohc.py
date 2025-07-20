@@ -26,7 +26,7 @@ def run(storm):
     ax.coastlines(resolution='10m', color='black', linewidth=0.8)
     ax.add_feature(cartopy.feature.BORDERS, edgecolor='black', linewidth=0.5) 
     gl = ax.gridlines(crs=ccrs.PlateCarree(central_longitude = 0), draw_labels = True, linewidth = 0.5, color='black', alpha=0.5, linestyle='--', transform = ccrs.PlateCarree(central_longitude=180))
-    gl.xlabels_top = gl.ylabels_right = False
+    gl.top_labels = gl.right_labels = False
     
     # Plots data along with center fix
     plt.contourf(ohc.lon, ohc.lat, ohc.values, cmap = 'inferno', levels = np.arange(0, 200, 1))

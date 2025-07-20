@@ -40,7 +40,7 @@ def plot(lat, lon = 0):
     ax.add_feature(cartopy.feature.LAND, facecolor='#242424', linewidth=0.5) 
     ax.add_feature(cartopy.feature.OCEAN, facecolor='#242424', linewidth=0.5) 
     gl = ax.gridlines(crs=ccrs.PlateCarree(central_longitude = 0), draw_labels=True, linewidth = 1, color='gray', alpha=0.5, linestyle='--')   
-    gl.xlabels_top = gl.ylabels_right = False
+    gl.top_labels = gl.right_labels = False
     ax.set_extent(extent, crs=ccrs.PlateCarree())
 
     plt.pcolormesh(mrms.lon, mrms.lat, mrms.values, cmap = cmap.ref(), vmin = 0, vmax = 75, transform=ccrs.PlateCarree(central_longitude = 0))

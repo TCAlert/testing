@@ -48,22 +48,22 @@ def yearlySum(data):
 
     return data
 
-# startYear = 1978
+# startYear = 1875
 # endYear = 2023
-# indexMonth = '10'
+# indexMonth = '6'
 # dataMonth = '1'
 # index = 'SSTAs in Box'
-# type = 'ACE'
-# lats = [40, 60]
-# lons = [-70, -35]
+# type = 'Track'
+# lats = [10, 20]
+# lons = [-60, -15]
 # boxXCoords = [lons[0], lons[1], lons[1], lons[0], lons[0]]
 # boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
-# csv = timeseries(indexMonth, range(startYear, endYear + 1), slice(lats[1], lats[0]), slice(360 + lons[0], 360 + lons[1]))[numToMonth(indexMonth)[0:3]]
+# csv = timeseries(indexMonth, range(startYear, endYear + 1), slice(lats[1], lats[0]), slice(360 + lons[0], 360 + lons[1]), dataset = False)[numToMonth(indexMonth)[0:3]]
 # #csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]]
 
 startYear = 1978
 endYear = 2023
-indexMonth = '3'
+indexMonth = '5'
 dataMonth = '1'
 eofNum = 2
 index = f'EOF{eofNum} of Box'
@@ -75,7 +75,7 @@ boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
 csv = pcaSeries(startYear, endYear, lats, lons, indexMonth, eofNum)[numToMonth(indexMonth)[0:3]]
 
 
-dataset = xr.open_dataset(r"C:\Users\deela\Downloads\HURDAT2DensityALL.nc")
+dataset = xr.open_dataset(r"C:\Users\deela\Downloads\HURDAT2DensityALL2025.nc")
 data = dataset[type]
 print(data.shape)
 data = yearlySum(data)

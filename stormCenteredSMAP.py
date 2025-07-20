@@ -60,7 +60,7 @@ def smap(storm, ascending):
     ax.coastlines(resolution='10m', color='black', linewidth=0.8)
     ax.add_feature(cartopy.feature.BORDERS, edgecolor='black', linewidth=0.5) 
     gl = ax.gridlines(crs=ccrs.PlateCarree(central_longitude = 0), draw_labels = True, linewidth = 0.5, color='black', alpha=0.5, linestyle='--', transform = ccrs.PlateCarree(central_longitude=180))
-    gl.xlabels_top = gl.ylabels_right = False
+    gl.top_labels = gl.right_labels = False
 
     c = plt.contour(data.lon, data.lat, data.values, origin='lower', levels = [34, 64, 96, 137], colors = 'black', linewidths = 2, transform=ccrs.PlateCarree(central_longitude=0))
     plt.contourf(data.lon, data.lat, data.values, origin='lower', levels = np.arange(0, 161), cmap = cmap.wind(), transform=ccrs.PlateCarree(central_longitude=0))

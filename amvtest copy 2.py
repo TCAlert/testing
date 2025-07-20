@@ -119,18 +119,18 @@ def map(lon, lat, s = 5, center = 0):
     ax.add_feature(cfeature.BORDERS.with_scale('50m'), linewidth = 0.25)
     ax.add_feature(cfeature.STATES.with_scale('50m'), linewidth = 0.25)  
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth = 1, color='gray', alpha=0.5, linestyle='--')   
-    gl.xlabels_top = gl.ylabels_right = False    
+    gl.top_labels = gl.right_labels = False
 
     return ax
 
-year = '2024'
-month = '10'
-day = '07'
-time = '1945'
+year = '2025'
+month = '06'
+day = '19'
+time = '0015'
 
-data = getData('14L', year, month, day, time, 'EM2')
-sLat = 25#-20.5
-sLon = -90#113.3
+data = getData('05E', year, month, day, time, 'EM2')
+sLat = 14.9
+sLon = -96.7
 s = 10
 
 print(data)
@@ -188,8 +188,8 @@ ds = xr.Dataset({'u' : (["latitude", "longitude"], u),
 
 fxx, fxy = Gradient2D(ds['u'])
 fyx, fyy = Gradient2D(ds['v'])
-# mag = fyx - fxy
-mag = fxx + fyy
+mag = fyx - fxy
+# mag = fxx + fyy
 mag = gaussian_filter(mag, sigma = 1)
 
 ax = map(sLon, sLat)

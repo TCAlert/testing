@@ -30,7 +30,7 @@ def stormir(data, lon, lat, cmap = 'irg'):
     ax.coastlines(resolution='10m', color='black', linewidth=0.8)
     ax.add_feature(cartopy.feature.BORDERS, edgecolor='black', linewidth=0.5) 
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth = 1, color='gray', alpha=0.5, linestyle='--')   
-    gl.xlabels_top = gl.ylabels_right = False    
+    gl.top_labels = gl.right_labels = False
     cmap, vmax, vmin = cmaps.wv()#cmaps.wvtables[cmap]
     print(data)
 

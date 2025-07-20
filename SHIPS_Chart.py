@@ -209,7 +209,7 @@ def run(storm):
         mp.set_extent([np.nanmin(lon) - 10, np.nanmin(lon) + 10, np.nanmax(lat) - 5, np.nanmax(lat) + 5], crs=ccrs.PlateCarree())
 
     gl = mp.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth = 1, color='gray', alpha=0.5, linestyle='--')   
-    gl.xlabels_top = gl.ylabels_right = False
+    gl.top_labels = gl.right_labels = False
 
     mp.scatter(lon, lat, linewidths=0.5, vmin = 0, vmax = 1000, edgecolors='black', zorder = 500, transform = ccrs.PlateCarree(central_longitude = 0))
     mp.plot(lon, lat, color = 'black', alpha = 0.5, linewidth = 0.5, transform = ccrs.PlateCarree(central_longitude = 0))

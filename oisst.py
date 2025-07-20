@@ -50,7 +50,7 @@ def stormCenteredOISST(storm):
         pass
     else:
         gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth = 0.5, color='gray', alpha=0.5, linestyle='--', zorder = 100)  
-        gl.xlabels_top = gl.ylabels_right = False
+        gl.top_labels = gl.right_labels = False
 
     time = (str(latest.values).split('T'))
 

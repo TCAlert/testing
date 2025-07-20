@@ -74,13 +74,13 @@ def get_zscores(data, months):
     return all_zscores
 
 labelsize = 9
-months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+months = [6]
 startYear = 1950
 endYear = 2024
 startPC = 1950
-endPC = 2024
-numOfEOFS = 4
-extent = [20, 60, 110, 260]
+endPC = 2025
+numOfEOFS = 3
+extent = [-25, 25, 30, 110]
 
 months1 = []
 for x in range(len(months)):

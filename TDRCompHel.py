@@ -64,8 +64,8 @@ def rePoPolar(dataset, offset = 0):
 
 def computeHelicity(dataset):
     data = dataset.sel(height = slice(0.5, 3))
-    umotion = dataset['swath_eastward_wind'].sel(height = slice(0.5, 6.5)).mean(['height']).astype('float32')
-    vmotion = dataset['swath_northward_wind'].sel(height = slice(0.5, 6.5)).mean(['height']).astype('float32')
+    umotion = dataset['swath_earth_relative_eastward_wind'].sel(height = slice(0.5, 6.5)).mean(['height']).astype('float32')
+    vmotion = dataset['swath_earth_relative_northward_wind'].sel(height = slice(0.5, 6.5)).mean(['height']).astype('float32')
 
     hgts = data.height
     print(hgts.values)
@@ -75,8 +75,8 @@ def computeHelicity(dataset):
         for y in range(len(dataset.latitude)):
             uM = umotion.sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).values
             vM = vmotion.sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).values
-            uwnd = data['swath_eastward_wind'].sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).astype('float32').values
-            vwnd = data['swath_northward_wind'].sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).astype('float32').values
+            uwnd = data['swath_earth_relative_eastward_wind'].sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).astype('float32').values
+            vwnd = data['swath_earth_relative_northward_wind'].sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).astype('float32').values
             if np.isnan(uwnd).any():
                 temp = np.nan
             else:
@@ -139,7 +139,7 @@ def makeComposites(dataset, list):
 
 dataset1 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc")
 dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc")
-t = 'Alignment'
+t = 'Non-Aligning'
 
 # if t == 'Decrease2':
 #     # Decrease 10km (<75kt)

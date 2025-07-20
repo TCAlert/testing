@@ -16,7 +16,7 @@ def smallPlot(ax, veloPot):
     ax.add_feature(cfeature.BORDERS.with_scale('50m'), linewidth = 1)
     ax.add_feature(cfeature.STATES.with_scale('50m'), linewidth = 1)
     gl = ax.gridlines(crs=ccrs.PlateCarree(central_longitude = 0), zorder = 9, draw_labels = True, linewidth = 0.5, color='gray', alpha=0.5, linestyle='--', transform = ccrs.PlateCarree(central_longitude=180))
-    gl.xlabels_top = gl.ylabels_right = False 
+    gl.top_labels = gl.right_labels = False
 
     ax.set_extent([60, 300, -10, 10], crs = ccrs.PlateCarree())
     c1 = ax.contourf(veloPot.lon, veloPot.lat, veloPot.values, levels = np.arange(-10000000, 11000000, 500000), cmap = 'BrBG_r', extend = 'both', transform = ccrs.PlateCarree(central_longitude=0))

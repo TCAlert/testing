@@ -157,5 +157,5 @@ for i in range(numOfEOFS):
     cbar = plt.colorbar(c, orientation = 'horizontal', aspect = 100, pad = .08)
     cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
     #cbar.set_ticks(np.arange(-1, 1.1, 0.1))
-    #plt.savefig(r"C:\Users\deela\Downloads\r1EOF" + str(i + 1) + ".png", dpi = 400, bbox_inches = 'tight')
+    plt.savefig(r"C:\Users\deela\Downloads\vectorr1EOF" + str(i + 1) + ".png", dpi = 400, bbox_inches = 'tight')
     plt.show()

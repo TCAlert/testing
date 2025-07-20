@@ -32,24 +32,24 @@ def map(interval, labelsize):
 labelsize = 9
 spacing = 1
 year = 2025
-month = 3
-day = 29
-hour = 18
-extent = USREGIONS['MA'][0]
+month = 6
+day = 23
+hour = 21
+extent = USREGIONS['NE'][0]
 data = xr.open_dataset(f'http://nomads.ncep.noaa.gov:80/dods/rtma2p5/rtma2p5{str(year)}{str(month).zfill(2)}{str(day).zfill(2)}/rtma2p5_anl_{str(hour).zfill(2)}z')
-data = data['tmp2m'].squeeze()
+data = data['dpt2m'].squeeze()
 data.values = ((data.values - 273.15) * (9/5)) + 32
 print(data)
 
 date = f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}'
 ax = map(spacing, labelsize - 1)
 ax.set_extent(extent)
-c = plt.contourf(data.lon, data.lat, data.values, cmap = cmap.temperature(), levels = np.arange(-100, 131, 1), extend = 'both')
-plt.contour(data.lon, data.lat, data.values, colors = 'black', levels = [32])
-# c = plt.contourf(data.lon, data.lat, data.values, cmap = cmap.dewp(), levels = np.arange(-30, 91, 1), extend = 'both')
+# c = plt.contourf(data.lon, data.lat, data.values, cmap = cmap.temperature(), levels = np.arange(-100, 131, 1), extend = 'both')
+# plt.contour(data.lon, data.lat, data.values, colors = 'black', levels = [32])
+c = plt.contourf(data.lon, data.lat, data.values, cmap = cmap.dewp(), levels = np.arange(-30, 91, 1), extend = 'both')
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
-cbar.ax.set_yticks(np.arange(-100, 140, 10))
-# cbar.ax.set_yticks(np.arange(-30, 100, 10))
+# cbar.ax.set_yticks(np.arange(-100, 140, 10))
+cbar.ax.set_yticks(np.arange(-30, 100, 10))
 
 for x in np.arange(extent[0] + spacing / 2, extent[1], spacing):
     for y in np.arange(extent[2] + spacing / 2, extent[3], spacing):

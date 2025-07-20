@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.mpl.ticker as cticker
 import cartopy.feature as cfeature
+import cartopy
 import numpy as np 
 import cmaps as cmap 
 import pandas as pd 
@@ -44,8 +45,8 @@ def map(interval, labelsize):
 #data = dataset['uwnd'].sel(level = 850).fillna(0)# * np.cos(np.radians(dataset['lat']))
 # dataset = psl.createClimoMonthly([1971, 2023], '8', ['air', 'shum'], ['Pressure', 'Pressure'], False)
 # dataset = helper.thetae(dataset[0].sel(level = 850) + 273.15, 850, 1000, dataset[1].sel(level = 850) / 1000)
-dataset = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
-dataset = dataset['sst']
+dataset1 = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
+dataset = dataset1['sst']
 # dates = []
 # for x in range(1987, 2024):
 #     for y in range(1, 13):
@@ -60,12 +61,13 @@ data = dataset.fillna(0) * np.cos(np.radians(dataset['lat']))
 #data = dataset['__xarray_dataarray_variable__'].fillna(0) * np.cos(np.radians(dataset['lat']))
 print(data)
 
-# index = 'ewrs'
-# indexMonth = '12'
-# dataMonth = '12'
-# startYear = 1950
-# endYear = 2020
-# csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]]
+index = 'Zach_Residuals'
+indexMonth = '12'
+dataMonth = '6'
+startYear = 1980
+endYear = 2024
+csv = pd.read_csv(r"C:\Users\deela\Downloads\composites - " + index + ".csv")[numToMonth(indexMonth)[0:3]]
+print(csv)
 
 # startYear = 1971
 # endYear = 2023
@@ -92,17 +94,17 @@ print(data)
 # boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
 # csv = timeseries(indexMonth, range(startYear, endYear + 1), slice(lats[1], lats[0]), slice(lons[0], lons[1]))[numToMonth(indexMonth)[0:3]]
 
-startYear = 1971
-endYear = 2023
-indexMonth = '9'
-dataMonth = '9'
-eofNum = 2
-index = f'EOF{eofNum} of Box'
-lats = [0, 70]
-lons = [280, 360]
-boxXCoords = [lons[0] - 360, lons[1] - 360, lons[1] - 360, lons[0] - 360, lons[0] - 360]
-boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
-csv = pcaSeries(startYear, endYear, lats, lons, indexMonth, eofNum)[numToMonth(indexMonth)[0:3]]
+# startYear = 1971
+# endYear = 2023
+# indexMonth = '9'
+# dataMonth = '9'
+# eofNum = 2
+# index = f'EOF{eofNum} of Box'
+# lats = [0, 70]
+# lons = [280, 360]
+# boxXCoords = [lons[0] - 360, lons[1] - 360, lons[1] - 360, lons[0] - 360, lons[0] - 360]
+# boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
+# csv = pcaSeries(startYear, endYear, lats, lons, indexMonth, eofNum)[numToMonth(indexMonth)[0:3]]
 
 fMonths = np.array([np.datetime64(f'{y}-{str(dataMonth).zfill(2)}-01') for y in range(startYear, endYear + 1)])
 print(fMonths)
@@ -126,12 +128,12 @@ for x in range(temp.shape[1]):
 print(np.array(corrData).shape)
 data = data.mean('time')
 data.values = np.reshape(corrData, (ogShape[1], ogShape[2]))
-# dataset['sig'] = ((ogShape[1], ogShape[2]), np.reshape(signData, (ogShape[1], ogShape[2])))
+dataset1['sig'] = ((ogShape[1], ogShape[2]), np.reshape(signData, (ogShape[1], ogShape[2])))
 
 ax = map(20, 9)
 #ax.set_extent([240, 359.9, -20, 50], crs = ccrs.PlateCarree())
 c = plt.contourf(data.lon, data.lat, data.values, cmap = cmap.tempAnoms3(), levels = np.arange(-1, 1.1, .1), extend = 'both', transform = ccrs.PlateCarree(central_longitude = 0))
-# h = plt.contourf(data.lon, data.lat, dataset['sig'].values, colors = 'none', levels = np.arange(0, 0.06, 0.01), hatches = ['...'], transform = ccrs.PlateCarree(central_longitude = 0))
+h = plt.contourf(data.lon, data.lat, dataset1['sig'].values, colors = 'none', levels = np.arange(0, 0.06, 0.01), hatches = ['...'], transform = ccrs.PlateCarree(central_longitude = 0))
 
 try:
     for y in range(len(boxXCoords)):
@@ -143,9 +145,12 @@ try:
 except:
     pass
 
-# for collection in h.collections:
-#     collection.set_edgecolor('#262626')
-#     collection.set_linewidth(0)
+try:
+    for collection in h.collections:
+        collection.set_edgecolor('#262626')
+        collection.set_linewidth(0)
+except:
+    pass
 
 # ax.set_title(f'NCEP/NCAR R1 850mb Zonal Wind Correlation with {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'ERSSTv5 Correlation with {numToMonth(indexMonth)} {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')

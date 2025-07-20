@@ -93,17 +93,17 @@ for x in range(len(adata)):
     axes[x + 1].set_xlim(0.5, 1.5)
     axes[x + 1].set_xticklabels([])
 
-    axes[x + 1].scatter(1, np.nanmedian(adata[x]), c = '#9f80ff', edgecolors = '#1f77b4', marker = 'D', zorder = 10)
-    axes[x + 1].scatter(1, np.nanmedian(bdata[x]), c = '#ff8080', edgecolors = '#ff7f0e', marker = 'D', zorder = 10)
+    axes[x + 1].scatter(1, np.nanmedian(adata[x]), c = 'C1', edgecolors = '#ff7f0e', marker = 'D', zorder = 10)
+    axes[x + 1].scatter(1, np.nanmedian(bdata[x]), c = 'C0', edgecolors = '#1f77b4', marker = 'D', zorder = 10)
 
-    violin = axes[x + 1].violinplot(adata[x])#, colors = '#9f80ff', alpha = 0.5)
-    for pc in violin['bodies']:
-        pc.set_facecolor('#9f80ff')
     violin = axes[x + 1].violinplot(bdata[x])
     for pc in violin['bodies']:
-        pc.set_facecolor('#ff8080')
+        pc.set_facecolor('C0')
+    violin = axes[x + 1].violinplot(adata[x])
+    for pc in violin['bodies']:
+        pc.set_facecolor('C1')
 
-    axes[x + 1].legend(handles=[mlines.Line2D([], [], color= '#9f80ff', label='Aligning'), mlines.Line2D([], [], color= '#ff8080', label='Non-Aligning')], loc='upper left')
+    axes[x + 1].legend(handles=[mlines.Line2D([], [], color= 'C1', label='Aligning'), mlines.Line2D([], [], color= 'C0', label='Non-Aligning')], loc='upper left')
 plt.savefig(r"C:\Users\deela\Downloads\tdr_env_stats.png", dpi = 400, bbox_inches = 'tight')
 
 # wind = np.nan_to_num(mdata)

@@ -75,8 +75,7 @@ def get_zscores(data, months):
 
     return all_zscores
 
-months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-def pcaSeries(startYear, endYear, lats, lons, mon, eofNum = 1):
+def pcaSeries(startYear, endYear, lats, lons, mon, eofNum = 1, months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]):
     extent = [lats[0], lats[1], lons[0], lons[1]]
     for x in range(len(months)):
         months[x] = [np.datetime64(f'{y}-{str(months[x]).zfill(2)}-01') for y in range(startYear, endYear + 1)]
@@ -91,7 +90,7 @@ def pcaSeries(startYear, endYear, lats, lons, mon, eofNum = 1):
 
     data = dataset['sst'] * np.cos(np.radians(dataset['lat']))
     data = data.sel(lat=slice(extent[1], extent[0]), lon=slice(extent[2], extent[3])) 
-    print(data)
+    # print(data)
     detrendedData = detrend_data(data)
     detrended = detrendedData.sel(time = fMonths)
     zscoreData = get_zscores(detrended, months)
@@ -119,16 +118,16 @@ def pcaSeries(startYear, endYear, lats, lons, mon, eofNum = 1):
     print(f"Explained variance: {explained_variance}")
 
     i = eofNum - 1
-    test = PCs[:, i]
+    test = PCs#[:, i]
 
-    test = test[fMonths.argsort()]
-    m, s = np.mean(test), np.std(test)
-    data = np.array([(x - m) / s for x in test])
-    data = np.reshape(data, (int(len(test) / 12), 12))[:, int(mon) - 1]
+    m, s = np.mean(test, axis = 0, keepdims=True), np.std(test, axis = 0, keepdims=True)
+    data = (test - m) / s
 
-    data = pd.DataFrame({'Year' : np.arange(startYear, endYear + 1), numToMonth(mon)[0:3] : data})
-    print(data.to_string())
+    column_labels = list(range(1, data.shape[1] + 1))
+    data = pd.DataFrame(data, columns=column_labels)
+
+    data.insert(0, 'Year', np.arange(startYear, endYear + 1))
     
     return data
 
-#pcaSeries(1971, 2023, [0, 70], [270, 360], '9', 2)
+# pcaSeries(1951, 2025, [0, 70], [270, 359], '6', 2, months = [6])

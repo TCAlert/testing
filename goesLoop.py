@@ -62,7 +62,7 @@ def stormwv(storm, data, center, time, n, cmp = 'wv14'):
     ax.coastlines(resolution='10m', color='black', linewidth=0.8)
     ax.add_feature(cartopy.feature.BORDERS, edgecolor='black', linewidth=0.5) 
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth = 1, color='gray', alpha=0.5, linestyle='--')   
-    gl.xlabels_top = gl.ylabels_right = False
+    gl.top_labels = gl.right_labels = False
 
     cmp, vmax, vmin = cmaps.wvtables[cmp.lower()]
     plt.imshow(data - 273, origin = 'upper', transform = ccrs.Geostationary(central_longitude = center, satellite_height=35786023.0), vmin = vmin, vmax = vmax, cmap = cmp)

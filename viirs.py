@@ -42,7 +42,7 @@ def map(lon, lat, zoom = 2, center = 0):
     ax.xaxis.set_major_formatter(cticker.LongitudeFormatter())
     ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth = .5, color='black', alpha=0.5, linestyle='--')   
-    gl.xlabels_top = gl.ylabels_right = False    
+    gl.top_labels = gl.right_labels = False
 
     return ax
 

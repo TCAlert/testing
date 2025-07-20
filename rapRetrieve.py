@@ -42,7 +42,7 @@ def map(e, w, s, n, size):
     ax.add_feature(cfeature.BORDERS.with_scale('50m'), linewidth = 1)
     ax.add_feature(cfeature.STATES.with_scale('50m'), linewidth = 1)
     gl = ax.gridlines(crs=ccrs.PlateCarree(central_longitude=0), zorder = 9, draw_labels = True, linewidth = 0.5, color='white', alpha=0.5, linestyle='--', transform = ccrs.PlateCarree(central_longitude=180))
-    gl.xlabels_top = gl.ylabels_right = False 
+    gl.top_labels = gl.right_labels = False
     return ax
 
 # Plots windbarbs

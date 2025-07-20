@@ -24,7 +24,7 @@ def map(lon, lat, s = 5, center = 0):
     ax.add_feature(cfeature.BORDERS.with_scale('50m'), linewidth = 0.25)
     ax.add_feature(cfeature.STATES.with_scale('50m'), linewidth = 0.25)  
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth = 1, color='gray', alpha=0.5, linestyle='--')   
-    gl.xlabels_top = gl.ylabels_right = False    
+    gl.top_labels = gl.right_labels = False
 
     return ax
 

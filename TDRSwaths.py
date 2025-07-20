@@ -62,6 +62,7 @@ def retrieveStorm(name, year = None):
     return dataset.sel(num_cases = years['num_cases'].values)
 
 def panelPlot(dataset, caseNum, height):
+    print(dataset['mission_ID'].values)
     data = dataset.sel(height = height)
     fig = plt.figure(figsize=(15, 12))
     gs = fig.add_gridspec(2, 2)
@@ -79,9 +80,12 @@ def panelPlot(dataset, caseNum, height):
     for x in range(1, 5):
         axes[x] = spmap(axes[x], .5, 8)
     
+    clon = data['tc_center_longitudes']
+    clat = data['tc_center_latitudes']
+
     lats = data['original_latitudes']
     lons = data['original_longitudes']
-    date = f'{str(data['swath_year'].values)}-{str(data['swath_month'].values).zfill(2)}-{str(data['swath_day'].values).zfill(2)} at {str(data['swath_hour'].values).zfill(2)}{str(data['swath_min'].values).zfill(2)}z'
+    date = f"{str(data['swath_year'].values)}-{str(data['swath_month'].values).zfill(2)}-{str(data['swath_day'].values).zfill(2)} at {str(data['swath_hour'].values).zfill(2)}{str(data['swath_min'].values).zfill(2)}z"
     axes[0].set_title(f'TC-RADAR: Tail Doppler Radar {height}km Diagnostic Plot\n{name} {year}', fontweight='bold', fontsize=10, loc='left')
     axes[0].set_title(f'{date} (Case #{int(caseNum)})', fontsize=10, loc='center')
     axes[0].set_title(f'Deelan Jariwala', fontsize=10, loc='right') 
@@ -106,10 +110,12 @@ def panelPlot(dataset, caseNum, height):
     cbar = plt.colorbar(vc, ax = axes[4], orientation = 'vertical', aspect = 50, pad = .02)
     cbar.ax.tick_params(axis='both', labelsize=8, left = False, bottom = False)
     axes[4].text(0.5, 0.95, 'Relative Vorticity (1/s)', fontweight = 'bold', fontsize = 8, horizontalalignment='center', verticalalignment='center', transform = axes[4].transAxes)
-    
+    axes[4].scatter(clon, clat, marker = 'x', s = 70, c = '#FF1200', transform=ccrs.PlateCarree(central_longitude=0), label = f'{height}km Center', zorder = 20)
+    axes[4].legend()
+
     plt.savefig(r"C:\Users\deela\Downloads\TDR_Swaths\\" + date + ".png", dpi = 400, bbox_inches = 'tight')
     plt.show()
-name = 'IDK'
+name = 'Earl'
 year = 2022
 height = 6
 # data = retrieveStorm(name, year)
@@ -134,7 +140,9 @@ height = 6
 # plt.show()
 
 
-cases = [1224 - 710]
+print(dataset.sel(num_cases = 1051 - 710, height = 2.0)['tc_center_longitudes'].values, dataset.sel(num_cases = 1051 - 710, height = 2.0)['tc_center_latitudes'].values)
+
+cases = [1051 - 710]
 # ax = map(2, 9)
 for x in range(len(cases)):
     panelPlot(dataset.sel(num_cases = cases[x]), cases[x], height)

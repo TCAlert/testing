@@ -65,8 +65,8 @@ def rePoPolar(dataset, offset = 0):
 
 def computeHelicity(dataset):
     data = dataset.sel(height = slice(0.5, 3))
-    umotion = dataset['swath_eastward_wind'].sel(height = slice(0.5, 6.5)).mean(['height']).astype('float32')
-    vmotion = dataset['swath_northward_wind'].sel(height = slice(0.5, 6.5)).mean(['height']).astype('float32')
+    umotion = dataset['swath_earth_relative_eastward_wind'].sel(height = slice(0.5, 6.5)).mean(['height']).astype('float32')
+    vmotion = dataset['swath_earth_relative_northward_wind'].sel(height = slice(0.5, 6.5)).mean(['height']).astype('float32')
 
     hgts = data.height
     print(hgts.values)
@@ -76,8 +76,8 @@ def computeHelicity(dataset):
         for y in range(len(dataset.latitude)):
             uM = umotion.sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).values
             vM = vmotion.sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).values
-            uwnd = data['swath_eastward_wind'].sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).astype('float32').values
-            vwnd = data['swath_northward_wind'].sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).astype('float32').values
+            uwnd = data['swath_earth_relative_eastward_wind'].sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).astype('float32').values
+            vwnd = data['swath_earth_relative_northward_wind'].sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).astype('float32').values
             if np.isnan(uwnd).any():
                 temp = np.nan
             else:
@@ -144,7 +144,7 @@ def makeComposites(dataset, list):
 
 dataset1 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc")
 dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc")
-t = 'RI'
+t = 'SI'
 
 if t == 'Alignment':
     list1 = [225,251,252,253,254,333,334,347,374,376,377,407,408,409,410,413,414,603,604,605,672]
@@ -173,22 +173,22 @@ if t == 'RI':
     print(list1)
     print(list2)
 if t == 'SI':
-    dataset1['SI'] = ((dataset1['vmax_ships'].sel(ships_lag_times=24) - dataset1['vmax_ships'].sel(ships_lag_times=0)) >= 0) & ((dataset1['vmax_ships'].sel(ships_lag_times=24) - dataset1['vmax_ships'].sel(ships_lag_times=0)) <= 25)
-    dataset2['SI'] = ((dataset2['vmax_ships'].sel(ships_lag_times=24) - dataset2['vmax_ships'].sel(ships_lag_times=0)) >= 0) & ((dataset2['vmax_ships'].sel(ships_lag_times=24) - dataset2['vmax_ships'].sel(ships_lag_times=0)) <= 25)
-    list1 = []#[527.0, 200.0, 227.0, 99.0, 425.0, 251.0, 682.0, 235.0, 430.0, 310.0, 607.0, 74.0, 351.0, 301.0, 611.0, 207.0, 226.0, 232.0, 530.0, 354.0, 619.0, 610.0, 85.0, 312.0, 379.0]
+    dataset1['SI'] = ((dataset1['vmax_ships'].sel(ships_lag_times=24) - dataset1['vmax_ships'].sel(ships_lag_times=0)) >= 10) & ((dataset1['vmax_ships'].sel(ships_lag_times=24) - dataset1['vmax_ships'].sel(ships_lag_times=0)) <= 25)
+    dataset2['SI'] = ((dataset2['vmax_ships'].sel(ships_lag_times=24) - dataset2['vmax_ships'].sel(ships_lag_times=0)) >= 10) & ((dataset2['vmax_ships'].sel(ships_lag_times=24) - dataset2['vmax_ships'].sel(ships_lag_times=0)) <= 25)
+    list1 = []#[672.0, 347.0, 339.0, 76.0, 213.0, 327.0, 223.0, 578.0, 675.0, 591.0, 422.0, 585.0, 84.0, 375.0, 350.0, 594.0, 460.0, 154.0, 196.0, 402.0, 211.0, 680.0, 671.0, 322.0, 346.0]
     for x in range(len(dataset1['SI'].values)):
-        if dataset1['SI'].values[x] and ((dataset1['vmax_ships'].sel(ships_lag_times = 0).values[x] < 100)):
+        if dataset1['SI'].values[x] and ((60 < dataset1['vmax_ships'].sel(ships_lag_times = 0).values[x] < 100)):
             list1.append(dataset1.num_cases.values[x])
 
-    list2 = []#[266.0, 510.0, 521.0, 260.0, 578.0, 84.0, 371.0, 366.0, 576.0, 365.0, 64.0, 19.0, 182.0, 347.0, 588.0, 62.0, 46.0, 360.0, 181.0, 508.0, 120.0, 237.0, 612.0, 24.0, 393.0]
+    list2 = []#[257.0, 495.0, 513.0, 60.0, 82.0, 396.0, 385.0, 228.0, 57.0, 436.0, 262.0, 506.0, 600.0, 539.0, 496.0, 37.0, 174.0, 366.0, 546.0, 512.0, 360.0, 467.0, 355.0, 351.0, 36.0]
     for x in range(len(dataset2['SI'].values)):
-        if dataset2['SI'].values[x] and ((dataset2['vmax_ships'].sel(ships_lag_times = 0).values[x] < 100)):
+        if dataset2['SI'].values[x] and ((60 < dataset2['vmax_ships'].sel(ships_lag_times = 0).values[x] < 100)):
             list2.append(dataset2.num_cases.values[x])
     # list1 = random.sample(list1, 25)
     # list2 = random.sample(list2, 25)
 
-    print(list1)
-    print(list2)
+    print(list1, len(list1))
+    print(list2, len(list2))
 if t == 'Sheared Intensification':
     dataset1['RI'] = (dataset1['vmax_ships'].sel(ships_lag_times=24) - dataset1['vmax_ships'].sel(ships_lag_times=0)) > 0
     dataset2['RI'] = (dataset2['vmax_ships'].sel(ships_lag_times=24) - dataset2['vmax_ships'].sel(ships_lag_times=0)) > 0

@@ -15,15 +15,15 @@ def labels(ax, flag = False):
     ax.set_theta_zero_location("N")
     ax.set_theta_direction(-1)
     if flag == False:
-        ax.text(1 * np.pi / 4, 2, 'Downtilt\nRight', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
-        ax.text(3 * np.pi / 4, 2, 'Uptilt\nRight', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
-        ax.text(5 * np.pi / 4, 2, 'Uptilt\nLeft', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
-        ax.text(7 * np.pi / 4, 2, 'Downtilt\nLeft', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
+        ax.text(1 * np.pi / 4, 50, 'Downtilt\nRight', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
+        ax.text(3 * np.pi / 4, 50, 'Uptilt\nRight', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
+        ax.text(5 * np.pi / 4, 50, 'Uptilt\nLeft', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
+        ax.text(7 * np.pi / 4, 50, 'Downtilt\nLeft', size = 12, color = 'black', horizontalalignment = 'center', fontfamily = 'Courier New', fontweight = 'bold', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")], verticalalignment = 'center')
         
-        ax.annotate('', xy=(0, 0.5), xytext=(np.pi, 0.5),
+        ax.annotate('', xy=(0, 20), xytext=(np.pi, 20),
                 arrowprops=dict(facecolor='black', edgecolor='black', width=1, headwidth=8, headlength=10, path_effects=[pe.withStroke(linewidth=2.25, foreground="white")]))
 
-    ax.set_yticklabels(['', '', 'RMW', '', '2xRMW', '', '3xRMW', '', ''], fontfamily = 'Courier New', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")])
+    # ax.set_yticklabels(['', '', 'RMW', '', '2xRMW', '', '3xRMW', '', ''], fontfamily = 'Courier New', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")])
     ax.set_xticklabels(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'], fontfamily = 'Courier New', path_effects=[pe.withStroke(linewidth=2.25, foreground="white")])
 
 def rePoPolar(dataset, offset = 0):
@@ -79,8 +79,8 @@ def getData(dataset, var, levels, case):
 
         offset = (np.pi / 2) + np.deg2rad(shd)
         temp = rePoPolar(temp, offset)
-        temp['r'] = temp['r'] / rmw
-        rad = 4
+        temp['r'] = temp['r']# / rmw
+        rad = 100
         temp = temp['data'].sel(r = slice(0, rad))
         temp.values = np.flip(temp.values, axis = 1)
         newR = np.linspace(0, rad, 200)
@@ -114,7 +114,7 @@ def makeComposites(dataset, list):
 dataset1 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc")
 print(dataset1.num_cases.values)
 dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc")
-t = 'Test'
+t = 'Non-Aligning'
 
 # if t == 'Decrease2':
 #     # Decrease 10km (<75kt)
@@ -163,7 +163,7 @@ tCoords = test.theta
 valid_nums = np.count_nonzero(~np.isnan(refl), axis = 0)
 fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize = (12, 9))
 c = plt.pcolormesh(tCoords, refl[0].r, valid_nums, cmap = cmap.probs2(), vmin = 0, vmax = np.nanmax(valid_nums))
-labels(ax, True)
+labels(ax)
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
 ax.set_title(f'TC-RADAR: Normalized Tilt {t} Composite\nNumber of Valid Datapoints', fontweight='bold', fontsize=9, loc='left')

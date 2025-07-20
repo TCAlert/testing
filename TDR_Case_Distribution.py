@@ -55,7 +55,7 @@ def getData(dataset, case):
     hour = dataset['solar_swath_hour'].sel(num_cases = case, ships_lag_times = 0)
  
 
-    return list(hour), list(lat), list(-1 * lon)
+    return list(tilt), list(lat), list(-1 * lon)
 
 def choose(t):
     if t == 'Alignment':
@@ -96,8 +96,8 @@ axes = [fig.add_subplot(gs[2:3, 0]),
         fig.add_subplot(gs[0:2, 0], projection = ccrs.PlateCarree(central_longitude=180))]
 
 axes[1] = makeMap(axes[1], 5, 8)
-axes[1].scatter(alons, alats, c = '#9f80ff', linewidth = 2, transform = ccrs.PlateCarree(central_longitude = 0))
-axes[1].scatter(mlons, mlats, c = '#ff8080', linewidth = 2, transform = ccrs.PlateCarree(central_longitude = 0))
+axes[1].scatter(alons, alats, c = 'C1', linewidth = 2, transform = ccrs.PlateCarree(central_longitude = 0))
+axes[1].scatter(mlons, mlats, c = 'C0', linewidth = 2, transform = ccrs.PlateCarree(central_longitude = 0))
 
 # Add the map and set the extent
 axes[0].set_frame_on(False)
@@ -109,10 +109,10 @@ axes[0].set_xlabel('Vortex Tilt (km)', weight = 'bold', size = 9)
 plt.title(f'TC-RADAR: Aligning vs. Non-Aligning TC VMax Histogram and Distribution\nTotal Datapoints: {len(adata)} (A), {len(mdata)} (M)' , fontweight='bold', fontsize=9, loc='left')
 print(f'{round(float(np.nanmean(mdata)), 1)}kt (M)')
 plt.title(f'Mean Tilt: {round(float(np.nanmean(adata)), 1)}km (A)\n{round(float(np.nanmean(mdata)), 1)}km (M)', fontsize = 8, loc='right')  
-axes[0].hist(adata, bins = np.arange(0, 25, 1), color = '#9f80ff', alpha = 0.5, label = 'Aligning')
-axes[0].hist(mdata, bins = np.arange(0, 25, 1), color = '#ff8080', alpha = 0.5, label = 'Non-Aligning')
+axes[0].hist(adata, bins = np.arange(20, 205, 5), color = 'C1', alpha = 0.5, label = 'Aligning')
+axes[0].hist(mdata, bins = np.arange(20, 205, 5), color = 'C0', alpha = 0.5, label = 'Non-Aligning')
 axes[0].legend()
-# plt.savefig(r"C:\Users\deela\Downloads\tdr_dist_tilt.png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\tdr_dist_tilt.png", dpi = 400, bbox_inches = 'tight')
 
 # wind = np.nan_to_num(mdata)
 # print(f"01%: {percentile(wind, 1)}\n05%: {percentile(wind, 5)}\n10%: {percentile(wind, 10)}\n25%: {percentile(wind, 25)}\n33%: {percentile(wind, 33)}\n50%: {percentile(wind, 50)}\n66%: {percentile(wind, 66)}\n75%: {percentile(wind, 75)}\n90%: {percentile(wind, 90)}\n95%: {percentile(wind, 95)}\n99%: {percentile(wind, 99)}\n")
