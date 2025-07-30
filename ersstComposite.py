@@ -108,4 +108,4 @@ def anomalies(month, years, sd = False):
 # analogs = np.arange(2000, 2025, 1)
 # analogs = '1882 1901 1928 1949 1952 1962 1996 2000 2001 2013'.split(' ')
 # anomalies('9', analogs)#, True)
-anomalies('9', [2001, 1990, 1985, 2012, 2013])
+anomalies('7', [2023, 1990, 1985, 2012, 2013])

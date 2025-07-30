@@ -76,8 +76,8 @@ axes = [fig.add_subplot(gs[0, 0:4]),
         fig.add_subplot(gs[0, 2]),
         fig.add_subplot(gs[0, 3])]
 
-axes[0].set_title(f'TC-RADAR: Aligning vs. Non-Aligning TC Environmental Violin Plots\nTotal Datapoints: {len(adata[0])} (A), {len(bdata[0])} (M)' , fontweight='bold', fontsize=9, loc='left')
-# axes[0].set_title(f'Mean VMax: {round(np.nanmean(adata), 1)}kt (A)\n{round(float(np.nanmean(adata)), 1)}kt (M)', fontsize = 8, loc='right')  
+axes[0].set_title(f'TC-RADAR: Aligning vs. Non-Aligning TC Environmental Violin Plots\nTotal Datapoints: {len(adata[0])} (A), {len(bdata[0])} (N)' , fontweight='bold', fontsize=9, loc='left')
+# axes[0].set_title(f'Mean VMax: {round(np.nanmean(adata), 1)}kt (A)\n{round(float(np.nanmean(adata)), 1)}kt (N)', fontsize = 8, loc='right')  
 axes[0].set_frame_on(False)
 axes[0].set_xticks([])
 axes[0].set_yticks([])

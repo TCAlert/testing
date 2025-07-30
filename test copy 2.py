@@ -39,19 +39,19 @@ def map(interval, labelsize):
     return ax 
 
 dates = []
-for x in range(1987, 2024):
+for x in range(1987, 2025):
     for y in range(1, 13):
         dates.append(np.datetime64(f'{x}-{str(y).zfill(2)}-01T00'))
 
-dates = dates + [np.datetime64(f'2024-{str(y).zfill(2)}-01T00') for y in range(1, 6)]
+dates = dates + [np.datetime64(f'2025-{str(y).zfill(2)}-01T00') for y in range(1, 3)]
 
-dataset = xr.open_dataset('https://www.ncei.noaa.gov/thredds/dodsC/cdr/mean_layer_temperature/amsu/rss/avrg/uat4_tb_v04r00_avrg_chtts_s198701_e202405_c20240615.nc')
+dataset = xr.open_dataset('https://www.ncei.noaa.gov/thredds/dodsC/cdr/mean_layer_temperature/amsu/rss/avrg/uat4_tb_v04r00_avrg_chtts_s198701_e202502_c20250306.nc')
 print(dataset['brightness_temperature'])
 dataset = dataset['brightness_temperature']
 dataset = dataset.assign_coords(time = dates)
 
-years = [2024]#1995, 1996, 1998, 1999, 2003, 2004, 2005, 2010, 2017, 2020]
-month = '05'
+years = [2015]#1995, 1996, 1998, 1999, 2003, 2004, 2005, 2010, 2017, 2020]
+month = '08'
 
 allData = []
 for year in years:

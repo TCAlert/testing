@@ -106,9 +106,9 @@ axes[0].grid(linestyle = '--', alpha = 0.5, color = 'black', linewidth = 0.5, zo
 axes[0].set_ylabel('Number of Cases', weight = 'bold', size = 9)
 axes[0].set_xlabel('Vortex Tilt (km)', weight = 'bold', size = 9)
 
-plt.title(f'TC-RADAR: Aligning vs. Non-Aligning TC VMax Histogram and Distribution\nTotal Datapoints: {len(adata)} (A), {len(mdata)} (M)' , fontweight='bold', fontsize=9, loc='left')
-print(f'{round(float(np.nanmean(mdata)), 1)}kt (M)')
-plt.title(f'Mean Tilt: {round(float(np.nanmean(adata)), 1)}km (A)\n{round(float(np.nanmean(mdata)), 1)}km (M)', fontsize = 8, loc='right')  
+plt.title(f'TC-RADAR: Aligning vs. Non-Aligning TC VMax Histogram and Distribution\nTotal Datapoints: {len(adata)} (A), {len(mdata)} (N)' , fontweight='bold', fontsize=9, loc='left')
+print(f'{round(float(np.nanmean(mdata)), 1)}kt (N)')
+plt.title(f'Mean Tilt: {round(float(np.nanmean(adata)), 1)}km (A)\n{round(float(np.nanmean(mdata)), 1)}km (N)', fontsize = 8, loc='right')  
 axes[0].hist(adata, bins = np.arange(20, 205, 5), color = 'C1', alpha = 0.5, label = 'Aligning')
 axes[0].hist(mdata, bins = np.arange(20, 205, 5), color = 'C0', alpha = 0.5, label = 'Non-Aligning')
 axes[0].legend()
