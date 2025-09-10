@@ -43,7 +43,7 @@ def spmap(ax, interval, labelsize):
     return ax 
 
 # dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc")
-dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc")
+dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3m_2020_2024_xy_rel_swath_ships.nc")
 
 print(list(dataset.variables.keys()))
 
@@ -114,19 +114,20 @@ def panelPlot(dataset, caseNum, height):
     axes[4].legend()
 
     plt.savefig(r"C:\Users\deela\Downloads\TDR_Swaths\\" + date + ".png", dpi = 400, bbox_inches = 'tight')
-    plt.show()
-name = 'Earl'
-year = 2022
-height = 6
-# data = retrieveStorm(name, year)
-# print(data.num_cases.values)
-# refl = data['swath_wind_speed'].sel(height = height) * 1.94384
+    # plt.show()
+name = 'Tammy'
+year = 2023
+height = 18
+data = retrieveStorm(name, year)
+print(data.num_cases.values)
+refl = data['swath_wind_speed'].sel(height = height) * 1.94384
 
-# ax = map(2, 9)
-#ax.set_extent([-120, 0, 0, 60])
-# for x in range(len(refl.num_cases)):
-#     case = refl.num_cases[x].values
-#     panelPlot(data.sel(num_cases = case), case)
+ax = map(2, 9)
+ax.set_extent([-120, 0, 0, 60])
+for x in range(len(refl.num_cases)):
+    case = refl.num_cases[x].values
+    case = 600
+    panelPlot(data.sel(num_cases = case), case, height = height)
 #     temp = refl.sel(num_cases = refl.num_cases[x])
 #     lats = data['original_latitudes'].sel(num_cases = refl.num_cases[x])
 #     lons = data['original_longitudes'].sel(num_cases = refl.num_cases[x])
@@ -140,9 +141,9 @@ height = 6
 # plt.show()
 
 
-print(dataset.sel(num_cases = 1051 - 710, height = 2.0)['tc_center_longitudes'].values, dataset.sel(num_cases = 1051 - 710, height = 2.0)['tc_center_latitudes'].values)
+# print(dataset.sel(num_cases = 1051 - 710, height = 2.0)['tc_center_longitudes'].values, dataset.sel(num_cases = 1051 - 710, height = 2.0)['tc_center_latitudes'].values)
 
-cases = [1051 - 710]
-# ax = map(2, 9)
-for x in range(len(cases)):
-    panelPlot(dataset.sel(num_cases = cases[x]), cases[x], height)
+# cases = [1051 - 710]
+# # ax = map(2, 9)
+# for x in range(len(cases)):
+#     panelPlot(dataset.sel(num_cases = cases[x]), cases[x], height)

@@ -14,8 +14,8 @@ import matplotlib.patheffects as pe
 def oisstContour(storm, isotherm = 26):
     fig = plt.figure(figsize=(18, 9))
 
-    date = '07-25T00'
-    years = np.arange(1995, 2026)
+    date = '08-27T00'
+    years = np.arange(1982, 2026)
     baselink = f"http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.oisst.v2.highres/sst.day.mean."
     links = [f'{baselink}{str(year)}.nc' for year in years]
     dates = [np.datetime64(f'{str(year)}-{date}') for year in years]
@@ -62,4 +62,4 @@ def oisstContour(storm, isotherm = 26):
     plt.savefig(r"C:\Users\deela\Downloads\oisstContour.png", dpi = 300, bbox_inches = 'tight')
     plt.show()
     plt.close()
-oisstContour('wpac', isotherm = 28)
+oisstContour('tpac', isotherm = 26)

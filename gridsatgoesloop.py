@@ -24,7 +24,10 @@ def map(lon, lat, zoom = 2, center = 0):
         elif zoom == 2:
             ax.set_extent([lon - 7.5, lon + 7.5, lat - 7.5, lat + 7.5], crs=ccrs.PlateCarree())
     except:
-        extent, size = REGIONS[zoom.upper()]
+        try:
+            extent, size = REGIONS[zoom.upper()]
+        except:
+            extent, size = ([-100, -80, 24, 38], (18, 9))
         plt.figure(figsize = size)
         ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=center))
 
@@ -88,8 +91,6 @@ def run(satellite, date, time, lat, lon, band, cmp = None, zoom = 2, num = 0):
                 else:
                     cmap, vmax, vmin = cmp, 40, -110        
 
-    print(cmp, vmin, vmax)
-
     try:
         if zoom.lower() in ['spac', 'scpac', 'enso', 'npac', 'npac2'] or (float(lon) < 196 and float(lon) > 164) or (float(lon) < -164 and float(lon) > -196):
             map(float(lon), float(lat), zoom, 180)
@@ -110,18 +111,19 @@ def run(satellite, date, time, lat, lon, band, cmp = None, zoom = 2, num = 0):
     cbar.set_label(cmp.upper())
     plt.title(f'{satellite} Channel {ch.zfill(2)} Brightness Temperature\nTime: {time}' , fontweight='bold', fontsize=10, loc='left')
     plt.title(f'{res}\nDeelan Jariwala', fontsize=10, loc='right')
-    plt.savefig(r"C:\Users\deela\Downloads\goesloop\\25sept_" + str(counter) + ".png", dpi = 150, bbox_inches = 'tight')
+    plt.savefig(r"C:\Users\deela\Downloads\katrina\\28aug_" + str(counter) + ".png", dpi = 150, bbox_inches = 'tight')
     #plt.show()
     plt.close()
     dataset.close()
 
     return filename
 
-counter = 0
-for x in range(3, 5, 1):
+counter = 289
+for x in range(29, 30, 1):
     for y in range(0, 24, 1):
-        try:
-            counter = counter + 1
-            run(8, f"10/{str(x)}/1995", f"{str(y).zfill(2)}00", "0", "0", "3", "wv13", 'gom', counter)
-        except:
-            pass
+        for z in range(0, 60, 15):
+            try:
+                counter = counter + 1
+                run(12, f"08/{str(x)}/2005", f"{str(y).zfill(2)}{str(z).zfill(2)}", "0", "0", "3", "codywv", 'custom', counter)
+            except:
+                pass

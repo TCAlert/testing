@@ -142,9 +142,9 @@ def makeComposites(dataset, list):
 
     return refl, winds
 
-dataset1 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc")
-dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc")
-t = 'SI'
+dataset1 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3m_1997_2019_xy_rel_swath_ships.nc")
+dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3m_2020_2024_xy_rel_swath_ships.nc")
+t = 'Sheared Intensification'
 
 if t == 'Alignment':
     list1 = [225,251,252,253,254,333,334,347,374,376,377,407,408,409,410,413,414,603,604,605,672]
@@ -245,7 +245,7 @@ cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
 ax.set_title(f'TC-RADAR: Normalized Shear-Relative {t} Composite\nNumber of Valid Datapoints', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'Mean VMax: {str(int(meanWind))}kt\nDeelan Jariwala', fontsize=9, loc='right') 
-plt.savefig(r"C:\Users\deela\Downloads\TCTiltProject\NEWtdrcomp_validcounts_" + t + ".png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\NEWtdrcomp_validcounts_" + t + ".png", dpi = 400, bbox_inches = 'tight')
 
 data = np.nanmean(refl, axis = 0)
 #data = gaussian_filter(data, sigma = 3)
@@ -257,7 +257,7 @@ cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
 ax.set_title(f'TC-RADAR: Normalized Shear-Relative {t} Composite (>33% Valid Points)\n0.5-3km Storm-Relative Helicity', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'Mean VMax: {str(int(meanWind))}kt\nDeelan Jariwala', fontsize=9, loc='right') 
-plt.savefig(r"C:\Users\deela\Downloads\TCTiltProject\NEWtdrcomp_hel_" + t + ".png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\NEWtdrcomp_hel_" + t + ".png", dpi = 400, bbox_inches = 'tight')
 
 data = np.nanstd(refl, axis = 0)
 data = np.where(valid_nums > (np.nanmax(valid_nums) / 3), data, np.nan)
@@ -268,5 +268,5 @@ cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
 ax.set_title(f'TC-RADAR: Normalized Shear-Relative {t} Composite\n0.5-3km Storm-Relative Helicity Standard Deviation', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'Mean VMax: {str(int(meanWind))}kt\nDeelan Jariwala', fontsize=9, loc='right') 
-plt.savefig(r"C:\Users\deela\Downloads\TCTiltProject\NEWtdrcomp_helstd_" + t + ".png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\NEWtdrcomp_helstd_" + t + ".png", dpi = 400, bbox_inches = 'tight')
 plt.show()

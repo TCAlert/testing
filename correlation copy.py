@@ -113,35 +113,35 @@ def getIndex(ts = False, ACEbox = False, SSTAbox = False, EOFbox = False, PSLbox
     
     return csv
 
-# height = 200
-# dataset1 = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/pressure/uwnd.mon.mean.nc')
-# dataset = dataset1['uwnd'].sel(level = height)
+# height = 500
+# dataset1 = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/pressure/hgt.mon.mean.nc')
+# dataset = dataset1['hgt'].sel(level = height)
 # dataset1 = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/spectral/chi.mon.mean.nc')
 # dataset = dataset1['chi'].sel(level = .2101).fillna(0)
 # data = dataset * np.cos(np.radians(dataset['lat']))
 # print(data)
 # dataset = psl.createClimoMonthly([1971, 2023], '8', ['air', 'shum'], ['Pressure', 'Pressure'], False)
 # dataset = helper.thetae(dataset[0].sel(level = 850) + 273.15, 850, 1000, dataset[1].sel(level = 850) / 1000)
-# dataset1 = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
-# dataset = dataset1['sst']
-# print(dataset)
-dates = []
-for x in range(1987, 2025):
-    for y in range(1, 13):
-        dates.append(np.datetime64(f'{x}-{str(y).zfill(2)}-01T00'))
+dataset1 = xr.open_dataset('http://psl.noaa.gov/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mnmean.nc')
+dataset = dataset1['sst']
+print(dataset)
+# dates = []
+# for x in range(1987, 2025):
+#     for y in range(1, 13):
+#         dates.append(np.datetime64(f'{x}-{str(y).zfill(2)}-01T00'))
 
-dataset1 = xr.open_dataset('https://www.ncei.noaa.gov/thredds/dodsC/cdr/mean_layer_temperature/amsu/rss/avrg/uat4_tb_v04r00_avrg_chtts_s198701_e202502_c20250306.nc')
-dataset = dataset1['brightness_temperature']
-data = dataset.isel(time = slice(0, 456))
-data = data.rename({'latitude' : 'lat', 'longitude' : 'lon'})
-data = data.assign_coords(time = dates)
-data = data.fillna(0) * np.cos(np.radians(data['lat']))
+# dataset1 = xr.open_dataset('https://www.ncei.noaa.gov/thredds/dodsC/cdr/mean_layer_temperature/amsu/rss/avrg/uat4_tb_v04r00_avrg_chtts_s198701_e202502_c20250306.nc')
+# dataset = dataset1['brightness_temperature']
+# data = dataset.isel(time = slice(0, 456))
+# data = data.rename({'latitude' : 'lat', 'longitude' : 'lon'})
+# data = data.assign_coords(time = dates)
+# data = data.fillna(0) * np.cos(np.radians(data['lat']))
 #dataset = xr.open_dataset(r"C:\Users\deela\Downloads\R1CI1971-2023.nc")
 #data = dataset['__xarray_dataarray_variable__'].fillna(0) * np.cos(np.radians(dataset['lat']))
 
 # dataset1 = xr.open_dataset(r"C:\Users\deela\Downloads\HURDAT2DensityALL2025.nc")
 # dataset = dataset1['ACE']
-# data = dataset * np.cos(np.deg2rad(dataset['latitude']))
+data = dataset * np.cos(np.deg2rad(dataset['lat']))
 # print(data.shape)
 # data = yearlySum(data)
 # data = data.coarsen(latitude=2, longitude=2, boundary='trim').mean()
@@ -150,18 +150,18 @@ data = data.fillna(0) * np.cos(np.radians(data['lat']))
 # data.values = gaussian_filter(data.values, sigma = s, axes = (1, 2))
 # print(data)
 
-index = 'ACE in Box'
-dataMonth = '8'
+index = 'VP in Box'
+dataMonth = '9'
 indexMonth = '9'
-startYear = 1987
+startYear = 1981
 endYear = 2024
-day = 365
-lats = [0, 70]
-lons = [360 - 100, 360]
+# day = 365
+lats = [-15, 15]
+lons = [110, 170]
 boxXCoords = [lons[0], lons[1], lons[1], lons[0], lons[0]]
 boxYCoords = [lats[0], lats[0], lats[1], lats[1], lats[0]]
-# csv1 = getIndex(PSLbox = True, lats = lats, lons = lons, startYear = startYear, endYear = endYear, indexMonth = indexMonth) * -1
-csv1 = getIndex(ACEbox = True, day = day, lats = lats, lons = lons, startYear = startYear, endYear = endYear)
+csv1 = getIndex(PSLbox = True, lats = lats, lons = lons, startYear = startYear, endYear = endYear, indexMonth = indexMonth) * -1
+# csv1 = getIndex(ACEbox = True, day = day, lats = lats, lons = lons, startYear = startYear, endYear = endYear)
 
 # lats = [10, 20]
 # csv2 = getIndex(ts = False, ACEbox = True, dataMonth = dataMonth, day = day, startYear = startYear, endYear = endYear, lats = lats, lons = lons)
@@ -174,7 +174,7 @@ data = data.sel(time = fMonths)
 print(data)
 ogShape = data.shape
 
-temp = data.values
+temp = np.nan_to_num(data.values)
 temp = np.reshape(temp, (ogShape[0], ogShape[1] * ogShape[2]))
 temp = detrend(temp, axis = 0)
 print(temp.shape, csv.shape)
@@ -220,9 +220,9 @@ try:
 except:
     pass
 
-# ax.set_title(f'NCEP/NCAR R1 {height}mb Zonal Wind Correlation with {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
-# ax.set_title(f'ERSSTv5 Correlation with {numToMonth(indexMonth)} {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
-ax.set_title(f'AMSU Tropopause (TTS) Brightness Temp. Correlation with {numToMonth(indexMonth)} {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
+# ax.set_title(f'NCEP/NCAR R1 {height}mb Geopotential Height Correlation with {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
+ax.set_title(f'ERSSTv5 Correlation with {numToMonth(indexMonth)} {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
+# ax.set_title(f'AMSU Tropopause (TTS) Brightness Temp. Correlation with {numToMonth(indexMonth)} {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
 # ax.set_title(f'ERSSTv5 Correlation with {index} | All Data Detrended\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
 # ax.set_title(f'HURDAT2 ACE Density Correlation with {numToMonth(indexMonth)} {index.upper()}\nYears Used: {startYear}-{endYear}', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'{numToMonth(dataMonth)}', fontsize=9, loc='center') 

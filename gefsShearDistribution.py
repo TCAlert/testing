@@ -173,19 +173,19 @@ year = t.year
 month = t.month
 day = t.day
 hr = 12
-fcastHour = 24
-storm = 'al02'
+fcastHour = 60
+storm = 'al05'
 shearStrength = 15
 p = 50
-title = f'Percent of Members with Shear Exceeding {shearStrength}kt'
-#title = 'Probability a Layer has the Max Shear Vector'
+# title = f'Percent of Members with Shear Exceeding {shearStrength}kt'
+# title = 'Probability a Layer has the Max Shear Vector'
 #title = 'Minimum Shear in Ensemble Suite'
 #title = 'Maximum Shear in Ensemble Suite'
-#title = f'{p}th Percentile of Wind Shears'
+# title = f'{p}th Percentile of Wind Shears'
 #title = 'Ensemble Mean'
 #title = 'Quartile Coefficient of Dispersion'
 #title = 'Interquartile Range'
-#title = 'Standard Deviation'
+# title = 'Standard Deviation'
 #title = 'Skewness'
 
 # Collects requisite information from the A-Deck regarding the given storm for the specified hour and models

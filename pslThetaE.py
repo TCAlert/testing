@@ -42,7 +42,7 @@ def map(interval, labelsize):
 
     return ax 
 
-years = [2017]
+years = [2025]
 months = [8]
 level1 = 850
 level2 = 500
@@ -75,12 +75,22 @@ labelsize = 8
 ax = map(10, labelsize)    
 ax.set_extent([295, 355, 5, 35], crs = ccrs.PlateCarree())
 
-c = plt.contourf(advStab.lon, advStab.lat, advStab - advStabClim, origin='lower', levels = np.arange(-5, 5.05, .05), cmap = cmap.tempAnoms(), extend = 'both', transform=ccrs.PlateCarree(central_longitude=0))
-plt.streamplot(uwnd.lon, vwnd.lat, uwnd.values - uClm.values, vwnd.values - vClm.values, linewidth = 1, density = 1, color = 'black', transform = ccrs.PlateCarree(central_longitude = 0))
-plt.title(f'NCEP/NCAR Reanalysis I: {level1}mb Theta-E Advection Anomalies\nClimatology: {climoYears[0]}-{climoYears[1]}' , fontweight='bold', fontsize=labelsize, loc='left')
+# c = plt.contourf(advStab.lon, advStab.lat, advStab - advStabClim, origin='lower', levels = np.arange(-5, 5.05, .05), cmap = cmap.tempAnoms(), extend = 'both', transform=ccrs.PlateCarree(central_longitude=0))
+# plt.streamplot(uwnd.lon, vwnd.lat, uwnd.values - uClm.values, vwnd.values - vClm.values, linewidth = 1, density = 1, color = 'black', transform = ccrs.PlateCarree(central_longitude = 0))
+# plt.title(f'NCEP/NCAR Reanalysis I: {level1}mb Theta-E Advection Anomalies\nClimatology: {climoYears[0]}-{climoYears[1]}' , fontweight='bold', fontsize=labelsize, loc='left')
+# plt.title(f'{helper.numToMonth(months[0])} {str(years[0])}', fontsize = labelsize, loc = 'center')
+# plt.title('2.5\u00b0\nDeelan Jariwala', fontsize=labelsize, loc='right')  
+# cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
+# cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
+# plt.savefig(r"C:\Users\deela\Downloads\thetaeanompsl.png", dpi = 400, bbox_inches = 'tight')
+# plt.show()
+
+c = plt.contourf(advStab.lon, advStab.lat, advStabClim, origin='lower', levels = np.arange(-5, 5.05, .05), cmap = cmap.tempAnoms(), extend = 'both', transform=ccrs.PlateCarree(central_longitude=0))
+plt.streamplot(uwnd.lon, vwnd.lat, uClm.values, vClm.values, linewidth = 1, density = 1, color = 'black', transform = ccrs.PlateCarree(central_longitude = 0))
+plt.title(f'NCEP/NCAR Reanalysis I: {level1}mb Theta-E Advection Climo\nClimatology: {climoYears[0]}-{climoYears[1]}' , fontweight='bold', fontsize=labelsize, loc='left')
 plt.title(f'{helper.numToMonth(months[0])} {str(years[0])}', fontsize = labelsize, loc = 'center')
 plt.title('2.5\u00b0\nDeelan Jariwala', fontsize=labelsize, loc='right')  
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
-plt.savefig(r"C:\Users\deela\Downloads\thetaeanompsl4.png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\thetaeAdvpslClimo.png", dpi = 400, bbox_inches = 'tight')
 plt.show()

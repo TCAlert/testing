@@ -177,6 +177,19 @@ def tempAnoms4():
 
     return newcmp.reversed()
 
+def tempAnoms5():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/20, "#f2b3b3"),
+    (5/20, "#ff4d4d"),
+    (10/20, "#000000"),
+    (15/20, "#4d4dff"),
+    (20/20, "#d3b3f2")])
+
+    vmin = -5
+    vmax = 5
+
+    return newcmp.reversed()
+
 def sshws():
     newcmp = LinearSegmentedColormap.from_list("", [
     (0/140, "#5ebaff"),
@@ -291,6 +304,56 @@ def wind2():
     (50/152, "#F9F797"),
     (64/152, "#f09571"),
     (83/152, "#F96B6B"),
+    (96/152, "#F26EF5"),
+    (113/152, "#7030A0"),
+    (125/152, "#283B76"),
+    (140/152, "#a28df0"),
+    (152/152, "#d0cdfa")])
+
+    return newcmp
+
+def wind3():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/200, "#ffffff"),
+    (34/200, "#08225c"),
+    (50/200, "#3f7a2d"),
+    (64/200, "#f2d23d"),
+    (75/200, "#f79638"),
+    (85/200, "#d32c30"),
+    (100/200, "#330231"),
+    (115/200, "#ca57ff"),
+    (140/200, "#FFFFFF"),
+    (160/200, "#ff8cc2"),
+    (180/200, "#cc3333"),
+    (200/200, "#000000")])
+
+    return newcmp
+
+def wind4():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/200, "#330231"),
+    (20/200, "#283B76"),
+    (34/200, "#2F7FBC"),
+    (50/200, "#47ab29"),
+    (64/200, "#ffd500"),
+    (85/200, "#ff6200"),
+    (100/200, "#d32c30"),
+    (115/200, "#ff3399"),
+    (140/200, "#FFFFFF"),
+    (160/200, "#74C9DA"),
+    (180/200, "#4245a6"),
+    (200/200, "#08225c")])
+
+    return newcmp
+
+def wind5():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/152, "#ffffff"),
+    (20/152, "#1da4bf"), 
+    (34/152, "#6ad957"),
+    (50/152, "#F9F797"),
+    (64/152, "#f07241"),
+    (83/152, "#c71e1e"),
     (96/152, "#F26EF5"),
     (113/152, "#7030A0"),
     (125/152, "#283B76"),

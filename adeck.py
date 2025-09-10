@@ -8,15 +8,15 @@ import urllib.request as urllib
 def getData(storm):
     year = str(datetime.now().year)
     if ('al' in storm.lower() or 'ep' in storm.lower() or 'cp' in storm.lower()):
-        link = 'https://www.ssd.noaa.gov/PS/TROP/DATA/ATCF/NHC/a' + storm.lower() + year + '.dat'     
+        link = 'https://ospo.noaa.gov/tropical-data/ATCF/NHC/a' + storm.lower() + year + '.dat'     
         file = urllib.urlopen(link).read().decode('utf-8')    
     else:
         if ('sh' in storm.lower() and datetime.now().month >= 11):
             year = str(int(year) + 1)
-            link = 'https://www.ssd.noaa.gov/PS/TROP/DATA/ATCF/JTWC/a' + storm.lower() + year + '.dat'    
+            link = 'https://ospo.noaa.gov/tropical-data/ATCF/JTWC/a' + storm.lower() + year + '.dat'    
             file = urllib.urlopen(link).read().decode('utf-8')           
         else:
-            link = 'https://www.ssd.noaa.gov/PS/TROP/DATA/ATCF/JTWC/a' + storm.lower() + year + '.dat'    
+            link = 'https://ospo.noaa.gov/tropical-data/ATCF/JTWC/a' + storm.lower() + year + '.dat'    
             file = urllib.urlopen(link).read().decode('utf-8')           
     print(link)
 

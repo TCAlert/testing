@@ -74,7 +74,7 @@ def spmap(ax, interval, labelsize, dark = False):
 
     return ax 
 
-dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc")
+dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3m_2020_2024_xy_rel_swath_ships.nc")
 
 print(list(dataset.variables.keys()))
 
@@ -118,12 +118,12 @@ def panelPlot(dataset, caseNum):
     ax.set_extent(extent)
     ax2.set_extent(extent)
 
-    date = f'{str(data['swath_year'].values)}-{str(data['swath_month'].values).zfill(2)}-{str(data['swath_day'].values).zfill(2)} at {str(data['swath_hour'].values).zfill(2)}{str(data['swath_min'].values).zfill(2)}z'
+    date = f"{str(data['swath_year'].values)}-{str(data['swath_month'].values).zfill(2)}-{str(data['swath_day'].values).zfill(2)} at {str(data['swath_hour'].values).zfill(2)}{str(data['swath_min'].values).zfill(2)}z"
     print(date)
     # plt.pcolormesh(lons, lats, data['swath_eastward_wind'].sel(height = 0.5).values)
     # plt.show()
-    umotion = dataset['swath_eastward_wind'].sel(height = slice(0.5, 6.5)).mean(['height'])#data['motion_x_ships'].sel(num_ships_times = 0).values
-    vmotion = dataset['swath_northward_wind'].sel(height = slice(0.5, 6.5)).mean(['height'])#data['motion_y_ships'].sel(num_ships_times = 0).values
+    umotion = dataset['swath_earth_relative_eastward_wind'].sel(height = slice(0.5, 6.5)).mean(['height'])#data['motion_x_ships'].sel(num_ships_times = 0).values
+    vmotion = dataset['swath_earth_relative_northward_wind'].sel(height = slice(0.5, 6.5)).mean(['height'])#data['motion_y_ships'].sel(num_ships_times = 0).values
 
     hgts = data.height
     print(hgts.values)
@@ -133,8 +133,8 @@ def panelPlot(dataset, caseNum):
         for y in range(len(dataset.latitude)):
             uM = umotion.sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).values
             vM = vmotion.sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).values
-            uwnd = data['swath_eastward_wind'].sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).values
-            vwnd = data['swath_northward_wind'].sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).values
+            uwnd = data['swath_earth_relative_eastward_wind'].sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).values
+            vwnd = data['swath_earth_relative_northward_wind'].sel(longitude = dataset.longitude[x], latitude = dataset.latitude[y]).values
             if np.isnan(uwnd).any():
                 temp = np.nan
             else:
@@ -173,11 +173,11 @@ def panelPlot(dataset, caseNum):
     leg = ax2.legend(loc = 'upper right')
     leg.get_frame().set_linewidth(0.0)
 
-    plt.savefig(r"C:\Users\deela\Downloads\laurasrh\hel_" + date + ".png", dpi = 400, bbox_inches = 'tight')
+    plt.savefig(r"C:\Users\deela\Downloads\helenesrh\hel_" + date + ".png", dpi = 400, bbox_inches = 'tight')
     #plt.show()
     plt.close()
-name = 'Laura'
-year = 2020
+name = 'Helene'
+year = 2024
 height = 3
 data = retrieveStorm(name, year)
 print(list(data.variables))

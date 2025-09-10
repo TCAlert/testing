@@ -8,7 +8,7 @@ from matplotlib.offsetbox import AnchoredText
 import adeck 
 import xarray as xr 
 from matplotlib import rcParams
-rcParams['font.family'] = 'Courier New'
+# rcParams['font.family'] = 'Courier New'
 
 # Helper function to calculate wind shear, primarily for the maximum wind function
 def calcShear(u, v, top, bot):
@@ -79,9 +79,9 @@ t = datetime.now()
 year = t.year
 month = t.month
 day = t.day 
-hr = 6
-fcastHour = 90
-storm = 'al02'
+hr = 12
+fcastHour = 60
+storm = 'al05'
 levels = [[200, 850], [500, 850], [200, 500]]
 
 # Collects requisite information from the A-Deck regarding the given storm for the specified hour and models
@@ -127,7 +127,7 @@ for x in range(len(shears)):
     h, bins = np.histogram(shears[x], bins = [x for x in range(0, 55, 5)])
     hist.append((h / len(shears[x])) * 100)
 
-fig = plt.figure(figsize=(12, 8))
+fig = plt.figure(figsize=(15, 8))
 
 # Add the map and set the extent
 ax = plt.axes()

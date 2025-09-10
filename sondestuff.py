@@ -44,7 +44,7 @@ def filter(dataset):
     normX = xDistB / flwrmw
     normY = yDistB / flwrmw
     radius = np.sqrt(normX**2 + normY**2)
-    mask = (radius < 1.1) & (radius > 0.9)
+    mask = (radius < 1.34) & (radius > 0.66)
     normX = normX.where(mask, drop = True)
     normY = normY.where(mask, drop = True)
     dataset = dataset.where(mask, drop = True)
@@ -95,7 +95,9 @@ def regression(input, output):
     testOut = output[600:]
 
     print(f"trainIn shape: {trainIn.shape}")
+    print(f"testIn shape: {testIn.shape}")
     print(f"trainOut shape: {trainOut.shape}")
+    print(f"testOut shape: {testOut.shape}")
 
     regr = linear_model.LinearRegression()
     regr.fit(trainIn, trainOut)
@@ -110,14 +112,15 @@ def regression(input, output):
     corr, sig = scipy.stats.pearsonr(predictTest, testOut)
     # error = np.sqrt(np.mean((predictTest - testOut)**2))
     error = np.mean(np.abs(predictTest - testOut))
-    plt.scatter(predictTest, testOut)
-    plt.xlabel('predicted')
-    plt.ylabel('actual')
-    plt.title('r^2 = ' + str(round(corr**2, 2)) + ', MAE: ' + str(round(error, 2)))
-    # plt.xlim(0, 2.5)
-    # plt.ylim(0, 2.5)
-    plt.savefig(r"C:\Users\deela\Downloads\ratiopred.png", dpi = 400, bbox_inches = 'tight')
-    plt.show()
+    scatter(['Predicted', predictTest], ['Actual', testOut])
+    # plt.scatter(predictTest, testOut)
+    # plt.xlabel('predicted')
+    # plt.ylabel('actual')
+    # plt.title('r^2 = ' + str(round(corr**2, 2)) + ', MAE: ' + str(round(error, 2)))
+    # # plt.xlim(0, 2.5)
+    # # plt.ylim(0, 2.5)
+    # plt.savefig(r"C:\Users\deela\Downloads\ratiopred.png", dpi = 400, bbox_inches = 'tight')
+    # plt.show()
 
     #print(str(error) + f"kt error\nCorrelation: {corr**2}")
 
@@ -161,7 +164,8 @@ def scatter(x, y, z = None):
 
 labelsize = 9
 
-dataset = xr.open_dataset(r"C:\Users\deela\Downloads\sonde-master.nc")
+dataset = xr.open_dataset(r"C:\Users\deela\Downloads\sonde-master (1).nc")
+print(dataset)
 dataset = filter(dataset)
 print(dataset)
 print(list(dataset.variables))
@@ -214,15 +218,15 @@ print(np.nanmean(ratio), np.nanmedian(ratio))
 # scatter(['Flight Level Wind (sonde)', np.array(nFLW)], ['Surface Wind', np.array(nSFC)])#, ['Flight Level RMW', np.array(nFeat)[:, 1]])
 # scatter(['WL150', np.array(nwl150)], ['Flight Level Wind', np.array(nFLW)])
 # scatter(['WL150', nwl150], ['Distance from Center', np.array(nFeat)[:, 4]])
-scatter(['Surface Wind', np.array(nSFC)], ['Flight Level Wind', np.array(nFLW)])
-scatter(['Surface Wind', np.array(nSFC)], ['WL150', np.array(nwl150)])
+# scatter(['Surface Wind', np.array(nSFC)], ['Flight Level Wind', np.array(nFLW)])
+# scatter(['Surface Wind', np.array(nSFC)], ['WL150', np.array(nwl150)])
 
 # for x in range(len(nRati)):
 #     print(x, nFeat[x], nRati[x])
 
 print(np.nanmean(nRati))
 
-# corr = regression(np.nan_to_num(np.array(nFeat)), np.nan_to_num(nwl150))
+corr = regression(np.nan_to_num(np.array(nFeat)), np.nan_to_num(nSFC))
 # print(corr)
 
 # grid, data, nobs = bin(lons, lats, ratio)
@@ -241,21 +245,21 @@ print(np.nanmean(nRati))
 # plt.show()
 
 
-fig = plt.figure(figsize=(14, 7))
+# fig = plt.figure(figsize=(14, 7))
 
-# Add the map and set the extent
-ax = plt.axes()
-ax.set_frame_on(False)
-ax.tick_params(axis='both', labelsize=8, left = False, bottom = False)
-ax.grid(linestyle = '--', alpha = 0.5, color = 'black', linewidth = 0.5, zorder = 9)
-ax.set_ylabel('Number of Dropsondes', weight = 'bold', size = 9)
-ax.set_xlabel('Reduction Ratio', weight = 'bold', size = 9)
-# ax.set_ylim(0, 24)
-# ax.set_xticks(np.arange(-30, 34, 4))
-# ax.set_yticks(np.arange(0, 24, 2))
+# # Add the map and set the extent
+# ax = plt.axes()
+# ax.set_frame_on(False)
+# ax.tick_params(axis='both', labelsize=8, left = False, bottom = False)
+# ax.grid(linestyle = '--', alpha = 0.5, color = 'black', linewidth = 0.5, zorder = 9)
+# ax.set_ylabel('Number of Dropsondes', weight = 'bold', size = 9)
+# ax.set_xlabel('Reduction Ratio', weight = 'bold', size = 9)
+# # ax.set_ylim(0, 24)
+# # ax.set_xticks(np.arange(-30, 34, 4))
+# # ax.set_yticks(np.arange(0, 24, 2))
 
-plt.title(f'Tropical Cyclone Dropsonde-Derived Reduction Ratio\nNumber of Valid Datapoints: {len(nRati)}' , fontweight='bold', fontsize=labelsize + 1, loc='left')
-plt.title(f'Deelan Jariwala', fontsize=labelsize + 1, loc='right')  
-plt.hist(nRati, bins = np.arange(0.5, 2.5, .1), color = '#9f80ff', alpha = 0.75)
-plt.savefig(r"C:\Users\deela\Downloads\histogramdropsonde2.png", dpi = 400, bbox_inches = 'tight')
-plt.show()
+# plt.title(f'Tropical Cyclone Dropsonde-Derived Reduction Ratio\nNumber of Valid Datapoints: {len(nRati)}' , fontweight='bold', fontsize=labelsize + 1, loc='left')
+# plt.title(f'Deelan Jariwala', fontsize=labelsize + 1, loc='right')  
+# plt.hist(nRati, bins = np.arange(0.5, 2.5, .1), color = '#9f80ff', alpha = 0.75)
+# plt.savefig(r"C:\Users\deela\Downloads\histogramdropsonde2.png", dpi = 400, bbox_inches = 'tight')
+# plt.show()

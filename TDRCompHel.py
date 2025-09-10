@@ -90,8 +90,8 @@ def computeHelicity(dataset):
 def getData(dataset, var, levels, case):
     vmax = dataset['vmax_ships'].sel(num_cases = case, ships_lag_times = 0).values
     rmw = dataset['tc_rmw'].sel(num_cases = case, height = 3).values / 2
-    # shd = 360 - dataset['sddc_ships'].sel(num_cases = case, ships_lag_times = 0).values
-    shd = 180 - np.nanmax(dataset['tc_tilt_direction'].sel(num_cases = case, height = [5, 5.5, 6.0, 6.5]).values) * (180 / np.pi)
+    shd = 360 - dataset['sddc_ships'].sel(num_cases = case, ships_lag_times = 0).values
+    # shd = 180 - np.nanmax(dataset['tc_tilt_direction'].sel(num_cases = case, height = [5, 5.5, 6.0, 6.5]).values) * (180 / np.pi)
 
     print('Shear direction', shd)
     print('Radius of Max Wind:', rmw)

@@ -18,7 +18,7 @@ def conv(dat, t = "IR"):
     return dat
 
 file = r"C:\Users\deela\Downloads\check.txt"
-newFile = r"C:\Users\deela\Downloads\Nimbus5-ESMR_1975m1120t195723_DS95.TAP"
+newFile = r"C:\Users\deela\Downloads\NSIDC-0630-EASE2_T25km-NIMBUS7_SMMR-1979242-37H-A-GRD-JPL-v1.3.nc"
 
 with open(newFile, 'rb') as data:
     decoded_data = data.read()

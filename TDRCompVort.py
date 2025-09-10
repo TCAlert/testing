@@ -93,19 +93,25 @@ def getData(dataset, var, levels, case):
         # temp = temp.isel(latitude=slice(1, None), longitude=slice(1, None))
 
         # vert = dataset['swath_upward_air_velocity'].sel(num_cases = case).differentiate('height').sel(height = levels[x])
-        # vert = dataset['swath_upward_air_velocity'].sel(num_cases = case, height = levels[x])
+        vert = dataset['swath_upward_air_velocity'].sel(num_cases = case, height = levels[x])
+        temp = vert
 
-        # u = dataset['swath_eastward_wind'].sel(num_cases = case, height = levels[x])
-        # ux, uy = Gradient2D(u)
-        # v = dataset['swath_northward_wind'].sel(num_cases = case, height = levels[x])
-        # vx, vy = Gradient2D(v)
+        u = dataset['swath_eastward_wind'].sel(num_cases = case, height = levels[x])
+        ux, uy = Gradient2D(u)
+        print(ux, uy)
+        v = dataset['swath_northward_wind'].sel(num_cases = case, height = levels[x])
+        vx, vy = Gradient2D(v)
+
+        # temp = (ux + vy)
 
         # temp.values = -(temp.values*ux + temp.values*vy)
 
         # Vertical Advection Term
-        temp = dataset['swath_upward_air_velocity'].sel(num_cases = case, height = levels[x])
-        vort = dataset['swath_relative_vorticity'].sel(num_cases = case).differentiate('height').sel(height = levels[x])
-        temp.values = -temp.values * vort
+        # temp = dataset['swath_upward_air_velocity'].sel(num_cases = case, height = levels[x])
+        # vort = dataset['swath_relative_vorticity'].sel(num_cases = case).differentiate('height').sel(height = levels[x])
+        # temp.values = -temp.values * vort
+
+        # temp = dataset['swath_relative_vorticity'].sel(num_cases = case, height = levels[x])
 
 
 
@@ -136,7 +142,7 @@ def makeComposites(dataset, list):
     for x in range(len(list)):
         print(x, '/', len(list))
         try:
-            dat, vmax = getData(dataset, ['swath_reflectivity'], [3], list[x])
+            dat, vmax = getData(dataset, ['swath_reflectivity'], [2], list[x])
 
             refl.append(dat[0])
             winds.append(vmax)
@@ -144,9 +150,9 @@ def makeComposites(dataset, list):
             pass
     return refl, winds
 
-dataset1 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc")
-dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc")
-t = 'Sheared Weakening'
+dataset1 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3m_1997_2019_xy_rel_swath_ships.nc")
+dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3m_2020_2023_xy_rel_swath_ships.nc")
+t = 'Sheared Intensification'
 
 # if t == 'Decrease2':
 #     # Decrease 10km (<75kt)
@@ -268,22 +274,22 @@ data = np.nanmean(refl, axis = 0)
 #data = gaussian_filter(data, sigma = 3)
 data = np.where(valid_nums > (np.nanmax(valid_nums) / 3), data, np.nan)
 fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize = (12, 9))
-c = plt.pcolormesh(tCoords, refl[0].r, data, cmap = cmap.tempAnoms3(), vmin = -0.001, vmax = 0.001)
+c = plt.pcolormesh(tCoords, refl[0].r, data, cmap = cmap.tempAnoms3(), vmin = -2, vmax = 2)
 labels(ax)
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
-ax.set_title(f'TC-RADAR: Normalized Shear-Relative {t} Composite (>33% Valid Points)\n2km Vertical Vorticity Advection', fontweight='bold', fontsize=9, loc='left')
+ax.set_title(f'TC-RADAR: Normalized Shear-Relative {t} Composite (>33% Valid Points)\n2km Vertical Velocity', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'Mean VMax: {str(int(meanWind))}kt\nDeelan Jariwala', fontsize=9, loc='right') 
-plt.savefig(r"C:\Users\deela\Downloads\TCTiltProject\NEWtdrcomp_3vadv_" + t + ".png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\TCTiltProject\NEWtdrcomp_2vvel_" + t + ".png", dpi = 400, bbox_inches = 'tight')
 
 data = np.nanstd(refl, axis = 0)
 data = np.where(valid_nums > (np.nanmax(valid_nums) / 3), data, np.nan)
 fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize = (12, 9))
-c = plt.pcolormesh(tCoords, refl[0].r, data, cmap = cmap.probs2(), vmin = 0, vmax = 0.1)
+c = plt.pcolormesh(tCoords, refl[0].r, data, cmap = cmap.probs2(), vmin = 0, vmax = 5)
 labels(ax, True)
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
-ax.set_title(f'TC-RADAR: Normalized Shear-Relative {t} Composite\n2km Vertical Vorticity Advection Standard Deviation', fontweight='bold', fontsize=9, loc='left')
+ax.set_title(f'TC-RADAR: Normalized Shear-Relative {t} Composite\n2km Vertical Velocity Standard Deviation', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'Mean VMax: {str(int(meanWind))}kt\nDeelan Jariwala', fontsize=9, loc='right') 
-plt.savefig(r"C:\Users\deela\Downloads\TCTiltProject\NEWtdrcomp_3vadvstd_" + t + ".png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\TCTiltProject\NEWtdrcomp_2vvelstd_" + t + ".png", dpi = 400, bbox_inches = 'tight')
 plt.show()

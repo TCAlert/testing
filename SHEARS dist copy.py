@@ -47,8 +47,10 @@ dataset = dataset.where(dataset.dist_land >= 0, drop=True)
 # dataset = dataset.where(dataset.rlhum.sel(upper = slice(300, 700)).mean('upper') > 40, drop = True)
 # dataset = dataset.where(dataset.sst > 26, drop=True)
 # dataset = dataset.where(dataset.lats > 0, drop = True)
-dataset = dataset.where(dataset.fdelta_vmax >= 0, drop = True)
+# dataset = dataset.where(dataset.fdelta_vmax >= 0, drop = True)
+dataset = dataset.where(dataset.time > np.datetime64('2020-01-01T00'), drop = True)
 dataset = dataset.where(dataset.atcf.astype(str).str.startswith('AL'), drop = True)
+print(dataset['time'].values)
 pres = dataset.upper
 
 # print(dataset)
@@ -92,8 +94,8 @@ axes[0].grid(linestyle = '--', alpha = 0.5, color = 'black', linewidth = 0.5, zo
 axes[0].set_ylabel('Number of Cases', weight = 'bold', size = 9)
 axes[0].set_xlabel('DVMax (kt)', weight = 'bold', size = 9)
 
-plt.title(f'SHEARS: NATL Future 24hr Intensity Change Distribution (+)\nTotal Datapoints: {len(dataset['fdelta_vmax'])}' , fontweight='bold', fontsize=9, loc='left')
-plt.title(f'Mean DVMax: {np.nanmean(dataset['fdelta_vmax'].values)}kt\nDeelan Jariwala', fontsize = 9, loc='right')  
+plt.title(f'SHEARS: NATL Future 24hr Intensity Change Distribution (+)\nTotal Datapoints: {len(dataset["fdelta_vmax"])}' , fontweight='bold', fontsize=9, loc='left')
+plt.title(f'Mean DVMax: {np.nanmean(dataset["fdelta_vmax"].values)}kt\nDeelan Jariwala', fontsize = 9, loc='right')  
 axes[0].hist(dataset['fdelta_vmax'], bins = np.arange(-50, 55, 5), color = '#9f80ff', alpha = 0.75)
 #plt.savefig(r"C:\Users\deela\Downloads\IntensificationDistribution.png", dpi = 400, bbox_inches = 'tight')
 

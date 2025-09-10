@@ -7,7 +7,7 @@ import datetime
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
-climoYears = [1995, 2023]
+climoYears = [1970, 2024]
 basin = 'AL'
 day = 0
 if basin == 'EP':
@@ -69,14 +69,14 @@ def plotbdeck(data, ax):
         data[x][1] = np.datetime64(f'{data[x][1][0:4]}-{data[x][1][4:6]}-{data[x][1][6:8]}')
         data[x][3] = ACE(int(data[x][-2]), data[x][4].strip(), data[x][2].strip())
 
-    dates, daily, accum = yearData(data, 2024)
+    dates, daily, accum = yearData(data, 2025)
     accum = daily
-    dates = np.arange(f'2024-01-01', f'2025-01-01', dtype = 'datetime64[D]')
+    dates = np.arange(f'2025-01-01', f'2026-01-01', dtype = 'datetime64[D]')
 
     today = datetime.datetime.utcnow()
     today = int(today.strftime('%j'))
 
-    ax.plot(dates[:today], accum[:today], color = 'blue', zorder = 52, linewidth = 2, label = '2024')
+    ax.plot(dates[:today], accum[:today], color = 'blue', zorder = 52, linewidth = 2, label = '2025')
     ax.scatter(dates[today - 1], accum[today - 1], color = 'blue', s = 50, zorder = 53)
 
     return daily, dates, today
@@ -93,7 +93,7 @@ def createClimoData(climo, basin, ax):
 
         dates, daily, accum = yearData(data, year)
         years.append(daily)
-    dates = np.arange(f'2024-01-01', f'2025-01-01', dtype = 'datetime64[D]')
+    dates = np.arange(f'2025-01-01', f'2026-01-01', dtype = 'datetime64[D]')
     if len(dates) == 366:
         print(dates[59])
         dates = np.delete(dates, 59)
@@ -136,7 +136,7 @@ tx = axes[1]
 ax = axes[0]
 
 ax.set_ylim([0, 20])
-ax.set_xlim([np.datetime64('2024-05-01'), np.datetime64('2024-12-31')])
+ax.set_xlim([np.datetime64('2025-05-01'), np.datetime64('2025-12-31')])
 ax.set_xticklabels(['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
 ax.grid()
 

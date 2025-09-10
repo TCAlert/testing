@@ -93,11 +93,11 @@ def stationPlot(ax, lat, lon, u, v, slp = None, temp = None, dews = None):
             pass
 
 def plot(data, year, month, day, hour, level = '1000', name = None, t = 'wind'):
-    print(hurdatParser.retrieveStorm(hurdatParser.database(), [name, str(year)]))
+    # print(hurdatParser.retrieveStorm(hurdatParser.database(), [name, str(year)]))
     stormData = hurdatParser.retrieveStorm(hurdatParser.database(), [name, str(year)])['Storm Data']
     stormData = stormData[(stormData['Time'] == np.datetime64(f'{year}-{str(month).zfill(2)}-{str(day).zfill(2)}T{str(hour).zfill(2)}'))]
     lat, lon = stormData['Latitude'].values[0], stormData['Longitude'].values[0]
-    # lat, lon = 10.20, 129.10	
+    # lat, lon = 13.5, -24.	
 
     print(data[(data['YR'].astype(str) == year) & (data['MO'].astype(str) == month)])
     data = data[(data['YR'].astype(str) == year) & (data['MO'].astype(str) == month) & (data['DY'].astype(str) == day) & (data['HR'] == float(hour)) & (data['LAT'] > lat - 6) & (data['LAT'] < lat + 6) & (data['LON (W)'] > lon - 7.5) & (data['LON (W)'] < lon + 7.5)]
@@ -189,21 +189,21 @@ def plot(data, year, month, day, hour, level = '1000', name = None, t = 'wind'):
     plt.title(f'Deelan Jariwala\nERA5 {title}', fontsize=labelsize + 1, loc='right')  
     cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
     cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
-    plt.savefig(r"C:\Users\deela\Downloads\\al061975\\" + name + title + str(year) + str(month).zfill(2) + str(day).zfill(2) + str(hour).zfill(2) + ".png", dpi = 400, bbox_inches = 'tight')
+    plt.savefig(r"C:\Users\deela\Downloads\\al101975\\" + name + title + str(year) + str(month).zfill(2) + str(day).zfill(2) + str(hour).zfill(2) + ".png", dpi = 400, bbox_inches = 'tight')
     # plt.savefig(r"C:\Users\deela\Downloads\haiyan.png", dpi = 400, bbox_inches = 'tight')
     # plt.show()
     plt.close()
 
-data = pd.read_csv(r"C:\Users\deela\Downloads\\AL061975 - data.csv")
+data = pd.read_csv(r"C:\Users\deela\Downloads\\AL091975 - data.csv")
 print(data)
-for x in list(np.arange(28, 32)):
+for x in list(np.arange(2, 10)):
     for y in range(0, 24, 6):
-        year, month, day, hour = '1975', '7', str(x), y
+        year, month, day, hour = '1975', '9', str(x), y
         level = 1000
 
         try:
-            plot(data, year, month, day, hour, 1000, 'AL061975', 'wind')
-            print('Wind done')
+            plot(data, year, month, day, hour, 1000, 'AL101975', 'wind')
+            print(year, month, day, hour, 'Wind done')
             # plot(data, year, month, day, hour, level, 'Alex', 'thetae')
             # print('Temp done')
             # plot(data, year, month, day, hour, level, 'UNNAMED', 'tempAdv')

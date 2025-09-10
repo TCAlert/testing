@@ -68,7 +68,7 @@ def finalPlot(grid, shear, init, title, us = None, vs = None):
     time = (str(data[0].time.values)).split('T')
     time = f'{time[0]} at {(time[1][:5])}z'
 
-    ax.set_title(f'GEFS Vertical Wind Shear Distribution: AL95\nInitialization: {init}', fontweight='bold', fontsize=10, loc='left')
+    ax.set_title(f'GEFS Vertical Wind Shear Distribution: AL05\nInitialization: {init}', fontweight='bold', fontsize=10, loc='left')
     ax.set_title(f'Forecast Hour: {time}', fontsize = 10, loc = 'center')
     ax.set_title(f'Deelan Jariwala', fontsize=10, loc='right') 
     at = AnchoredText("Inspired by Michael Fischer",
@@ -85,10 +85,10 @@ t = datetime.now()
 year = t.year
 month = t.month
 day = t.day
-hr = 18
-fcastHour = 48
-fcastHour2 = 6
-storm = 'AL02'
+hr = 12
+fcastHour = 36
+fcastHour2 = 0
+storm = 'AL05'
 shearStrength = 15
 p = 50
 

@@ -59,18 +59,18 @@ def getData(dataset, case):
 
 def choose(t):
     if t == 'Alignment':
-        list1 = [225,251,252,253,254,333,334,347,374,376,377,407,408,409,410,413,414,603,604,605,672]
-        list2 = [719,752,765,767,794,878,879,939,941,957,968,969,970,971,1057,1073,1101,1131,1148,1177,1178,1179,1180,1191,1192,1220,1222,1223,1224,1226,1227,1228,1301,1302,1305]
+        list1 = [225, 251, 252, 253, 254, 333, 334, 347, 374, 376, 377, 407, 408, 409, 410, 413, 414, 603, 604, 605, 672]
+        list2 = [712, 719, 752, 765, 864, 878, 879, 939, 941, 957, 968, 969, 970, 971, 1057, 1073, 1101, 1128, 1131, 1148, 1177, 1178, 1179, 1180, 1191, 1192, 1220, 1221, 1222, 1223, 1224, 1226, 1227, 1228, 1302, 1379, 1380, 1391, 1405, 1406, 1445, 1446, 1447, 1448, 1453, 1471]
         list2 = [x - 710 for x in list2]
     elif t == 'Misalignment':
-        list1 = [148,149,222,224,339,340,341,342,343,344,382,383,384,402,423,424,425,426,427,429,430,431,545,600,601]
-        list2 = [742,744,745,747,869,898,899,918,919,930,934,935,936,1040,1049,1175,1195,1197,1201,1217,1218]
+        list1 = [148, 149, 223, 224, 339, 340, 341, 342, 343, 344, 382, 383, 384, 386, 400, 402, 423, 424, 425, 426, 427, 429, 430, 431, 545, 600, 601]
+        list2 = [742, 744, 745, 747, 757, 760, 869, 898, 899, 918, 919, 930, 934, 935, 936, 1042, 1052, 1174, 1175, 1195, 1197, 1201, 1217, 1218, 1372, 1373, 1376, 1377, 1408, 1410, 1418, 1419]
         list2 = [x - 710 for x in list2]
 
     return list1, list2 
 
-dataset1 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_1997_2019_xy_rel_swath_ships.nc")
-dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3l_2020_2023_xy_rel_swath_ships.nc")
+dataset1 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3m_1997_2019_xy_rel_swath_ships.nc")
+dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3m_2020_2024_xy_rel_swath_ships.nc")
 
 t = 'Alignment'
 list1, list2 = choose(t)
@@ -107,7 +107,6 @@ axes[0].set_ylabel('Number of Cases', weight = 'bold', size = 9)
 axes[0].set_xlabel('Vortex Tilt (km)', weight = 'bold', size = 9)
 
 plt.title(f'TC-RADAR: Aligning vs. Non-Aligning TC VMax Histogram and Distribution\nTotal Datapoints: {len(adata)} (A), {len(mdata)} (N)' , fontweight='bold', fontsize=9, loc='left')
-print(f'{round(float(np.nanmean(mdata)), 1)}kt (N)')
 plt.title(f'Mean Tilt: {round(float(np.nanmean(adata)), 1)}km (A)\n{round(float(np.nanmean(mdata)), 1)}km (N)', fontsize = 8, loc='right')  
 axes[0].hist(adata, bins = np.arange(20, 205, 5), color = 'C1', alpha = 0.5, label = 'Aligning')
 axes[0].hist(mdata, bins = np.arange(20, 205, 5), color = 'C0', alpha = 0.5, label = 'Non-Aligning')
