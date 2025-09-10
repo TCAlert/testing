@@ -332,6 +332,65 @@ def ir16():
 
     return newcmp.reversed(), vmax, vmin
 
+def ir17():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/130, '#000000'),
+    (50/130, "#ffffff"),
+
+    (70/130, "#5ebaff"),
+    (80/130, "#00faf4"),
+    (90/130, "#ffffcc"),
+
+    (95/130, "#ffe775"),
+    (100/130, "#ffc140"),
+    (105/130, "#ff8f20"),
+    (110/130, "#ff6060"),
+    (110/130, "#a188fc"),
+    (130/130, "#000000")])
+
+    vmax = 30
+    vmin = -100
+
+    return newcmp.reversed(), vmax, vmin
+
+def ir18():
+    newcmp = LinearSegmentedColormap.from_list("",[
+    (0/96, "#F4F4F4"),
+    (0.1/96, "#F4F4F4"),
+    (0.1/96, "#BFD8EC"),
+    (1/96, "#BFD8EC"),
+    (1/96, "#6BAFD2"),
+    (2/96, "#6BAFD2"),
+    (2/96, "#2F7FBC"),
+    (3/96, "#2F7FBC"),
+    (3/96, "#08529B"),
+    (4/96, "#08529B"),
+    (4/96, "#082899"),
+    (6/96, "#082899"),
+    (6/96, "#FFFE94"),
+    (8/96, "#FFFE94"),
+    (8/96, "#FDC403"),
+    (12/96, "#FDC403"),
+    (12/96, "#FF8601"),
+    (18/96, "#FF8601"),
+    (18/96, "#D81501"),
+    (24/96, "#D81501"),
+    (24/96, "#980108"),
+    (30/96, "#980108"),
+    (30/96, "#6F0000"),
+    (36/96, "#6F0000"),
+    (36/96, "#320000"),
+    (48/96, "#320000"),
+    (48/96, "#CACBFB"),
+    (60/96, "#A08BDA"),
+    (72/96, "#7B509F"),
+    (96/96, "#000000")])
+
+    vmax = 30
+    vmin = -100
+
+    return newcmp, vmax, vmin
+
 def rainbow():
     newcmp = LinearSegmentedColormap.from_list("", [
     (0/145, '#110112'),
@@ -3523,6 +3582,27 @@ def wv36():
 
     return newcmp.reversed(), vmax, vmin
 
+def wv37():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/90, "#4d4d4d"),
+    (10/90, "#330231"),
+    (20/90, "#283B76"),
+    (30/90, "#2F7FBC"),
+    (40/90, "#74C9DA"),
+    (45/90, "#47ab29"),
+    (50/90, "#ffd500"),
+    (55/90, "#ff6200"),
+    (60/90, "#ba2729"),
+    (70/90, "#ff3399"),
+    (75/90, "#FFFFFF"),
+    (80/90, "#74C9DA"),
+    (85/90, "#4245a6"),
+    (90/90, "#08225c")])
+
+    vmax = 0
+    vmin = -100
+
+    return newcmp.reversed(), vmax, vmin
 
 def watermelon():
     newcmp = LinearSegmentedColormap.from_list("", [
@@ -3982,6 +4062,7 @@ wvtables = {
     'wv34'  : wv34(),
     'wv35'  : wv35(),
     'wv36'  : wv36(),
+    'wv37'  : wv37(),
     'copper': copperWV(),
     'bajaflash': bajaflash(),
     'simple': simple(),
@@ -4088,6 +4169,8 @@ irtables = {
     'ir14'    :ir14(),
     'ir15'    :ir15(),
     'ir16'    :ir16(),
+    'ir17'    :ir17(),
+    'ir18'    :ir18(),
     'codyir'  :codyir(),
     'cmyk'    :cmyk(),
     'chatgpt' :chatgpt(),
