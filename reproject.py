@@ -82,7 +82,7 @@ def reproject(dataset, lats, lons, pos):
     floater_IR = (np.greater(lats, minimglat) & np.greater(maximglat, lats) &
                     np.greater(lons, minimglon) & np.greater(maximglon, lons) & np.isfinite(IR))
 
-    gridded_data = scipy.interpolate.griddata((lats[floater_IR], lons[floater_IR]), IR[floater_IR], (grid[0], grid[1]), method='cubic')
+    gridded_data = scipy.interpolate.griddata((lats[floater_IR], lons[floater_IR]), IR[floater_IR], (grid[0], grid[1]), method='linear')
     
     return grid[1], grid[0], gridded_data
 

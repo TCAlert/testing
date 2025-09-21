@@ -53,9 +53,9 @@ def scatter(x, y, vline = True, hline = True, title = None, z = None):
         pass
     plt.show()
 
-def histogram(data, bounds = None, title = None):
+def histogram(data, bounds = None, title = None, save = False):
     if bounds == None:
-        bounds = []
+        bounds = [0, 1, 2]
         bounds[0] = np.nanmin(data[1])
         bounds[1] = np.nanmax(data[1])
         bounds[2] = (bounds[1] - bounds[0]) / 10
@@ -76,5 +76,6 @@ def histogram(data, bounds = None, title = None):
         plt.title(f'{title}\nNumber of Valid Datapoints: {len(data[1])}' , fontweight='bold', fontsize=LABELSIZE + 1, loc='left')
     plt.title(f'Deelan Jariwala', fontsize=LABELSIZE + 1, loc='right')  
     plt.hist(data[1], bins = np.arange(bounds[0], bounds[1], bounds[2]), color = '#9f80ff', alpha = 0.75)
-    plt.savefig(r"C:\Users\deela\Downloads\histogram_" + str(data[0]) + ".png", dpi = 400, bbox_inches = 'tight')
+    if save == True:
+        plt.savefig(r"C:\Users\deela\Downloads\histogram_" + str(data[0]) + ".png", dpi = 400, bbox_inches = 'tight')
     plt.show()

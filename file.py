@@ -32,7 +32,7 @@ def getGZ(file, newFile = None):
         
     with gzip.open(file, 'rb') as f:
         with open(newFile, 'wb') as nf:
-            print(f'File {file} opened successfully.')
+            # print(f'File {file} opened successfully.')
             nf.write(f.read())
     
     return newFile

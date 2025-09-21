@@ -139,8 +139,8 @@ def Gradient2D(data):
     # Return dA/dx and dA/dy, where A is the original dataset
     return dAx / dx, dAy / dy
 
-dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3m_1997_2019_xy_rel_swath_ships.nc")
-# dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3m_2020_2024_xy_rel_swath_ships.nc")
+# dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3m_1997_2019_xy_rel_swath_ships.nc")
+dataset = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3m_2020_2024_xy_rel_swath_ships.nc")
 
 print(list(dataset.variables.keys()))
 
@@ -245,11 +245,11 @@ def panelPlot(dataset, caseNum, height):
     axes[2].annotate("", xy= (0.10 + (u/DSHR)*0.075, 0.10 + (v/DSHR)*0.075), xytext=(0.10,0.10), xycoords="axes fraction", arrowprops=dict(arrowstyle="-|>", color="#ff5959", lw=1.5, mutation_scale=12, path_effects=[pe.withStroke(linewidth=1.25, foreground="black")]), zorder=20, annotation_clip=False)
     axes[2].text(0.1, 0.065, f'{round(float(DSHR), 1)} knots', fontsize = 8, color = 'black', ha = 'center', path_effects = [pe.withStroke(linewidth=1.25, foreground="white")], zorder = 20, bbox={'facecolor': 'white', 'edgecolor': 'None', 'alpha': 0.75}, transform = axes[2].transAxes)
 
-    plt.savefig(r"C:\Users\deela\Downloads\\TDR_Swaths_v2\\wilma\\" + date + "_" + str(height) + ".png", dpi = 400, bbox_inches = 'tight')
+    plt.savefig(r"C:\Users\deela\Downloads\\TDR_Swaths_v2\\" + date + "_" + str(height) + ".png", dpi = 400, bbox_inches = 'tight')
     # plt.show()
     plt.close()
-name = 'Wilma'
-year = 2005
+name = 'TDR'
+year = 2024
 height = 3
 data = retrieveStorm(name, year)
 print(data.num_cases.values)

@@ -85,8 +85,12 @@ def getDataGOES(satellite, year, month, day, time, band):
         filename = 'goesfile'
         fs.get(file, r"C:\Users\deela\Downloads\goesfile.nc")
     except:
-        filename = 'goesfile2'
-        fs.get(file, r"C:\Users\deela\Downloads\goesfile2.nc")
+        try:
+            filename = 'goesfile2'
+            fs.get(file, r"C:\Users\deela\Downloads\goesfile2.nc")
+        except:
+            filename = 'goesfile3'
+            fs.get(file, r"C:\Users\deela\Downloads\goesfile3.nc")
     print(f'GOES-{satellite} data downloaded for {month}/{day}/{year} at {time}z')
 
     return filename

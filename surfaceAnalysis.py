@@ -130,10 +130,14 @@ def plot(data, year, month, day, hour, level = '1000', name = None, t = 'wind'):
         ax.streamplot(uwnd.longitude - 180, vwnd.latitude, uwnd.values, vwnd.values, linewidth = 1, density = 1, color = '#404040', transform = ccrs.PlateCarree(central_longitude=180))
         title = f'{level}mb Wind Speed (kt)'
     elif t.lower() == 'temp':
-        retrieve(['temperature'], level, [year, str(month).zfill(2), str(day).zfill(2), str(hour).zfill(2)], lat, lon)
+        retrieve(['temperature', 'u_component_of_wind', 'v_component_of_wind'], level, [year, str(month).zfill(2), str(day).zfill(2), str(hour).zfill(2)], lat, lon)
         data = xr.open_dataset(r"C:\Users\deela\Downloads\era5.nc")
         temp = (data['t']).squeeze() - 273
+        uwnd = (data['u']).squeeze()
+        vwnd = (data['v']).squeeze()
+        
         c = ax.contourf(temp.longitude, temp.latitude, temp, levels = np.arange(-80, 40.25, .25), cmap = cmap.tempC(), extend = 'both')
+        ax.streamplot(uwnd.longitude - 180, vwnd.latitude, uwnd.values, vwnd.values, linewidth = 1, density = 1, color = '#404040', transform = ccrs.PlateCarree(central_longitude=180))
         title = f'{level}mb Air Temperature (C)'
     elif t.lower() == 'tempadv':
         retrieve(['temperature', 'u_component_of_wind', 'v_component_of_wind'], level, [year, str(month).zfill(2), str(day).zfill(2), str(hour).zfill(2)], lat, lon)
@@ -189,21 +193,21 @@ def plot(data, year, month, day, hour, level = '1000', name = None, t = 'wind'):
     plt.title(f'Deelan Jariwala\nERA5 {title}', fontsize=labelsize + 1, loc='right')  
     cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
     cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
-    plt.savefig(r"C:\Users\deela\Downloads\\al101975\\" + name + title + str(year) + str(month).zfill(2) + str(day).zfill(2) + str(hour).zfill(2) + ".png", dpi = 400, bbox_inches = 'tight')
+    plt.savefig(r"C:\Users\deela\Downloads\\gladys75\\" + name + title + str(year) + str(month).zfill(2) + str(day).zfill(2) + str(hour).zfill(2) + ".png", dpi = 400, bbox_inches = 'tight')
     # plt.savefig(r"C:\Users\deela\Downloads\haiyan.png", dpi = 400, bbox_inches = 'tight')
     # plt.show()
     plt.close()
 
-data = pd.read_csv(r"C:\Users\deela\Downloads\\AL091975 - data.csv")
+data = pd.read_csv(r"C:\Users\deela\Downloads\\Gladys 1975 - icoads.csv")
 print(data)
-for x in list(np.arange(2, 10)):
+for x in list(np.arange(1, 6)):
     for y in range(0, 24, 6):
-        year, month, day, hour = '1975', '9', str(x), y
+        year, month, day, hour = '1975', '10', str(x), y
         level = 1000
 
         try:
-            plot(data, year, month, day, hour, 1000, 'AL101975', 'wind')
-            print(year, month, day, hour, 'Wind done')
+            plot(data, year, month, day, hour, 200, 'Gladys', 'temp')
+            print(year, month, day, hour, 'Temp done')
             # plot(data, year, month, day, hour, level, 'Alex', 'thetae')
             # print('Temp done')
             # plot(data, year, month, day, hour, level, 'UNNAMED', 'tempAdv')
@@ -217,7 +221,8 @@ for x in list(np.arange(2, 10)):
         # plot(data, year, month, day, hour, level, 'UNNAMED', 'tempAdv')
         # print('Temp done')
             #print('Temperature done')
-        except:
+        except Exception as e:
+            print(e)
             pass
 
 # plot(data, 2013, 11, 7, 12, None, 'HAIYAN', 'mslp')

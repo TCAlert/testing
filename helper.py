@@ -168,3 +168,15 @@ def helicity(hgts, uwnd, vwnd, uMotion, vMotion):
  
 #    return trapezoidalRule(hgts, (uwnd * dvwnd) - (vwnd * duwnd))
     return np.trapz((vwnd * duwnd) - (uwnd * dvwnd), hgts[:-1])
+
+def norm(data, neg = False, filter = False, filterVal = 0):
+    if filter == True:
+        data = np.where(np.abs(data) < filterVal, np.nan, data)
+
+    max = np.nanmax(data)
+    min = np.nanmin(data)
+    norm_data = (data - min) / (max - min)
+    if neg == True:
+        norm_data = (norm_data * 2) - 1
+    
+    return norm_data

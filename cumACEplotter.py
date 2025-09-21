@@ -7,7 +7,7 @@ import datetime
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
-climoYears = [1970, 2024]
+climoYears = [1995, 2024]
 basin = 'AL'
 day = 0
 if basin == 'EP':
@@ -135,7 +135,7 @@ axes = [fig.add_subplot(gs[0:64, 0:54]),
 tx = axes[1]
 ax = axes[0]
 
-ax.set_ylim([0, 20])
+ax.set_ylim([0, 18])
 ax.set_xlim([np.datetime64('2025-05-01'), np.datetime64('2025-12-31')])
 ax.set_xticklabels(['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
 ax.grid()
@@ -145,10 +145,10 @@ bdeck, dates, today = plotbdeck(getStorms(basin), ax)
 for x in range(len(avg)):
     print(x + 1, avg[x])
 
-hdata.loc[2024] = bdeck
+hdata.loc[2025] = bdeck
 hace = np.array((hdata.sort_values(today))[today])
 hyear = np.array((hdata.sort_values(today)).index)
-place = int(np.where(hyear == 2024)[0])
+place = int(np.where(hyear == 2025)[0])
 
 cols = ['#', 'Year', 'Daily\nACE', 'Total\nACE']
 data = []

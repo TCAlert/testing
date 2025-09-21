@@ -2,7 +2,7 @@ import xarray as xr
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
-
+from scipy import stats
 
 def percentile(data, num):
     num = int(num / 100 * len(data))
@@ -28,8 +28,13 @@ def getData(dataset, case):
     sst = sst[sst != 999.9]
     print(sst)
     rhm = dataset['rhmd_ships'].sel(num_cases = case, ships_lag_times = 0).values
+    p200 = dataset['pw2m_ships'].sel(num_cases = case, ships_lag_times = 0).values
+    s200 = dataset['pw5u_ships'].sel(num_cases = case, ships_lag_times = 0).values
+    mpi = dataset['mpi_ships'].sel(num_cases = case, ships_lag_times = 0).values
+    mshr = dataset['shrs_ships'].sel(num_cases = case, ships_lag_times = 0).values
 
-    return list(vmax), list(shr), list(sst), list(rhm)
+
+    return list(vmax), list(shr), list(sst), list(rhm), list(mpi), list(mshr), list(p200), list(s200)
 
 def choose(t):
     if t == 'Alignment':
@@ -48,63 +53,87 @@ dataset2 = xr.open_dataset(r"C:\Users\deela\Downloads\tc_radar_v3m_2020_2024_xy_
 
 t = 'Alignment'
 list1, list2 = choose(t)
-data1, shr1, sst1, rhm1 = getData(dataset1, list1)
-data2, shr2, sst2, rhm2 = getData(dataset2, list2)
+data1, shr1, sst1, rhm1, mpi1, mshr1, p2001, s2001 = getData(dataset1, list1)
+data2, shr2, sst2, rhm2, mpi2, mshr2, p2002, s2002 = getData(dataset2, list2)
 
 avmax = data1 + data2
 ashrs = shr1 + shr2
 assts = sst1 + sst2
 arhms = rhm1 + rhm2 
-adata = [avmax, ashrs, assts, arhms]
+ampi = mpi1 + mpi2 
+amshr = mshr1 + mshr2 
+ap200 = p2001 + p2002 
+as200 = s2001 + s2002
+adata = [[avmax, ashrs, assts, arhms], [ampi, amshr, ap200, as200]]
 
 t = 'Misalignment'
 list1, list2 = choose(t)
-data1, shr1, sst1, rhm1 = getData(dataset1, list1)
-data2, shr2, sst2, rhm2 = getData(dataset2, list2)
+data1, shr1, sst1, rhm1, mpi1, mshr1, p2001, s2001 = getData(dataset1, list1)
+data2, shr2, sst2, rhm2, mpi2, mshr2, p2002, s2002 = getData(dataset2, list2)
 
 bvmax = data1 + data2
 bshrs = shr1 + shr2
 bssts = sst1 + sst2
 brhms = rhm1 + rhm2 
-bdata = [bvmax, bshrs, bssts, brhms]
-names = ['a. Maximum Sustained Winds (kt)', 'b. Deep-Layer Wind Shear (kt)', 'c. Sea Surface Temperature (C)', 'd. Mid-Level Relative Humidity (%)']
-fig = plt.figure(figsize=(14, 8))
-gs = fig.add_gridspec(1, 4, wspace = .2, hspace = 1)
-axes = [fig.add_subplot(gs[0, 0:4]),
+bmpi = mpi1 + mpi2 
+bmshr = mshr1 + mshr2 
+bp200 = p2001 + p2002 
+bs200 = s2001 + s2002
+bdata = [[bvmax, bshrs, bssts, brhms], [bmpi, bmshr, bp200, bs200]]
+
+names = [['a. Maximum Sustained Winds (kt)', 'b. Deep-Layer Wind Shear (kt)', 'c. Sea Surface Temperature (C)', 'd. Mid-Level Relative Humidity (%)'], ['e. Maximum Potential Intensity (kt)', 'f. Mid-Level Wind Shear (kt)', 'g. Mean PWAT 200km (mm)', 'h. US Quad PWAT 500km (mm)']]
+fig = plt.figure(figsize=(14, 12))
+gs = fig.add_gridspec(2, 4, wspace = .2, hspace = .2)
+axes = [fig.add_subplot(gs[0:1, 0:4]),
         fig.add_subplot(gs[0, 0]),
         fig.add_subplot(gs[0, 1]),
         fig.add_subplot(gs[0, 2]),
-        fig.add_subplot(gs[0, 3])]
+        fig.add_subplot(gs[0, 3]),
+        fig.add_subplot(gs[1, 0]),
+        fig.add_subplot(gs[1, 1]),
+        fig.add_subplot(gs[1, 2]),
+        fig.add_subplot(gs[1, 3])]
 
-axes[0].set_title(f'TC-RADAR: Aligning vs. Non-Aligning TC Environmental Violin Plots\nTotal Datapoints: {len(adata[0])} (A), {len(bdata[0])} (N)' , fontweight='bold', fontsize=9, loc='left')
-# axes[0].set_title(f'Mean VMax: {round(np.nanmean(adata), 1)}kt (A)\n{round(float(np.nanmean(adata)), 1)}kt (N)', fontsize = 8, loc='right')  
+axes[0].set_title(f'Aligning vs. Non-Aligning TC Environmental Violin Plots\nTotal Datapoints: {len(adata[0][0])} (A), {len(bdata[0][0])} (N)' , fontweight='bold', fontsize=9, loc='left')
+axes[0].set_title(f'TC-RADAR\nBold = Statistically Significant', fontsize = 8, loc='right')  
 axes[0].set_frame_on(False)
 axes[0].set_xticks([])
 axes[0].set_yticks([])
 
-for x in range(len(adata)):
-    print('\nname', 'type', 'range', 'iqr', 'median', 'mean')
-    print(names[x], 'aligning', np.nanmax(adata[x]) - np.nanmin(adata[x]), np.nanpercentile(adata[x], 75) - np.nanpercentile(adata[x], 25), np.nanmean(adata[x]), np.nanmedian(adata[x]))
-    print(names[x], 'misalign', np.nanmax(bdata[x]) - np.nanmin(bdata[x]), np.nanpercentile(bdata[x], 75) - np.nanpercentile(bdata[x], 25), np.nanmean(bdata[x]), np.nanmedian(bdata[x]))
-    axes[x + 1].set_frame_on(False)
-    axes[x + 1].tick_params(axis='both', labelsize=8, left = False, bottom = False)
-    axes[x + 1].grid(linestyle = '--', alpha = 0.5, color = 'black', linewidth = 0.5, zorder = 9)
-    axes[x + 1].set_xlabel(names[x], weight = 'bold', size = 9)
-    axes[x + 1].set_xlim(0.5, 1.5)
-    axes[x + 1].set_xticklabels([])
+x = 0
+for i in range(len(adata)):
+    for j in range(len(adata[0])):
+        print('\nname', 'type', 'range', 'iqr', 'median', 'mean')
+        print(names[i][j], 'aligning', np.nanmax(adata[i][j]) - np.nanmin(adata[i][j]), np.nanpercentile(adata[i][j], 75) - np.nanpercentile(adata[i][j], 25), np.nanmean(adata[i][j]), np.nanmedian(adata[i][j]))
+        print(names[i][j], 'misalign', np.nanmax(bdata[i][j]) - np.nanmin(bdata[i][j]), np.nanpercentile(bdata[i][j], 75) - np.nanpercentile(bdata[i][j], 25), np.nanmean(bdata[i][j]), np.nanmedian(bdata[i][j]))
+        t_stat, p_value = stats.ttest_ind(adata[i][j], bdata[i][j], equal_var=False)
+        print(f"t = {t_stat:.3f}, p = {p_value:.4f}")
+        
+        axes[x + 1].set_frame_on(False)
+        axes[x + 1].tick_params(axis='both', labelsize=8, left = False, bottom = False)
+        axes[x + 1].grid(linestyle = '--', alpha = 0.5, color = 'black', linewidth = 0.5, zorder = 9)
 
-    axes[x + 1].scatter(1, np.nanmedian(adata[x]), c = 'C1', edgecolors = '#ff7f0e', marker = 'D', zorder = 10)
-    axes[x + 1].scatter(1, np.nanmedian(bdata[x]), c = 'C0', edgecolors = '#1f77b4', marker = 'D', zorder = 10)
+        if p_value < 0.05:
+            axes[x + 1].set_xlabel(names[i][j], weight = 'bold', size = 9)
+        else:
+            axes[x + 1].set_xlabel(names[i][j], size = 9)
+    
+        axes[x + 1].set_xlim(0.5, 1.5)
+        axes[x + 1].set_xticklabels([])
 
-    violin = axes[x + 1].violinplot(bdata[x])
-    for pc in violin['bodies']:
-        pc.set_facecolor('C0')
-    violin = axes[x + 1].violinplot(adata[x])
-    for pc in violin['bodies']:
-        pc.set_facecolor('C1')
+        axes[x + 1].scatter(1, np.nanmedian(adata[i][j]), c = 'C1', edgecolors = '#ff7f0e', marker = 'D', zorder = 10)
+        axes[x + 1].scatter(1, np.nanmedian(bdata[i][j]), c = 'C0', edgecolors = '#1f77b4', marker = 'D', zorder = 10)
 
-    axes[x + 1].legend(handles=[mlines.Line2D([], [], color= 'C1', label='Aligning'), mlines.Line2D([], [], color= 'C0', label='Non-Aligning')], loc='upper left')
-plt.savefig(r"C:\Users\deela\Downloads\tdr_env_stats.png", dpi = 400, bbox_inches = 'tight')
+        violin = axes[x + 1].violinplot(bdata[i][j])
+        for pc in violin['bodies']:
+            pc.set_facecolor('C0')
+        violin = axes[x + 1].violinplot(adata[i][j])
+        for pc in violin['bodies']:
+            pc.set_facecolor('C1')
+
+        axes[x + 1].legend(handles=[mlines.Line2D([], [], color= 'C1', label='Aligning'), mlines.Line2D([], [], color= 'C0', label='Non-Aligning')], loc='upper left')
+        x = x + 1
+plt.savefig(r"C:\Users\deela\Downloads\tdr_env_statsNEW.png", dpi = 400, bbox_inches = 'tight')
 
 # wind = np.nan_to_num(mdata)
 # print(f"01%: {percentile(wind, 1)}\n05%: {percentile(wind, 5)}\n10%: {percentile(wind, 10)}\n25%: {percentile(wind, 25)}\n33%: {percentile(wind, 33)}\n50%: {percentile(wind, 50)}\n66%: {percentile(wind, 66)}\n75%: {percentile(wind, 75)}\n90%: {percentile(wind, 90)}\n95%: {percentile(wind, 95)}\n99%: {percentile(wind, 99)}\n")
