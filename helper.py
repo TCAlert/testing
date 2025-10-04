@@ -58,10 +58,18 @@ USREGIONS = {'NE' : ([-82.5, -65, 37.5, 48], (18, 9)),
 
 RADCONV = np.pi / 180
 RADIUSOFEARTH = 3440.1 #nmi
+RADIUSOFEARTHKM = 6378
+DEGCONV = 180 / np.pi 
 
 def greatCircle(lat1, lon1, lat2, lon2): 
     lat1, lon1, lat2, lon2 = lat1 * RADCONV, lon1 * RADCONV, lat2 * RADCONV, lon2 * RADCONV 
     return RADIUSOFEARTH * np.arccos(np.cos(lat1) * np.cos(lat2) * np.cos(lon1 - lon2) + (np.sin(lat1) * np.sin(lat2)))
+
+def invGreatCircle(lat, lon, dx, dy): 
+    lat, lon = lat * RADCONV, lon * RADCONV 
+    dlat = dy / RADIUSOFEARTHKM
+    dlon = dx / (RADIUSOFEARTHKM * np.cos(lat)) 
+    return (lat + dlat) * DEGCONV, (lon + dlon) * DEGCONV
 
 def dirSpdToUV(direction, magnitude):
     return magnitude * np.cos(np.deg2rad(direction)), magnitude * np.sin(np.deg2rad(direction))

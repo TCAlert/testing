@@ -18,7 +18,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 pd.options.mode.chained_assignment = None
 
 basin = 'AL'
-climoYears = np.arange(1951, 2025)
+climoYears = np.arange(1971, 2025)
 months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 bounds = [-102.5, -7.5, 2.5, 47.5]
 interval = 5
@@ -220,11 +220,13 @@ for x in range(len(climoYears)):
         dataset.append(climo)
 dataset = np.concatenate(dataset, axis = 0)
 print(dataset.shape, np.nanpercentile(dataset, 95, axis = (0, 1, 2)))
-climo = np.nanpercentile(np.array(dataset), 95, axis = 0)
+dataset = np.array(dataset)
+# climo = np.nanpercentile(dataset, 95, axis = 0)
+climo = np.count_nonzero(dataset > 30, axis = 0) / np.count_nonzero(~np.isnan(dataset), axis = 0) * 100
 print(grid[1].shape, grid[0].shape, climo.shape)
 ax = map(5, 8)
 ax.set_extent(bounds, crs = ccrs.PlateCarree())
-c = plt.pcolormesh(grid[1], grid[0], climo, cmap = cmap.probs(), vmin = 0, vmax = 50)
+c = plt.pcolormesh(grid[1], grid[0], climo, cmap = cmap.probs(), vmin = 0, vmax = 10)
 
 yList = range(int(bounds[0] - 2.5), int(bounds[1] - 2.5), interval)
 xList = range(int(bounds[2]), int(bounds[3]), interval)
@@ -232,17 +234,17 @@ for x in range(len(xList)):
     for y in range(len(yList)):
         try:
             if round(climo[x][y]) > 0 and yList[y] > -105:
-                plt.text(yList[y] + 2.5, xList[x], f'{int(round(climo[x][y], 0))}kt', size=8, color='black', weight = 'bold', horizontalalignment = 'center', verticalalignment = 'center', path_effects=[pe.withStroke(linewidth = 1, foreground="white")])#, transform = ccrs.PlateCarree(central_longitude = 0))
+                plt.text(yList[y] + 2.5, xList[x], f'{int(round(climo[x][y], 1))}%', size=8, color='black', weight = 'bold', horizontalalignment = 'center', verticalalignment = 'center', path_effects=[pe.withStroke(linewidth = 1, foreground="white")])#, transform = ccrs.PlateCarree(central_longitude = 0))
         except Exception as e:
             print(e)
             pass
 
-ax.set_title(f'HURDAT2 RI Definition (95th Percentile 24hr Change)\n{climoYears[0]}-{climoYears[-1]}', fontweight='bold', fontsize=9, loc='left')
+ax.set_title(f'HURDAT2 RI Definition (% of Storms Undergoing RI)\n{climoYears[0]}-{climoYears[-1]}', fontweight='bold', fontsize=9, loc='left')
 ax.set_title(f'{interval}\u00b0x{interval}\u00b0 Bins\nDeelan Jariwala', fontsize=9, loc='right') 
 cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
 cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
 # plt.savefig(r"C:\Users\deela\Downloads\density\\" + months[y] + "_" + str(climoYears[x]) + ".png", dpi = 400, bbox_inches = 'tight')
-plt.savefig(r"C:\Users\deela\Downloads\riMapTest_1951.png", dpi = 400, bbox_inches = 'tight')
+plt.savefig(r"C:\Users\deela\Downloads\riMapTest_1971.png", dpi = 400, bbox_inches = 'tight')
 plt.show()
 plt.close()
 # dataset = np.array(dataset)

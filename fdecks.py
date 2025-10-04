@@ -50,8 +50,8 @@ def processDataAirc(data, file, fixType = 'AIRC'):
             file.write(','.join(temp) + "\n")
             file.flush()
     
-with open(r"C:\Users\deela\Downloads\nhcaircfixes.txt", 'w') as file:
-    for x in range(1988, 2025):
+with open(r"C:\Users\deela\Downloads\nhcaircfixesPost2017.txt", 'w') as file:
+    for x in range(2017, 2025):
         for y in range(1, 40):
             for z in ['ep', 'cp', 'al']:
                 try:

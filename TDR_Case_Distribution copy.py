@@ -29,7 +29,7 @@ def getData(dataset, case):
     print(sst)
     rhm = dataset['rhmd_ships'].sel(num_cases = case, ships_lag_times = 0).values
     p200 = dataset['pw2m_ships'].sel(num_cases = case, ships_lag_times = 0).values
-    s200 = dataset['pw5u_ships'].sel(num_cases = case, ships_lag_times = 0).values
+    s200 = dataset['pw5m_ships'].sel(num_cases = case, ships_lag_times = 0).values
     mpi = dataset['mpi_ships'].sel(num_cases = case, ships_lag_times = 0).values
     mshr = dataset['shrs_ships'].sel(num_cases = case, ships_lag_times = 0).values
 
@@ -64,7 +64,7 @@ ampi = mpi1 + mpi2
 amshr = mshr1 + mshr2 
 ap200 = p2001 + p2002 
 as200 = s2001 + s2002
-adata = [[avmax, ashrs, assts, arhms], [ampi, amshr, ap200, as200]]
+adata = [[avmax, ashrs, amshr, assts], [arhms, as200, ap200, ampi]]
 
 t = 'Misalignment'
 list1, list2 = choose(t)
@@ -79,9 +79,9 @@ bmpi = mpi1 + mpi2
 bmshr = mshr1 + mshr2 
 bp200 = p2001 + p2002 
 bs200 = s2001 + s2002
-bdata = [[bvmax, bshrs, bssts, brhms], [bmpi, bmshr, bp200, bs200]]
+bdata = [[bvmax, bshrs, bmshr, bssts], [brhms, bs200, bp200, bmpi]]
 
-names = [['a. Maximum Sustained Winds (kt)', 'b. Deep-Layer Wind Shear (kt)', 'c. Sea Surface Temperature (C)', 'd. Mid-Level Relative Humidity (%)'], ['e. Maximum Potential Intensity (kt)', 'f. Mid-Level Wind Shear (kt)', 'g. Mean PWAT 200km (mm)', 'h. US Quad PWAT 500km (mm)']]
+names = [['a. Maximum Sustained Winds (kt)', 'b. Deep-Layer Wind Shear (kt)', 'c. Mid-Level Wind Shear (kt)', 'd. Sea Surface Temperature (C)'], ['e. Mid-Level Relative Humidity (%)', 'f. Mean PWAT 500km (mm)', 'g. Mean PWAT 200km (mm)', 'h. Maximum Potential Intensity (kt)']]
 fig = plt.figure(figsize=(14, 12))
 gs = fig.add_gridspec(2, 4, wspace = .2, hspace = .2)
 axes = [fig.add_subplot(gs[0:1, 0:4]),
