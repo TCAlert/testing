@@ -2,38 +2,50 @@ import numpy as np
 import cartopy, cartopy.crs as ccrs
 import cartopy.mpl.ticker as cticker
 from datetime import datetime
+import xarray as xr 
 
-REGIONS = {'NATL' : ([-100, -10, 0, 65], (18, 9)),
+REGIONS = {'NATL' : ([-100, -10, 0, 50], (16, 6)),
            'TATL' : ([-90, -20, 0, 40], (18, 9)),
            'CATL' : ([-70, -20, 0, 30], (18, 9)),
            'WATL' : ([-100, -50, 2.5, 35], (18, 9)),
-           'EATL' : ([-60, 0, -10, 30], (18, 9)),
+           'EATL' : ([-60, 0, -5, 35], (18, 9)),
            'NAFR' : ([-40, 40, 0, 40], (16, 6)),
            'MEDI' : ([-20, 40, 25, 50], (18, 9)),
            'SATL1' : ([-50, -10, -10, -40], (18, 9)),
            'SATL2' : ([-70, -30, -35, -65], (18, 9)),
            'SATL3' : ([-25, 25, 5, -40], (18, 9)),
            'MDR'  : ([-65, -15, 5, 27.5], (16, 6)),
+           'CV'  : ([-35, -10, 5, 25], (18, 9)),
            'US'   : ([-130, -60, 20, 60], (18, 9)),
            'WUS'  : ([-140, -100, 25, 57.5], (18, 9)),
            'SAMS' : ([-90, -30, -25, -65], (18, 9)),
            'SAMN' : ([-90, -30, 15, -25], (18, 9)),
            'NWATL': ([-85, -45, 25, 60], (18, 9)),
            'NEATL': ([-50, -10, 25, 60], (18, 9)),
-           'SWATL': ([-95, -55, 10, 45], (18, 9)),
+           'SWATL': ([-95, -50, 15, 45], (18, 9)),
            'SEATL': ([-50, -10, 10, 45], (18, 9)),
+           'EUS'  : ([-90, -45, 20, 55], (18, 9)),
+           'SUB'  : ([-70, -15, 20, 55], (18, 8)),
            'CAG'  : ([-100, -70, 5, 30], (18, 9)),
            'CA'   : ([-120, -60, 0, 40], (18, 9)),
            'CAR'  : ([-90, -55, 5, 26], (18, 9)),
+           'GA'   : ([-90, -55, 10, 31], (18, 9)),
+           'LA'   : ([-70, -52.5, 7.5, 22.5], (18, 9)),
            'GOM'  : ([-100, -75, 15, 32.5], (18, 9)),
            'EPAC' : ([-140, -80, 0, 30], (16, 6)),
+           'EPAC2': ([-160, -100, 0, 30], (16, 6)),
            'CPAC' : ([-179, -119, 0, 30], (16, 6)),
+           'HI' :   ([-170, -145, 12.5, 27.5], (18, 9)),
            'NPAC' : ([-189, -99, 20, 70], (24, 8)),
            'NPAC2': ([110, 200, 20, 70], (24, 8)),
            'TPAC' : ([-179, -79, 0, 50], (16, 6)),
            'WPAC' : ([105, 170, 0, 45], (18, 9)),
+           'WPAC2' : ([135, 200, 0, 45], (18, 9)),
            'WMDR' : ([110, 160, 5, 27.5], (16, 6)),
+           'NMDR' : ([140, 185, -5, 25], (16, 6)),
            'PHIL' : ([105, 140, 5, 26], (16, 6)),
+           'NWPAC': ([115, 140, 15, 35], (16, 6)),
+           'GUAM' : ([130, 160, 5, 26], (16, 6)),
            'AUS'  : ([100, 165, -45, 0], (18, 9)),
            'SPAC' : ([139, 199, -45, 0], (18, 9)),
            'SCPAC': ([-189, -129, -45, 0], (18, 9)),
@@ -43,6 +55,7 @@ REGIONS = {'NATL' : ([-100, -10, 0, 65], (18, 9)),
            'IO'   : ([30, 120, -35, 30], (18, 9)),
            'SWIO' : ([30, 75, 5, -35], (16, 6)),
            'SEIO' : ([75, 120, 5, -35], (16, 6)),
+           'SCS'  : ([100, 125, 8, 26], (18, 9)),
            'BOB'  : ([75, 120, 5, 30], (16, 6)),
            'ARB'  : ([35, 80, 5, 30], (16, 6))}
 
@@ -177,6 +190,17 @@ def helicity(hgts, uwnd, vwnd, uMotion, vMotion):
 #    return trapezoidalRule(hgts, (uwnd * dvwnd) - (vwnd * duwnd))
     return np.trapz((vwnd * duwnd) - (uwnd * dvwnd), hgts[:-1])
 
+def helicityv2(uwnd, vwnd, uMotion, vMotion, varName = 'level'):
+    duwnd = uwnd.differentiate(varName)
+    dvwnd = vwnd.differentiate(varName)
+
+    uwnd = uwnd - uMotion
+    vwnd = vwnd - vMotion
+ 
+    inte = (vwnd * duwnd) - (uwnd * dvwnd)
+
+    return inte.integrate(varName)
+
 def norm(data, neg = False, filter = False, filterVal = 0):
     if filter == True:
         data = np.where(np.abs(data) < filterVal, np.nan, data)
@@ -188,3 +212,47 @@ def norm(data, neg = False, filter = False, filterVal = 0):
         norm_data = (norm_data * 2) - 1
     
     return norm_data
+
+def Gradient2D(data, short = False):
+    if short == True:
+        lon = 'lon'
+        lat = 'lat'
+    else:
+        lon = 'longitude'
+        lat = 'latitude'
+    # Define gradient vector as <fx, fy>
+    # Compute the derivative of the dataset, A, in x and y directions, accounting for dimensional changes due to centered differencing
+    dAx = data.diff(lon)[1:, :]
+    dAy = data.diff(lat)[:, 1:]
+
+    # Compute the derivative of both the x and y coordinates
+    dx = data[lon].diff(lon) * np.cos(data[lat] * (np.pi / 180)) 
+    dy = data[lat].diff(lat)
+
+    dx = dx.broadcast_like(dAx)
+    dy = dy.broadcast_like(dAx)
+
+    # Return dA/dx and dA/dy, where A is the original dataset
+    return dAx / dx, dAy / dy
+
+def Gradient2D_m(data, short = False):
+    if short == True:
+        lon = 'lon'
+        lat = 'lat'
+    else:
+        lon = 'longitude'
+        lat = 'latitude'
+    # Define gradient vector as <fx, fy>
+    # Compute the derivative of the dataset, A, in x and y directions, accounting for dimensional changes due to centered differencing
+    dAx = data.diff(lon)
+    dAy = data.diff(lat)
+
+    # Compute the derivative of both the x and y coordinates
+    dx = data[lon].diff(lon) * np.cos(np.deg2rad(data[lat])) * (np.pi/180*6_371_000)
+    dy = data[lat].diff(lat) * (np.pi/180*6_371_000)
+
+    dx = dx.broadcast_like(dAx)
+    dy = dy.broadcast_like(dAx)
+
+    # Return dA/dx and dA/dy, where A is the original dataset
+    return dAx / dx, dAy / dy

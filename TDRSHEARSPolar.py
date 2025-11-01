@@ -62,7 +62,7 @@ def rePoPolar(dataset, name):
     return polar
 
 height = 400
-data = xr.open_dataset(r"C:\Users\deela\Downloads\TC_Tilt_TCPRIMED_ERA5_Files.nc")
+data = xr.open_dataset(r"C:\Users\deela\Downloads\TCRADAR_ERA5.nc")
 data = data.sel(level = height)
 thetae = helper.thetae(data['temperature'], data['level'], 1000, data['sphum'])
 u = data['u_data'] - data['uspd']

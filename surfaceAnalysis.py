@@ -193,21 +193,21 @@ def plot(data, year, month, day, hour, level = '1000', name = None, t = 'wind'):
     plt.title(f'Deelan Jariwala\nERA5 {title}', fontsize=labelsize + 1, loc='right')  
     cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
     cbar.ax.tick_params(axis='both', labelsize=labelsize, left = False, bottom = False)
-    plt.savefig(r"C:\Users\deela\Downloads\\gladys75\\" + name + title + str(year) + str(month).zfill(2) + str(day).zfill(2) + str(hour).zfill(2) + ".png", dpi = 400, bbox_inches = 'tight')
+    plt.savefig(r"C:\Users\deela\Downloads\\al18\\" + name + title + str(year) + str(month).zfill(2) + str(day).zfill(2) + str(hour).zfill(2) + ".png", dpi = 400, bbox_inches = 'tight')
     # plt.savefig(r"C:\Users\deela\Downloads\haiyan.png", dpi = 400, bbox_inches = 'tight')
     # plt.show()
     plt.close()
 
-data = pd.read_csv(r"C:\Users\deela\Downloads\\Gladys 1975 - icoads.csv")
+data = pd.read_csv(r"C:\Users\deela\Downloads\\AL181975 - data.csv")
 print(data)
-for x in list(np.arange(1, 6)):
+for x in list(np.arange(14, 18)):
     for y in range(0, 24, 6):
         year, month, day, hour = '1975', '10', str(x), y
         level = 1000
 
         try:
-            plot(data, year, month, day, hour, 200, 'Gladys', 'temp')
-            print(year, month, day, hour, 'Temp done')
+            plot(data, year, month, day, hour, level, 'AL181975', 'wind')
+            print(year, month, day, hour, 'Wind done')
             # plot(data, year, month, day, hour, level, 'Alex', 'thetae')
             # print('Temp done')
             # plot(data, year, month, day, hour, level, 'UNNAMED', 'tempAdv')

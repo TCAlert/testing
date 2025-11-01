@@ -27,7 +27,7 @@ def map(lon, lat, zoom = 2, center = 0):
         try:
             extent, size = REGIONS[zoom.upper()]
         except:
-            extent, size = ([-100, -80, 24, 38], (18, 9))
+            extent, size = ([-120, -85, 10, 30], (18, 6))
         plt.figure(figsize = size)
         ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=center))
 
@@ -111,19 +111,21 @@ def run(satellite, date, time, lat, lon, band, cmp = None, zoom = 2, num = 0):
     cbar.set_label(cmp.upper())
     plt.title(f'{satellite} Channel {ch.zfill(2)} Brightness Temperature\nTime: {time}' , fontweight='bold', fontsize=10, loc='left')
     plt.title(f'{res}\nDeelan Jariwala', fontsize=10, loc='right')
-    plt.savefig(r"C:\Users\deela\Downloads\katrina\\28aug_" + str(counter) + ".png", dpi = 150, bbox_inches = 'tight')
-    #plt.show()
+    plt.savefig(r"C:\Users\deela\Downloads\patricia\\22oct_" + str(counter) + ".png", dpi = 150, bbox_inches = 'tight')
+    # plt.show()
     plt.close()
     dataset.close()
 
     return filename
 
-counter = 289
-for x in range(29, 30, 1):
+z = '00'
+counter = 72
+for x in range(24, 25, 1):
     for y in range(0, 24, 1):
-        for z in range(0, 60, 15):
+        # for z in range(0, 60, 15):
             try:
                 counter = counter + 1
-                run(12, f"08/{str(x)}/2005", f"{str(y).zfill(2)}{str(z).zfill(2)}", "0", "0", "3", "codywv", 'custom', counter)
-            except:
+                run(13, f"10/{str(x)}/2015", f"{str(y).zfill(2)}{str(z).zfill(2)}", "0", "0", "4", "irg", 'custom', counter)
+            except Exception as e:
+                print(e)
                 pass

@@ -120,6 +120,37 @@ def probs3():
 
     return newcmp
 
+def probs4():
+    newcmp = LinearSegmentedColormap.from_list("",[
+    (0/100, "#000000"),
+    (20/100, "#0c3336"),
+    (30/100, "#385484"),
+    (40/100, "#5c9d8d"),
+    (50/100, "#5e9d5c"),
+    (60/100, "#e2c657"),
+    (70/100, "#f7843c"),
+    (80/100, "#fc4226"),
+    (90/100, "#d90048"),
+    (100/100, "#fd52a2")])
+
+    return newcmp
+
+def rh():
+    newcmp = LinearSegmentedColormap.from_list("",[
+    (0/100, "#000000"),
+    (10/100, "#2e2e2e"),
+    (20/100, "#6e3e04"),
+    (35/100, "#c7ad8d"),
+
+    (50/100, "#FFFFFF"),
+    
+    (65/100, "#5c9d8d"),
+    (80/100, "#1f5725"),
+    (90/100, "#1f2f40"),
+    (100/100, "#100729")])
+
+    return newcmp
+
 def cloud():
     newcmp = LinearSegmentedColormap.from_list("",[
     (0/100, "#FFFFFF"),
@@ -785,6 +816,24 @@ def pressure():
 
     (50/100, "#e5c185"),
     (70/100, "#c7522a"),
+    (85/100, "#402820"),
+
+    (85/100, "#404040"),
+    (100/100, "#000000")])
+    
+    return newcmp
+
+def pressure2():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/100, "#FFFFFF"),
+    (20/100, "#FFFFFF"),
+
+    (20/100, "#1C1751"),
+    (35/100, "#623BAA"),
+    (50/100, "#8d74a8"),
+
+    (50/100, "#e2809f"),
+    (70/100, "#da3535"),
     (85/100, "#402820"),
 
     (85/100, "#404040"),

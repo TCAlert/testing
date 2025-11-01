@@ -64,6 +64,7 @@ ampi = mpi1 + mpi2
 amshr = mshr1 + mshr2 
 ap200 = p2001 + p2002 
 as200 = s2001 + s2002
+ampi = ((100 - np.array(arhms)) * np.array(ashrs)) / np.array(ampi)
 adata = [[avmax, ashrs, amshr, assts], [arhms, as200, ap200, ampi]]
 
 t = 'Misalignment'
@@ -79,9 +80,10 @@ bmpi = mpi1 + mpi2
 bmshr = mshr1 + mshr2 
 bp200 = p2001 + p2002 
 bs200 = s2001 + s2002
+bmpi = ((100 - np.array(brhms)) * np.array(bshrs)) / np.array(bmpi)
 bdata = [[bvmax, bshrs, bmshr, bssts], [brhms, bs200, bp200, bmpi]]
 
-names = [['a. Maximum Sustained Winds (kt)', 'b. Deep-Layer Wind Shear (kt)', 'c. Mid-Level Wind Shear (kt)', 'd. Sea Surface Temperature (C)'], ['e. Mid-Level Relative Humidity (%)', 'f. Mean PWAT 500km (mm)', 'g. Mean PWAT 200km (mm)', 'h. Maximum Potential Intensity (kt)']]
+names = [['a. Maximum Sustained Winds (kt)', 'b. Deep-Layer Wind Shear (kt)', 'c. Mid-Level Wind Shear (kt)', 'd. Sea Surface Temperature (C)'], ['e. Mid-Level Relative Humidity (%)', 'f. Mean PWAT 500km (mm)', 'g. Mean PWAT 200km (mm)', 'h. Ventilation Proxy']]
 fig = plt.figure(figsize=(14, 12))
 gs = fig.add_gridspec(2, 4, wspace = .2, hspace = .2)
 axes = [fig.add_subplot(gs[0:1, 0:4]),
@@ -133,7 +135,7 @@ for i in range(len(adata)):
 
         axes[x + 1].legend(handles=[mlines.Line2D([], [], color= 'C1', label='Aligning'), mlines.Line2D([], [], color= 'C0', label='Non-Aligning')], loc='upper left')
         x = x + 1
-plt.savefig(r"C:\Users\deela\Downloads\tdr_env_statsNEW.png", dpi = 400, bbox_inches = 'tight')
+# plt.savefig(r"C:\Users\deela\Downloads\tdr_env_statsNEW.png", dpi = 400, bbox_inches = 'tight')
 
 # wind = np.nan_to_num(mdata)
 # print(f"01%: {percentile(wind, 1)}\n05%: {percentile(wind, 5)}\n10%: {percentile(wind, 10)}\n25%: {percentile(wind, 25)}\n33%: {percentile(wind, 33)}\n50%: {percentile(wind, 50)}\n66%: {percentile(wind, 66)}\n75%: {percentile(wind, 75)}\n90%: {percentile(wind, 90)}\n95%: {percentile(wind, 95)}\n99%: {percentile(wind, 99)}\n")

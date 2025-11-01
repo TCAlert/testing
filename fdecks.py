@@ -2,15 +2,18 @@ from file import getGZ
 import urllib.request
 
 def getFile(basin, num, year):
-    link = f'https://ftp.nhc.noaa.gov/atcf/archive/{year}/f{basin.lower()}{num.zfill(2)}{year}.dat.gz'
-    urllib.request.urlretrieve(link, r"C:\Users\deela\Downloads\fdeck_temp.dat.gz")
-
     fileName = r"C:\Users\deela\Downloads\fdeck_text\\" + "f" + basin.lower() + str(num).zfill(2) + str(year) + ".txt"
-    getGZ(r"C:\Users\deela\Downloads\fdeck_temp.dat.gz", fileName) 
+    
+    if int(year) == 2025:
+        link = f'https://ftp.nhc.noaa.gov/atcf/fix/f{basin.lower()}{num.zfill(2)}{year}.dat'
+        urllib.request.urlretrieve(link, fileName)
+    else:
+        link = f'https://ftp.nhc.noaa.gov/atcf/archive/{year}/f{basin.lower()}{num.zfill(2)}{year}.dat.gz'
+        urllib.request.urlretrieve(link, r"C:\Users\deela\Downloads\fdeck_temp.dat.gz")
+        getGZ(r"C:\Users\deela\Downloads\fdeck_temp.dat.gz", fileName) 
 
     with open(fileName, 'r') as data:
         return data.read().split('\n')
-
 
 def processData(data, file, fixType = 'DVTS', value = 140.):
     lats = []
@@ -50,8 +53,8 @@ def processDataAirc(data, file, fixType = 'AIRC'):
             file.write(','.join(temp) + "\n")
             file.flush()
     
-with open(r"C:\Users\deela\Downloads\nhcaircfixesPost2017.txt", 'w') as file:
-    for x in range(2017, 2025):
+with open(r"C:\Users\deela\Downloads\nhcaircfixesPost2002.txt", 'w') as file:
+    for x in range(2002, 2026):
         for y in range(1, 40):
             for z in ['ep', 'cp', 'al']:
                 try:

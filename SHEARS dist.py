@@ -106,6 +106,6 @@ axes[0].set_xlabel('DVMax (kt)', weight = 'bold', size = 9)
 plt.title(f'SHEARS: Bin ({PC1}, {PC2}, {PC3}) Distribution\nTotal Datapoints: {len(dataset['delta_vmax'])}' , fontweight='bold', fontsize=9, loc='left')
 plt.title(f'Mean DVMax: {mean}kt\nDeelan Jariwala', fontsize = 9, loc='right')  
 axes[0].hist(dataset['delta_vmax'], bins = np.arange(-50, 55, 5), color = '#9f80ff', alpha = 0.75)
-plt.savefig(r"C:\Users\deela\Downloads\\EOFs\largest.png", dpi = 400, bbox_inches = 'tight')
+# plt.savefig(r"C:\Users\deela\Downloads\\EOFs\largest.png", dpi = 400, bbox_inches = 'tight')
 plt.show()
 
