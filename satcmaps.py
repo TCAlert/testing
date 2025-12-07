@@ -102,6 +102,67 @@ def ir21():
 
     return newcmp.reversed(), vmax, vmin
 
+def ir22():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/130, '#000000'),
+    (50/130, "#FFFFFF"),
+    (65/130, "#94a7cf"),
+    (95/130, "#4d004b"),
+
+    (100/130, "#7f0000"),
+    (107.5/130, "#f67b51"),
+    (112.5/130, "#ffffbf"),
+    
+    (115/130, "#FFFFFF"),
+    
+    (117.5/130, "#ffbff2"),
+    (122.5/130, "#f55193"),
+    (130/130, "#800022")])
+
+    vmax = 30
+    vmin = -100
+
+    return newcmp.reversed(), vmax, vmin
+
+def ir23():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/130, '#000000'),
+
+    (60/130, "#FFFFFF"),
+    (85/130, "#29924C"),
+    (90/130, "#217384"),
+    (100/130, "#94a7cf"),
+    (109/130, "#4d004b"),
+    (111/130, "#7f0000"),
+    (120/130, "#f67b51"),
+    (125/130, "#ffffbf"),
+    (130/130, "#FFFFFF")])
+
+    vmax = 30
+    vmin = -100
+
+    return newcmp.reversed(), vmax, vmin
+
+
+def ir24():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/130, '#000000'),
+
+    (60/130, "#FFFFFF"),
+    (85/130, "#29924C"),
+    (90/130, "#217384"),
+    (100/130, "#000000"),
+    (109/130, "#780074"),
+    (111/130, "#7f0000"),
+    (120/130, "#f67b51"),
+    (125/130, "#ffffbf"),
+    (130/130, "#FFFFFF")])
+
+    vmax = 30
+    vmin = -100
+
+    return newcmp.reversed(), vmax, vmin
+
 def ca():
     newcmp = LinearSegmentedColormap.from_list("", [
     (0/130, '#000000'),
@@ -2489,6 +2550,26 @@ def ir():
 
     return newcmp, vmax, vmin
 
+def whaticouldvedone():
+    num1 = 25
+    num2 = 55
+    num3 = 40
+    num4 = 10
+    num5 = 10
+    top3 = cm.get_cmap('OrRd', num5)
+    top2 = cm.get_cmap('BuPu_r', num4)
+    top = cm.get_cmap('PuRd', num1)
+    mid = cm.get_cmap('Spectral', num2)
+    bot = cm.get_cmap('bone_r', num3)
+
+    newcolors = np.vstack((top3(np.linspace(0, 1, num5)), top2(np.linspace(0, 1, num4)), top(np.linspace(0, 1, num1)), mid(np.linspace(0, 1, num2)), bot(np.linspace(0, 1, num3))))
+    newcmp = ListedColormap(newcolors, name='temp')
+
+    vmax = 40
+    vmin = -100
+
+    return newcmp, vmax, vmin
+
 def blob():
     newcmp = LinearSegmentedColormap.from_list("", [
     
@@ -2588,22 +2669,6 @@ def ref():
     vmax = 30
     
     return newcmp.reversed(), vmax, vmin
-
-def whaticouldvedone():
-    num1 = 25
-    num2 = 55
-    num3 = 40
-    num4 = 10
-    num5 = 10
-    top3 = cm.get_cmap('OrRd', num5)
-    top2 = cm.get_cmap('BuPu_r', num4)
-    top = cm.get_cmap('PuRd', num1)
-    mid = cm.get_cmap('Spectral', num2)
-    bot = cm.get_cmap('bone_r', num3)
-
-    newcolors = np.vstack((top3(np.linspace(0, 1, num5)), top2(np.linspace(0, 1, num4)), top(np.linspace(0, 1, num1)), mid(np.linspace(0, 1, num2)), bot(np.linspace(0, 1, num3))))
-    newcmp = ListedColormap(newcolors, name='temp')
-    return newcmp
 
 def grayir():
     newcmp = LinearSegmentedColormap.from_list("", [
@@ -3820,6 +3885,67 @@ def wv42():
 
     return newcmp.reversed(), vmax, vmin 
 
+def wv43():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0.0, "#a1a1a1"), 
+    (15/90, "#141414"),
+    (30/90, "#524000"),
+    (50/90, "#ffdd30"),
+    (55/90, "#dfffb8"),
+    (60/90, "#b8fff9"),
+    (80/90, "#1546a1"),
+    (90/90, "#00022b")])
+
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin 
+
+def wv44():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/90, "#FFFFFF"),
+    (30/90, "#000000"),
+    (32.5/90, "#330032"),
+    (40/90, "#cc0000"),
+    (50/90, "#ff9b30"),
+    (55/90, "#fbffb8"),
+    (60/90, "#b8fff9"),
+    (80/90, "#1546a1"),
+    (90/90, "#00022b")])
+
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin 
+
+def wv46():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/90, "#FFFFFF"),
+    (30/90, "#000000"),
+    (55/90, "#fbffb8"),
+    (60/90, "#b8fff9"),
+    (80/90, "#1546a1"),
+    (90/90, "#00022b")])
+
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin 
+
+def wv45():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/90, "#FCD100"),
+    (10/90, "#000000"),
+    (55/90, "#FFFFFF"),
+    (60/90, "#b8fff9"),
+    (80/90, "#1546a1"),
+    (90/90, "#00022b")])
+
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin 
+
 def uv():
     newcmp = LinearSegmentedColormap.from_list("", [
     (0/90, "#f2d91d"),
@@ -4302,6 +4428,10 @@ wvtables = {
     'wv40'  : wv40(),
     'wv41'  : wv41(),
     'wv42'  : wv42(),
+    'wv43'  : wv43(),
+    'wv44'  : wv44(),
+    'wv45'  : wv45(),
+    'wv46'  : wv46(),
     'uv'    : uv(),
     'fig'   : uv(),
     'copper': copperWV(),
@@ -4366,6 +4496,7 @@ irtables = {
     'asir'    :asir(),
     'volcano' :volcano(),
     'blob'    :blob(),
+    'whaticouldvedone'      :whaticouldvedone(),
     'ir'      :ir(),
     'ira'     :ira(),
     'irb'     :irb(),
@@ -4415,6 +4546,9 @@ irtables = {
     'ir19'    :ir19(),
     'ir20'    :ir20(),
     'ir21'    :ir21(),
+    'ir22'    :ir22(),
+    'ir23'    :ir23(),
+    'ir24'    :ir24(),
     'codyir'  :codyir(),
     'cmyk'    :cmyk(),
     'chatgpt' :chatgpt(),
