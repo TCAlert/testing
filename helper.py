@@ -145,13 +145,41 @@ def monthToNum(month):
     
     return dict[month]
 
+import numpy as np
+
+def dptToSph(td, p):
+    td = td - 273.15
+    e_s = 6.112 * np.exp((17.67 * td) / (td + 243.5))
+
+    epsilon = 0.622
+    q = (epsilon * e_s) / (p - (1 - epsilon) * e_s)
+    return q
+
 def theta(temp, pres, ref):
     return temp * ((ref / pres) ** (287.052874 / 1005))
 
-def thetae(temp, pres, ref, sh):
+def thetae(temp, pres, ref, sh, dew = True):
     t = theta(temp, pres, ref)
+    if dew == True:
+        dpt = sh 
+        sh = dptToSph(dpt, pres)
 
     return t * (np.e)**((2.501e6 * sh) / (1005 * temp))
+
+def sat_specific_humidity(temp, pres):
+    T_C = temp - 273.15
+
+    e_s = 6.112 * np.exp((17.67 * T_C) / (T_C + 243.5))
+    eps = 0.622
+
+    q_s = eps * e_s / (pres - (1 - eps) * e_s)
+    return q_s
+
+def thetaes(temp, pres, ref):
+    ssh = sat_specific_humidity(temp, pres)
+
+    t = theta(temp, pres, ref)
+    return t * np.exp((2.501e6 * ssh) / (1005.0 * temp))
 
 def CtoF(temperature):
     return (temperature * (9/5)) + 32

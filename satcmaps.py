@@ -83,6 +83,24 @@ def gay():
 
     return newcmp.reversed(), vmax, vmin
 
+def ir21():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/130, '#000000'),
+    (20/130, '#cccccc'),
+    (20/130, '#85d6de'),
+    (60/130, "#235c23"), 
+    (70/130, "#fcfa68"),
+    (85/130, "#ed422f"),
+    (90/130, "#ab0258"),
+    (100/130, "#170824"),
+    (110/130, "#a145ed"),
+    (120/130, "#abc7f7"),
+    (130/130, "#FFFFFF")])
+
+    vmax = 30
+    vmin = -100
+
+    return newcmp.reversed(), vmax, vmin
 
 def ca():
     newcmp = LinearSegmentedColormap.from_list("", [
@@ -390,6 +408,68 @@ def ir18():
     vmin = -100
 
     return newcmp, vmax, vmin
+
+def ir19():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/13, "#000000"),
+    (6/13, "#FFFFFF"),
+    (6/13, "#5ebaff"),
+    (6.75/13, "#5ebaff"),
+    (6.75/13, "#00faf4"),
+    (7.5/13, "#00faf4"),
+    (7.5/13, "#00bf9f"),
+    (8/13, "#00bf9f"),
+    (8/13, "#008055"),
+    (8.5/13, "#008055"),
+    (8.5/13, "#004020"),
+    (9/13, "#004020"),
+
+    (9/13, "#ffffcc"),
+
+    (9.5/13, "#ffffcc"),
+    (9.5/13, "#fff480"),
+    (10/13, "#fff480"),
+
+    (10/13, "#ff9f40"),
+    (10.5/13, "#ff9f40"),
+
+    (10.5/13, "#ff7733"),
+    (10.75/13, "#ff7733"),
+
+    (10.75/13, "#ff4a26"),
+    (11/13, "#ff4a26"),
+    (11/13, "#ff0d4a"),
+    (11.5/13, "#ff0d4a"),
+
+    (11.5/13, "#d9006c"),
+    (12/13, "#d9006c"),
+    (12/13, "#800055"),
+    (12.5/13, "#800055"),
+    (12.5/13, "#000000"),
+    (13/13, "#000000")])
+
+    vmax = 30
+    vmin = -100
+
+    return newcmp.reversed(), vmax, vmin
+
+def ir20():
+    newcmp = LinearSegmentedColormap.from_list("", [
+        (0/150, "#4d2c1c"),
+        (21/150, "#000000"),
+        (60/150, "#ffffff"),
+        (80/150, "#55a630"),
+        (95/150, "#ffd60a"),
+        (110/150, "#e50000"),
+        (120/150, "#101010"),
+        (125/150, "#7209b7"),
+        (130/150, "#b072be"),
+        (140/150, "#e6dada"),
+        (150/150, "#FFFFFF")
+    ])
+    vmax = 50
+    vmin = -100
+    return newcmp.reversed(), vmax, vmin
 
 def rainbow():
     newcmp = LinearSegmentedColormap.from_list("", [
@@ -2692,14 +2772,33 @@ def wv4():
 
     return newcmp.reversed(), vmax, vmin
 
+# def codywv():
+#     newcmp = LinearSegmentedColormap.from_list("", [
+#     (0.0, "#FCD100"), 
+#     (10/90, "#534A37"),
+#     (20/90, "#070704"), 
+#     # (25/90, "#7A7A7A"),
+#     (30/90, "#404040"),
+#     (35/90, "#EDEDED"),
+#     (40/90, "#64BDDF"),
+#     (50/90, "#156899"),
+#     (60/90, "#03062F"),
+#     (70/90, "#D92028"),
+#     (80/90, "#FBCA0C"),
+#     (90/90, "#FFFFFF")])
+
+#     vmax = 0
+#     vmin = -90
+
+#     return newcmp.reversed(), vmax, vmin
+
 def codywv():
     newcmp = LinearSegmentedColormap.from_list("", [
     (0.0, "#FCD100"), 
     (10/90, "#534A37"),
     (20/90, "#070704"), 
-    # (25/90, "#7A7A7A"),
-    (30/90, "#404040"),
-    (35/90, "#EDEDED"),
+    (25/90, "#7A7A7A"),
+    (30/90, "#EDEDED"),
     (40/90, "#64BDDF"),
     (50/90, "#156899"),
     (60/90, "#03062F"),
@@ -2710,7 +2809,7 @@ def codywv():
     vmax = 0
     vmin = -90
 
-    return newcmp.reversed(), vmax, vmin
+    return newcmp.reversed(), vmax, vmin 
 
 def codyir():
     newcmp = LinearSegmentedColormap.from_list("", [
@@ -2753,14 +2852,14 @@ def mikewv():
 def wv3():
     newcmp = LinearSegmentedColormap.from_list("", [
     (0/90, "#804080"),
-    (5/90, "#1a000d"),
-    (10/90, "#661a1a"),
-    (15/90, "#8f5d3c"), 
+    (4/90, "#1a000d"),
+    (7.5/90, "#661a1a"),
+    (12.5/90, "#8f5d3c"), 
     (20/90, "#000000"),
-    (40/90, "#FFFFFF"),
-    (50/90, "#a9c4de"),
-    (55/90, "#8e9ac8"),
-    (65/90, "#88439e"),
+    (35/90, "#FFFFFF"),
+    (42.5/90, "#a9c4de"),
+    (50/90, "#8e9ac8"),
+    (60/90, "#88439e"),
     (70/90, "#4d014b"),
     (70/90, "#67041f"),
     (80/90, "#d1145b"),
@@ -3604,6 +3703,140 @@ def wv37():
 
     return newcmp.reversed(), vmax, vmin
 
+def wv38():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/90, "#696563"),
+    (10/90, "#1f1e1c"), 
+    (20/90, "#a85432"),
+    (30/90, "#e3e1de"),
+    (35/90, "#FFFFFF"),
+
+    (50/90, "#8fc1f2"),
+    (60/90, "#3285d3"),
+    (65/90, "#ffcc00"),
+    (75/90, "#dc0000"),
+    (80/90, "#400040"),
+    (90/90, "#ff00fc")])
+
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin
+
+def wv39():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/90, "#666666"),
+    
+    (20/90, "#000000"),
+
+    (35/90, "#FFFFFF"),
+
+    (60/90, "#4d4d4d"),
+    (75/90, "#000000"),
+    (90/90, "#999999")])
+
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin
+
+def wv395():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/90, "#666666"),
+    
+    (20/90, "#000000"),
+
+    (35/90, "#FFFFFF"),
+    (35/90, "#000000"),
+
+    (60/90, "#b3b3b3"),
+    (75/90, "#FFFFFF"),
+    (80/90, "#000000"),
+    (90/90, "#999999")])
+
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin
+
+def wv40():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/90, "#808080"),
+    (15/90, "#000000"),
+    (25/90, "#484a77"),
+    (35/90, "#8fd3fe"),
+    (40/90, "#FFFFFF"),
+    
+    (45/90, "#eaaded"),
+    (50/90, "#905ea9"),
+    (55/90, "#6b3e75"),
+    (60/90, "#45293f"),
+    (70/90, "#c32454"),
+    (80/90, "#fdcbb0"),
+    (90/90, "#FFFFFF")])
+
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin
+
+def wv41():
+    newcmp = LinearSegmentedColormap.from_list("",[
+    (0/90, "#6f5f5f"),
+    (20/90, "#000000"),
+    (25/90, "#0c3336"),
+    (30/90, "#385484"),
+    # (40/90, "#a3ffe8"),
+    (40/90, "#ffffff"),
+    (50/90, "#5e9d5c"),
+    (60/90, "#e2c657"),
+    (65/90, "#f7843c"),
+    (70/90, "#fc4226"),
+    (75/90, "#d90048"),
+    (82.5/90, "#fd52a2"),
+    (90/90, "#FFFFFF")])
+
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin
+
+def wv42():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0.0, "#FCD100"), 
+    (10/90, "#534A37"),
+    (20/90, "#070704"), 
+    (25/90, "#7A7A7A"),
+    (30/90, "#EDEDED"),
+    (40/90, "#c464df"),
+    (50/90, "#991564"),
+    (60/90, "#2f0303"),
+    (70/90, "#D92028"),
+    (80/90, "#FBCA0C"),
+    (90/90, "#FFFFFF")])
+
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin 
+
+def uv():
+    newcmp = LinearSegmentedColormap.from_list("", [
+    (0/90, "#f2d91d"),
+    (15/90, "#000000"),
+    
+    (40/90, "#FFFFFF"),
+    # (50/90, "#050533"),
+    (60/90, "#8d88f6"),
+    (70/90, "#ff1202"),
+    (80/90, "#fff904"),
+    (90/90, "#FFFFFF")])
+
+    vmax = 0
+    vmin = -90
+
+    return newcmp.reversed(), vmax, vmin
+
 def watermelon():
     newcmp = LinearSegmentedColormap.from_list("", [
     (0/90, "#FFFFFF"),
@@ -4063,6 +4296,14 @@ wvtables = {
     'wv35'  : wv35(),
     'wv36'  : wv36(),
     'wv37'  : wv37(),
+    'wv38'  : wv38(),
+    'wv39'  : wv39(),
+    'wv39.5': wv395(),
+    'wv40'  : wv40(),
+    'wv41'  : wv41(),
+    'wv42'  : wv42(),
+    'uv'    : uv(),
+    'fig'   : uv(),
     'copper': copperWV(),
     'bajaflash': bajaflash(),
     'simple': simple(),
@@ -4171,6 +4412,9 @@ irtables = {
     'ir16'    :ir16(),
     'ir17'    :ir17(),
     'ir18'    :ir18(),
+    'ir19'    :ir19(),
+    'ir20'    :ir20(),
+    'ir21'    :ir21(),
     'codyir'  :codyir(),
     'cmyk'    :cmyk(),
     'chatgpt' :chatgpt(),

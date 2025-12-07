@@ -48,4 +48,4 @@ def stormCenteredOISST(storm, time):
     plt.savefig(r"C:\Users\deela\Downloads\stormcenteredoisst.png", dpi = 300, bbox_inches = 'tight')
     plt.show()
     plt.close()
-stormCenteredOISST('car', '2025-10-26T00')
+# stormCenteredOISST('natl', '1985-09-15T00')

@@ -7,7 +7,7 @@ import datetime
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
-climoYears = [1995, 2024]
+climoYears = [1951, 2024]
 basin = 'AL'
 day = 0
 if basin == 'EP':
