@@ -2,8 +2,8 @@ import os
 import cv2 
 import subprocess
 
-image_folder = r"C:\Users\deela\Downloads\pulsezoom2\\"
-video_name = r"C:\Users\deela\Downloads\melissa12zto18z_2.mp4"
+image_folder = r"C:\Users\deela\Downloads\pulseZoom2\\"
+video_name = r"C:\Users\deela\Downloads\melDynamicMean3.mp4"
 
 images = sorted([img for img in os.listdir(image_folder) if img.endswith((".jpg", ".jpeg", ".png"))], key=lambda x: int(os.path.splitext(x)[0]))
 # images = sorted(
@@ -43,5 +43,5 @@ def compress_video(infile, outfile, crf=25):
     ]
     subprocess.run(cmd)
 
-compress_video(r"C:\Users\deela\Downloads\melissa12zto18z_2.mp4", r"C:\Users\deela\Downloads\melissa12zto18z_2small.mp4", crf=25)
+compress_video(r"C:\Users\deela\Downloads\melDynamicMean3.mp4", r"C:\Users\deela\Downloads\melDynamicMean3_small.mp4", crf=25)
 print('compression complete')
