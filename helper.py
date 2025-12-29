@@ -158,6 +158,33 @@ def dptToSph(td, p):
 def theta(temp, pres, ref):
     return temp * ((ref / pres) ** (287.052874 / 1005))
 
+def moistEnthalpy(t, q):
+    cp = 1004
+    lv = 2.5 * 10**6
+
+    return cp * t + lv * q
+
+def density(T, Td, p, q = False):
+    Rd = 287.05
+    Rv = 461.5
+    epsilon = 0.622
+
+    T = T + 273.15
+    p = p * 100
+    
+    # Vapor pressure (Pa)
+    if q == True:
+        e = (Td * p) / (epsilon + Td * (1 - epsilon))
+    else:
+        e = 6.112 * np.exp((17.67 * Td) / (Td + 243.5)) * 100
+    
+    # Partial pressures
+    pd = p - e
+    
+    rho = pd / (Rd * T) + e / (Rv * T)
+
+    return rho
+
 def thetae(temp, pres, ref, sh, dew = True):
     t = theta(temp, pres, ref)
     if dew == True:

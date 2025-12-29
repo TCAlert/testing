@@ -32,9 +32,9 @@ def map(interval, labelsize):
 labelsize = 9
 spacing = 1
 year = 2025
-month = 11
-day = 11
-hour = 1
+month = 12
+day = 29
+hour = 5
 extent = USREGIONS['GP'][0]
 data = xr.open_dataset(f'http://nomads.ncep.noaa.gov:80/dods/rtma2p5/rtma2p5{str(year)}{str(month).zfill(2)}{str(day).zfill(2)}/rtma2p5_anl_{str(hour).zfill(2)}z')
 data = data['tmp2m'].squeeze()

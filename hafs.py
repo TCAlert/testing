@@ -5,7 +5,7 @@ import scipy
 from file import getGRIB 
 import cmaps as cmap 
 import warnings
-from helper import thetae, theta, moistEnthalpy, sat_specific_humidity
+from helper import thetae, theta, moistEnthalpy, sat_specific_humidity, density
 from matplotlib import patheffects as pe 
 import cartopy, cartopy.crs as ccrs 
 import numpy as np
@@ -44,9 +44,8 @@ def Gradient2D_m(data, short = False):
     # Return dA/dx and dA/dy, where A is the original dataset
     return dAx / dx, dAy / dy
 
-def makeMap(loc, size, lc = 'black', center = 0):
+def makeMap(loc, size, lc = 'black', interval = 1, center = 0):
     labelsize = 8
-    interval = 1
     fig = plt.figure(figsize = size)
 
     # Add the map and set the extent
@@ -104,7 +103,7 @@ def rePoPolar(dataset, name):
     return polar
 
 def labels(ax, flag = False):
-    ax.set_yticklabels(['', '100km', '', '300km', '', '500km', ''], fontfamily = 'Courier New', alpha = 0.75, path_effects=[pe.withStroke(linewidth=2.25, foreground="white")])
+    ax.set_yticklabels(['', '50km', '', '150km', '', '250km', ''], fontfamily = 'Courier New', alpha = 0.75, path_effects=[pe.withStroke(linewidth=2.25, foreground="white")])
     ax.set_xticklabels(['E', 'NE', 'N', 'NW', 'W', 'SW', 'S', 'SE'])#, path_effects=[pe.withStroke(linewidth=2.25, foreground="white")])
 
     # ax.set_frame_on(False)
@@ -112,7 +111,7 @@ def labels(ax, flag = False):
     # ax.set_yticklabels([])
 
 bucket = 'noaa-nws-hafs-pds'
-def getAWSFile(storm, date, init, fhour, model):
+def getAWSFile(storm, date, init, fhour, model, t = 'storm'):
     s3_client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
     paginator = s3_client.get_paginator('list_objects_v2')
     prefix = f'hfs{model.lower()}/{date}/{init[:2]}/'
@@ -126,23 +125,23 @@ def getAWSFile(storm, date, init, fhour, model):
     files = []
     for page in response_iterator:
         for object in page['Contents']:
-            if storm.lower() in object['Key'] and f'storm.atm.f{fhour.zfill(3)}' in object['Key']:
+            if storm.lower() in object['Key'] and f'{t}.atm.f{fhour.zfill(3)}' in object['Key']:
                 file = object['Key']
                 files.append(file)
-    # print(files)
+    print(files)
     
     s3_client.download_file(bucket, files[0], r"C:\Users\deela\Downloads\\gfsGRIB.grib2")    
     # s3_client.download_file(bucket, files[1], r"C:\Users\deela\Downloads\\gfsGRIB.grib2.idx")    
 
-def getData(storm, date, init, fhour, var, level, model, group = 'isobaricInhPa', newFile = True):
+def getData(storm, date, init, fhour, var, level, model, group = 'isobaricInhPa', newFile = True, t = 'storm'):
     date = date.split('/')
     date = f'{date[2]}{date[0].zfill(2)}{date[1].zfill(2)}'
     
     if newFile == True:
         try:
-            getAWSFile(storm, date, init, fhour, model)
+            getAWSFile(storm, date, init, fhour, model, t = t)
         except Exception as e:
-            link = f'https://nomads.ncep.noaa.gov/pub/data/nccf/com/hafs/prod/hfs{model}.{date}/{init[:2]}/{storm.lower()}.{date}{init[:2]}.hfs{model}.storm.atm.f{str(fhour).zfill(3)}.grb2'
+            link = f'https://nomads.ncep.noaa.gov/pub/data/nccf/com/hafs/prod/hfs{model}.{date}/{init[:2]}/{storm.lower()}.{date}{init[:2]}.hfs{model}.{t}.atm.f{str(fhour).zfill(3)}.grb2'
             print(link)
             gfsGRIB = getGRIB(link, 'gfsGRIB.grib2')
 
@@ -193,10 +192,13 @@ def getData(storm, date, init, fhour, var, level, model, group = 'isobaricInhPa'
     return data
 
 def computeVentilation(tData, qData, uData, vData, wData, level):
-    r = 650
+    r = 300
     teData = thetae(tData, int(level), 1000, qData, dew = False)
+    dData = density(tData, qData, int(level), q = True)
     te = rePoPolar(teData, 'data')
     te = te['data'].sel(r = slice(0, r))
+    d = rePoPolar(dData, 'data')
+    d = d['data'].sel(r = slice(0, r))
     u = rePoPolar(uData, 'data')
     u = u['data'].sel(r = slice(0, r))
     v = rePoPolar(vData, 'data')
@@ -214,19 +216,21 @@ def computeVentilation(tData, qData, uData, vData, wData, level):
 
     thetaCoord = u.theta 
     rCoord = u.r
-    vent = thtPer * radPer 
+    vent = thtPer * radPer * d
 
-    return thetaCoord, rCoord, vent, radialWind, te, w
+    return thetaCoord, rCoord, vent, radialWind, te, w, thtPer, radPer
 
 def ventPlot(storm, date, init, fhour, level = 850, model = 'a'):
     data = getData(storm, date, init, fhour, ['t', 'q', 'u', 'v', 'wz'], level, model)
-    thetaCoord, rCoord, vent, radialWind, te, w = computeVentilation(data[0], data[1], data[2], data[3], data[4], level)
+    thetaCoord, rCoord, vent, radialWind, te, w, tPer, rPer = computeVentilation(data[0], data[1], data[2], data[3], data[4], level)
 
     fig, axes = plt.subplots(2, 2, subplot_kw={'projection': 'polar'}, figsize=(18, 15))
     axes[0, 0].pcolormesh(thetaCoord, rCoord, radialWind, cmap = cmap.tempAnoms6(), vmin = -50, vmax = 50)
     labels(axes[0, 0])
 
     c = axes[0, 1].pcolormesh(thetaCoord, rCoord, vent, cmap = cmap.tempAnoms6(), vmin = -50, vmax = 50)
+    mask = (rPer < 0) & (tPer < 0) & (vent > 2.5)
+    axes[0, 1].contour(thetaCoord, rCoord, mask, levels=[0.5], colors='black')
     labels(axes[0, 1])
 
     ca = axes[1, 0].pcolormesh(thetaCoord, rCoord, te, cmap = cmap.probs4(), vmin = 320, vmax = 350)
@@ -261,12 +265,175 @@ def ventPlot(storm, date, init, fhour, level = 850, model = 'a'):
     plt.savefig(r"C:\Users\deela\Downloads\ventRealTime.png", dpi = 200, bbox_inches = 'tight')
     plt.close()
 
-def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
+def hafsCrossSectionPlot(storm, date, init, fhour, var, dir = 'h', model = 'a'):
+    lc = 'black'
+    rcParams['font.family'] = 'Courier New'
+    level = np.arange(100, 1025, 25)
+    if var.lower() == 'temp':
+        data = getData(storm, date, init, fhour, ['t'], [level], model)[0] - 273.15
+        lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
+
+        if dir.lower() == 'h':
+            data = data.sel(latitude = lat, method = 'nearest')
+            data = data.sel(longitude = slice(lon - 2.5, lon + 2.5))
+        elif dir.lower() == 'v':
+            data = data.sel(latitude = slice(lat - 2.5, lat + 2.5))
+            data = data.sel(longitude = lon, method = 'nearest')
+        vmin = -80
+        vmax = 40
+        cmp = cmap.tempC()
+        level = f'{level} hPa'
+        longName = 'Temperature (C)'
+    elif var.lower() == 'thetae':
+        data = getData(storm, date, init, fhour, ['t', 'q'], [level, level], model)
+        data = thetae(data[0], data[0].isobaricInhPa, 1000, data[1], dew = False)
+        lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
+
+        if dir.lower() == 'h':
+            data = data.sel(latitude = lat, method = 'nearest')
+            data = data.sel(longitude = slice(lon - 2.5, lon + 2.5))
+        elif dir.lower() == 'v':
+            data = data.sel(latitude = slice(lat - 2.5, lat + 2.5))
+            data = data.sel(longitude = lon, method = 'nearest')
+        vmin = 300
+        vmax = 400
+        cmp = cmap.probs7()
+        longName = 'Equivalent Potential Temperature (K)'
+    elif var.lower() == 'theta':
+        data = getData(storm, date, init, fhour, ['t'], [level], model)
+        data = theta(data[0], data[0].isobaricInhPa, 1000)
+        lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
+
+        if dir.lower() == 'h':
+            data = data.sel(latitude = lat, method = 'nearest')
+            data = data.sel(longitude = slice(lon - 2.5, lon + 2.5))
+        elif dir.lower() == 'v':
+            data = data.sel(latitude = slice(lat - 2.5, lat + 2.5))
+            data = data.sel(longitude = lon, method = 'nearest')
+        vmin = 275
+        vmax = 425
+        cmp = cmap.longTemp()
+        longName = 'Potential Temperature (K)'
+    elif var.lower() == 'vvel':
+        data = getData(storm, date, init, fhour, ['wz'], [level], model)[0]
+        lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
+
+        if dir.lower() == 'h':
+            data = data.sel(latitude = lat, method = 'nearest')
+            data = data.sel(longitude = slice(lon - 2.5, lon + 2.5))
+        elif dir.lower() == 'v':
+            data = data.sel(latitude = slice(lat - 2.5, lat + 2.5))
+            data = data.sel(longitude = lon, method = 'nearest')
+        vmin = -10
+        vmax = 10
+        cmp = cmap.tempAnoms8()
+        longName = 'Vertical Velocity (m/s)'
+    elif var.lower() == 'rh':
+        data = getData(storm, date, init, fhour, ['r'], [level], model)[0]
+        lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
+
+        if dir.lower() == 'h':
+            data = data.sel(latitude = lat, method = 'nearest')
+            data = data.sel(longitude = slice(lon - 2.5, lon + 2.5))
+        elif dir.lower() == 'v':
+            data = data.sel(latitude = slice(lat - 2.5, lat + 2.5))
+            data = data.sel(longitude = lon, method = 'nearest')
+        vmin = 0
+        vmax = 100
+        cmp = cmap.relh()
+        longName = 'Relative Humidity (%)'
+    elif var.lower() == 'absv':
+        data = getData(storm, date, init, fhour, ['absv'], [level], model)[0]
+        lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
+
+        if dir.lower() == 'h':
+            data = data.sel(latitude = lat, method = 'nearest')
+            data = data.sel(longitude = slice(lon - 2.5, lon + 2.5))
+        elif dir.lower() == 'v':
+            data = data.sel(latitude = slice(lat - 2.5, lat + 2.5))
+            data = data.sel(longitude = lon, method = 'nearest')
+        vmin = -0.00025
+        vmax = 0.00025
+        cmp = cmap.pressure3()
+        longName = 'Absolute Vorticity (1/s)'
+    elif var.lower() == 'tadv':
+        data = getData(storm, date, init, fhour, ['u', 'v', 't'], [level, level, level], model)
+        lon, lat = np.nanmean(data[0].longitude.values), np.nanmean(data[0].latitude.values)
+        u, v, t = data[0], data[1], data[2]
+
+        fx, fy = Gradient2D_m(t, False)
+        data = (-(u * fx + v * fy)) * 3600
+
+        data.values = gaussian_filter(data.values, sigma = 5, axes = (1, 2))
+        lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
+
+        if dir.lower() == 'h':
+            data = data.sel(latitude = lat, method = 'nearest')
+            data = data.sel(longitude = slice(lon - 2.5, lon + 2.5))
+        elif dir.lower() == 'v':
+            data = data.sel(latitude = slice(lat - 2.5, lat + 2.5))
+            data = data.sel(longitude = lon, method = 'nearest')
+        vmin = -20
+        vmax = 20
+        cmp = cmap.tempAnoms()
+        longName = 'Temperature Advection (K/h)'
+    else:#elif var.lower() == 'wind':
+        data = getData(storm, date, init, fhour, ['u', 'v'], [level, level], model)
+        data = ((data[0]**2 + data[1]**2)**0.5) * 1.94384
+        lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
+
+        if dir.lower() == 'h':
+            data = data.sel(latitude = lat, method = 'nearest')
+            data = data.sel(longitude = slice(lon - 2.5, lon + 2.5))
+        elif dir.lower() == 'v':
+            data = data.sel(latitude = slice(lat - 2.5, lat + 2.5))
+            data = data.sel(longitude = lon, method = 'nearest')
+        vmin = 0
+        vmax = 160
+        cmp = cmap.wind()
+        longName = 'Wind Speed (kt)'
+
+    if dir.lower() == 'h':
+        dirLong = 'E to W'
+    elif dir.lower() == 'v':
+        dirLong = 'N to S'
+
+    fig = plt.figure(figsize=(12, 6))
+    ax = plt.axes()
+
+    ax.tick_params(axis='both', labelsize=8, left = False, bottom = False)
+    ax.grid(linestyle = '--', alpha = 0.5, color = 'black', linewidth = 0.5, zorder = 9)
+    ax.set_ylabel('Height (hPa)', weight = 'bold', size = 9)
+    ax.set_xlabel('Distance', weight = 'bold', size = 9)
+    ax.invert_yaxis()
+    ax.set_yscale('log')
+    ax.set_yticks([1000, 850, 700, 500, 200, 100])
+    ax.set_yticklabels(['1000', '850', '700', '500', '200', '100'])
+    ax.minorticks_off()
+
+    if dir.lower() == 'h':
+        c = ax.contourf(data.longitude, data.isobaricInhPa, data, levels = np.arange(vmin, vmax + .1, .1), cmap = cmp, extend = 'both')
+    elif dir.lower() == 'v':
+        c = ax.contourf(data.latitude, data.isobaricInhPa, data, levels = np.arange(vmin, vmax + .1, .1), cmap = cmp, extend = 'both')
+
+    time = f'{date} at {init}z'
+
+    ax.set_title(f'HAFS-{model.upper()} {longName} {dirLong} Cross Section \nInit: {time}', fontweight='bold', fontsize=10, loc='left')
+    ax.set_title(f'Forecast Hour: {fhour.zfill(3)}', fontsize = 9, loc = 'center')
+    ax.set_title(f'{storm.upper()}\nDeelan Jariwala', fontsize=10, loc='right') 
+
+    cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
+    cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
+    plt.savefig(r"C:\Users\deela\Downloads\hafsRealTimeCS.png", dpi = 250, bbox_inches = 'tight')
+    plt.show()
+    plt.close()
+
+def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a', t = 'storm'):
     lc = 'black'
     rcParams['font.family'] = 'Courier New'
 
     if var.lower() == 'temp':
-        data = getData(storm, date, init, fhour, ['t'], level, model)[0] - 273.15
+        data = getData(storm, date, init, fhour, ['t'], level, model, t = t)[0] - 273.15
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
         if level.lower() == 'tropopause':
             cmp, vmax, vmin = cmp2.irg()
@@ -280,7 +447,7 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         quantName = 'Average (2x2): '
         quant = data.sel(longitude = slice(lon - 1, lon + 1), latitude = slice(lat - 1, lat + 1)).mean(['latitude', 'longitude'])
     elif var.lower() == 'thetae':
-        data = getData(storm, date, init, fhour, ['t', 'q'], level, model)
+        data = getData(storm, date, init, fhour, ['t', 'q'], level, model, t = t)
         data = thetae(data[0], int(level), 1000, data[1], dew = False)
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
         vmin = 275
@@ -290,9 +457,50 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         level = f'{level} hPa'
         quantName = 'Max (2x2): '
         quant = data.sel(longitude = slice(lon - 1, lon + 1), latitude = slice(lat - 1, lat + 1)).max(['latitude', 'longitude'])
+    elif var.lower() == 'tfp' or var.lower() == 'tfp_s' or var.lower() == 'tfp_ss':
+        data = getData(storm, date, init, fhour, ['t', 'q'], level, model, t = t)
+        data = thetae(data[0], int(level), 1000, data[1], dew = False)
+        fx, fy = Gradient2D_m(data, False)
+        mag = (fx**2 + fy**2)**0.5
+        mx, my = Gradient2D_m(mag, False)
+        data = - ((mx * (fx / mag)) + (my * (fy / mag)))
+
+        lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
+
+        if var.lower() == 'tfp_s':
+            data.values = gaussian_filter(data.values, sigma = 5)
+            vmin = -.0000001
+            vmax = .0000001
+        elif var.lower() == 'tfp_ss':
+            data.values = gaussian_filter(data.values, sigma = 15)
+            vmin = -.00000005
+            vmax = .00000005
+        else:
+            vmin = -.0000005
+            vmax = .0000005
+        cmp = cmap.tempAnoms()
+        longName = 'Thermal Front Parameter (K / m^2)'
+        level = f'{level} hPa'
+        quantName = None
+    elif var.lower() == 'ci':
+        data = getData(storm, date, init, fhour, ['t', 'q'], 850, model, t = t)
+        trop = getData(storm, date, init, fhour, ['pt'], 'tropopause', model, t = t)[0]
+        te = thetae(data[0], 850, 1000, data[1], dew = False)
+        data = trop - te
+        lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
+        vmin = -7.5
+        vmax = 52.5
+        cmp = cmap.tempAnoms()
+        longName = 'Index (K)'
+        level = f'Coupling'
+        quantName = 'Min (5x5): '
+        quant = data.sel(longitude = slice(lon - 2.5, lon + 2.5), latitude = slice(lat - 2.5, lat + 2.5)).min(['latitude', 'longitude'])
     elif var.lower() == 'theta':
-        data = getData(storm, date, init, fhour, ['t'], level, model)
-        data = theta(data[0], int(level), 1000)
+        if level != 'tropopause':
+            data = getData(storm, date, init, fhour, ['t'], level, model, t = t)
+            data = theta(data[0], int(level), 1000)
+        else:
+            data = getData(storm, date, init, fhour, ['pt'], 'tropopause', model, t = t)[0]
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
         vmin = 275
         vmax = 425
@@ -306,16 +514,27 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
             levs = ['1000', '850']
             vmin = -0.015
             vmax = 0.005
+            cmp = cmap.tempAnoms()
+        elif level == 'upper':
+            levs = ['500', '200']
+            vmin = -0.005
+            vmax = 0.010
+            cmp = cmap.probs7()
+        elif level == 'deep':
+            levs = ['850', '200']
+            vmin = -0.005
+            vmax = 0.005
+            cmp = cmap.tempAnoms()
         else:
             levs = ['1000', '500']
             vmin = -0.005
             vmax = 0.005
-        data = getData(storm, date, init, fhour, ['t', 'q', 'gh'], [levs, levs, levs], model)
+            cmp = cmap.tempAnoms()
+        data = getData(storm, date, init, fhour, ['t', 'q', 'gh'], [levs, levs, levs], model, t = t)
         data = (thetae(data[0].sel(isobaricInhPa = levs[0]), int(levs[0]), 1000, data[1].sel(isobaricInhPa = levs[0]), dew = False) - thetae(data[0].sel(isobaricInhPa = levs[1]), int(levs[1]), 1000, data[1].sel(isobaricInhPa = levs[1]), dew = False)) / (data[2].sel(isobaricInhPa = levs[0]) - data[2].sel(isobaricInhPa = levs[1]))
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
-        cmp = cmap.tempAnoms()
         longName = 'Moist Bulk Stability [dThetaE / dZ] (K/m)'
-        level = f'1000-{levs[1]} hPa'
+        level = f'{levs[0]}-{levs[1]} hPa'
         quantName = 'Average (2x2): '
         quant = data.sel(longitude = slice(lon - 1, lon + 1), latitude = slice(lat - 1, lat + 1)).mean(['latitude', 'longitude'])
     elif var.lower() == 'ss':
@@ -323,21 +542,42 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
             levs = ['1000', '850']
             vmin = 0.002
             vmax = 0.008
+        elif level == 'upper':
+            levs = ['500', '200']
+            vmin = 0.003
+            vmax = 0.007
+        elif level == 'deep':
+            levs = ['850', '200']
+            vmin = 0.003
+            vmax = 0.007
         else:
             levs = ['1000', '500']
             vmin = 0.004
             vmax = 0.007
-        data = getData(storm, date, init, fhour, ['t', 'q', 'gh'], [levs, levs, levs], model)
-        data = (theta(data[0].sel(isobaricInhPa = levs[0]), int(levs[0]), 1000) - theta(data[0].sel(isobaricInhPa = levs[1]), int(levs[1]), 1000)) / (data[2].sel(isobaricInhPa = levs[0]) - data[2].sel(isobaricInhPa = levs[1]))
+        data = getData(storm, date, init, fhour, ['t', 'gh'], [levs, levs, levs], model, t = t)
+        data = (theta(data[0].sel(isobaricInhPa = levs[0]), int(levs[0]), 1000) - theta(data[0].sel(isobaricInhPa = levs[1]), int(levs[1]), 1000)) / (data[1].sel(isobaricInhPa = levs[0]) - data[1].sel(isobaricInhPa = levs[1]))
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
 
         cmp = cmap.probs4()
         longName = 'Bulk Static Stability [dTheta / dZ] (K/m)'
-        level = f'1000-{levs[1]} hPa'
+        level = f'{levs[0]}-{levs[1]} hPa'
         quantName = 'Average (2x2): '
         quant = data.sel(longitude = slice(lon - 1, lon + 1), latitude = slice(lat - 1, lat + 1)).mean(['latitude', 'longitude'])
+    elif var.lower() == 's':
+        data = getData(storm, date, init, fhour, ['t', 'gh'], [[200, 1000], [200, 1000]], model, t = t)
+        t = (data[0].sel(isobaricInhPa = 1000) - data[0].sel(isobaricInhPa = 200))
+        dz = (data[1].sel(isobaricInhPa = 1000) - data[1].sel(isobaricInhPa = 200)) / 1000
+        data = 9.8 - (-t / dz)
+        lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
+        vmin = 2.5
+        vmax = 5
+        cmp = cmap.probs7()
+        level = f'{level} hPa'
+        longName = 'Γd - Γ (C/km)'
+        quantName = 'Average (10x10): '
+        quant = data.sel(longitude = slice(lon - 5, lon + 5), latitude = slice(lat - 5, lat + 5)).mean(['latitude', 'longitude'])
     elif var.lower() == 'dewp':
-        data = getData(storm, date, init, fhour, ['d2m'], level, model, group = 'heightAboveGround')[0] - 273.15
+        data = getData(storm, date, init, fhour, ['d2m'], level, model, group = 'heightAboveGround', t = t)[0] - 273.15
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
         vmin = -20
         vmax = 40
@@ -347,7 +587,7 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         quantName = 'Average (2x2): '
         quant = data.sel(longitude = slice(lon - 1, lon + 1), latitude = slice(lat - 1, lat + 1)).mean(['latitude', 'longitude'])
     elif var.lower() == 'wind':
-        data = getData(storm, date, init, fhour, ['u', 'v'], level, model)
+        data = getData(storm, date, init, fhour, ['u', 'v'], level, model, t = t)
         data = ((data[0]**2 + data[1]**2)**0.5) * 1.94384
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
         vmin = 0
@@ -359,7 +599,7 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         quantName = 'Max (2x2): '
         quant = data.sel(longitude = slice(lon - 1, lon + 1), latitude = slice(lat - 1, lat + 1)).max(['latitude', 'longitude'])
     elif var.lower() == 'vvel':
-        data = getData(storm, date, init, fhour, ['wz'], level, model)[0]
+        data = getData(storm, date, init, fhour, ['wz'], level, model, t = t)[0]
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
         vmin = -10
         vmax = 10
@@ -367,8 +607,28 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         longName = 'Vertical Velocity (m/s)'
         level = f'{level} hPa'
         quantName = None
+    elif var.lower() == 'mflx' or var.lower() == 'mflx_s' or var.lower() == 'mflx_ss':
+        data = getData(storm, date, init, fhour, ['wz', 't', 'q'], level, model, t = t)
+        den = density(data[1] - 273.15, data[2], int(level), q = True)
+        data = data[0] * den
+        lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
+        if var.lower() == 'mflx_s':
+            data.values = gaussian_filter(data.values, sigma = 5)
+            vmin = -.5
+            vmax = .5
+        elif var.lower() == 'mflx_ss':
+            data.values = gaussian_filter(data.values, sigma = 15)
+            vmin = -.1
+            vmax = .1
+        else:
+            vmin = -1
+            vmax = 1
+        cmp = cmap.tempAnoms()
+        longName = 'Vertical Mass Flux (kg / m^2 s)'
+        level = f'{level} hPa'
+        quantName = None
     elif var.lower() == 'rh':
-        data = getData(storm, date, init, fhour, ['r'], level, model)[0]
+        data = getData(storm, date, init, fhour, ['r'], level, model, t = t)[0]
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)    
         vmin = 0
         vmax = 100
@@ -377,7 +637,7 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         level = f'{level} hPa'
         quantName = None
     elif var.lower() == 'vort':
-        data = getData(storm, date, init, fhour, ['absv'], level, model)[0]
+        data = getData(storm, date, init, fhour, ['absv'], level, model, t = t)[0]
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
         vmin = -0.00025
         vmax = 0.00025
@@ -385,24 +645,76 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         longName = 'Absolute Vorticity (1/s)'
         level = f'{level} hPa'
         quantName = None
-    elif var.lower() == 'tadv' or var.lower() == 'tadv_s':
-        data = getData(storm, date, init, fhour, ['u', 'v', 't'], level, model)
+    elif var.lower() == 'tadv' or var.lower() == 'tadv_s' or var.lower() == 'tadv_ss':
+        data = getData(storm, date, init, fhour, ['u', 'v', 't'], level, model, t = t)
         lon, lat = np.nanmean(data[0].longitude.values), np.nanmean(data[0].latitude.values)
-        u, v, t = data[0], data[1], data[2]
+        u, v, tm = data[0], data[1], data[2]
 
-        fx, fy = Gradient2D_m(t, False)
+        fx, fy = Gradient2D_m(tm, False)
         data = (-(u * fx + v * fy)) * 3600
         if var.lower() == 'tadv_s':
-            data.values = gaussian_filter(data.values, sigma = 3)
-
-        vmin = -10
-        vmax = 10
-        cmp = cmap.tempAnoms2()
+            data.values = gaussian_filter(data.values, sigma = 5)
+            vmin = -15
+            vmax = 15
+        elif var.lower() == 'tadv_ss':
+            data.values = gaussian_filter(data.values, sigma = 15)
+            vmin = -2.5
+            vmax = 2.5
+        else:
+            vmin = -20
+            vmax = 20
+        cmp = cmap.tempAnoms()
         longName = 'Temperature Advection (K/hr)'
         level = f'{level} hPa'
         quantName = None
-    elif var.lower() == 'mfc' or var.lower() == 'mfc_s':
-        data = getData(storm, date, init, fhour, ['u', 'v', 'q'], level, model)
+    elif var.lower() == 'thadv' or var.lower() == 'thadv_s' or var.lower() == 'thadv_ss':
+        data = getData(storm, date, init, fhour, ['u', 'v', 't'], level, model, t = t)
+        lon, lat = np.nanmean(data[0].longitude.values), np.nanmean(data[0].latitude.values)
+        u, v, tm = data[0], data[1], data[2]
+        tm = theta(tm, level, 1000)
+
+        fx, fy = Gradient2D_m(tm, False)
+        data = (-(u * fx + v * fy)) * 3600
+        if var.lower() == 'thadv_s':
+            data.values = gaussian_filter(data.values, sigma = 5)
+            vmin = -15
+            vmax = 15
+        elif var.lower() == 'thadv_ss':
+            data.values = gaussian_filter(data.values, sigma = 15)
+            vmin = -5
+            vmax = 5
+        else:
+            vmin = -20
+            vmax = 20
+        cmp = cmap.tempAnoms()
+        longName = 'Theta Advection (K/hr)'
+        level = f'{level} hPa'
+        quantName = None
+    elif var.lower() == 'thedv' or var.lower() == 'thedv_s' or var.lower() == 'thedv_ss':
+        data = getData(storm, date, init, fhour, ['u', 'v', 't', 'q'], level, model, t = t)
+        lon, lat = np.nanmean(data[0].longitude.values), np.nanmean(data[0].latitude.values)
+        u, v, tm, q = data[0], data[1], data[2], data[3]
+        tm = thetae(tm, level, 1000, q, dew = False)
+        
+        fx, fy = Gradient2D_m(tm, False)
+        data = (-(u * fx + v * fy)) * 3600
+        if var.lower() == 'thedv_s':
+            data.values = gaussian_filter(data.values, sigma = 5)
+            vmin = -15
+            vmax = 15
+        elif var.lower() == 'thedv_ss':
+            data.values = gaussian_filter(data.values, sigma = 15)
+            vmin = -5
+            vmax = 5
+        else:
+            vmin = -20
+            vmax = 20
+        cmp = cmap.tempAnoms()
+        longName = 'Theta-E Advection (K/hr)'
+        level = f'{level} hPa'
+        quantName = None
+    elif var.lower() == 'mfc' or var.lower() == 'mfc_s' or var.lower() == 'mfc_ss':
+        data = getData(storm, date, init, fhour, ['u', 'v', 'q'], level, model, t = t)
         lon, lat = np.nanmean(data[0].longitude.values), np.nanmean(data[0].latitude.values)
         u, v, q = data[0], data[1], data[2]
 
@@ -410,19 +722,25 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         fxx, fxy = Gradient2D_m(u, False)
         fyx, fyy = Gradient2D_m(v, False)
         adv = (-(u * qx + v * qy))
-        cnv = -data[0] * (fxx + fyy)
+        cnv = -q * (fxx + fyy)
         data = adv + cnv
         if var.lower() == 'mfc_s':
-            data.values = gaussian_filter(data.values, sigma = 3)
-
-        vmin = -.1
-        vmax = .1
+            data.values = gaussian_filter(data.values, sigma = 5)
+            vmin = -.00005 / 2
+            vmax = .00005 / 2
+        elif var.lower() == 'mfc_ss':
+            data.values = gaussian_filter(data.values, sigma = 15)
+            vmin = -.00001 / 2
+            vmax = .00001 / 2
+        else:
+            vmin = -.0005 / 2
+            vmax = .0005 / 2
         cmp = cmap.relh()
         longName = 'Moisture Flux Convergence (kg/kg s)'
         level = f'{level} hPa'
         quantName = None
-    elif var.lower() == 'div' or var.lower() == 'div_s':
-        data = getData(storm, date, init, fhour, ['u', 'v'], level, model)
+    elif var.lower() == 'div' or var.lower() == 'div_s' or var.lower() == 'div_ss':
+        data = getData(storm, date, init, fhour, ['u', 'v'], level, model, t = t)
         lon, lat = np.nanmean(data[0].longitude.values), np.nanmean(data[0].latitude.values)
         u, v = data[0], data[1]
 
@@ -430,16 +748,76 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         fyx, fyy = Gradient2D_m(v, False)
         data = fxx + fyy
         if var.lower() == 'div_s':
-            data.values = gaussian_filter(data.values, sigma = 3)
-
-        vmin = -5 / 3600
-        vmax = 5 / 3600
+            data.values = gaussian_filter(data.values, sigma = 5)
+            vmin = -1 / 3600
+            vmax = 1 / 3600
+        elif var.lower() == 'div_ss':
+            data.values = gaussian_filter(data.values, sigma = 15)
+            vmin = -.5 / 3600
+            vmax = .5 / 3600
+        else:
+            vmin = -5 / 3600
+            vmax = 5 / 3600
         cmp = cmap.tempAnoms()
         longName = 'Divergence (1/s)'
         level = f'{level} hPa'
         quantName = None
+    elif var.lower() == 'okw' or var.lower() == 'okw_s' or var.lower() == 'okw_ss':
+        data = getData(storm, date, init, fhour, ['u', 'v'], level, model, t = t)
+        lon, lat = np.nanmean(data[0].longitude.values), np.nanmean(data[0].latitude.values)
+        u, v = data[0], data[1]
+
+        fxx, fxy = Gradient2D_m(u, False)
+        fyx, fyy = Gradient2D_m(v, False)
+        v = (fyx - fxy)**2
+        s = ((fxx - fyy)**2 + (fyx + fxy)**2) 
+        data = v - s
+        if var.lower() == 'okw_s':
+            data.values = gaussian_filter(data.values, sigma = 5)
+            vmin = -.05 / 100000
+            vmax = .05 / 100000
+        elif var.lower() == 'okw_ss':
+            data.values = gaussian_filter(data.values, sigma = 15)
+            vmin = -.01 / 100000
+            vmax = .01 / 100000
+        else:
+            vmin = -.1 / 100000
+            vmax = .1 / 100000
+        cmp = cmap.tempAnoms()
+        longName = 'Okubo-Weiss Parameter (1/s^2)'
+        level = f'{level} hPa'
+        quantName = None
+    elif var.lower() == 'fgn' or var.lower() == 'fgn_s' or var.lower() == 'fgn_ss':
+        data = getData(storm, date, init, fhour, ['u', 'v', 't'], level, model, t = t)
+        lon, lat = np.nanmean(data[0].longitude.values), np.nanmean(data[0].latitude.values)
+        u, v, tm = data[0], data[1], data[2]
+        tm = theta(tm, int(level), 1000)
+
+        fxx, fxy = Gradient2D_m(u, False)
+        fyx, fyy = Gradient2D_m(v, False)
+        tmx, tmy = Gradient2D_m(tm, False)
+
+        mag = (tmx**2 + tmy**2)**0.5
+        data = (tmx**2 * fxx + tmy**2 * fyy + tmx * tmy * (fxy + fyx)) / (mag + 1e-16)
+        data = data * 100000 * (3 * 3600)
+
+        if var.lower() == 'fgn_s':
+            data.values = gaussian_filter(data.values, sigma = 5)
+            vmin = -50
+            vmax = 50
+        elif var.lower() == 'fgn_ss':
+            data.values = gaussian_filter(data.values, sigma = 15)
+            vmin = -5
+            vmax = 5
+        else:
+            vmin = -100
+            vmax = 100
+        cmp = cmap.tempAnoms()
+        longName = 'Frontogenesis (K/100km/3hr)'
+        level = f'{level} hPa'
+        quantName = None
     elif var.lower() == 'pwat':
-        data = getData(storm, date, init, fhour, ['pwat'], level, model, group = 'atmosphereSingleLayer')[0]
+        data = getData(storm, date, init, fhour, ['pwat'], level, model, group = 'atmosphereSingleLayer', t = t)[0]
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
         vmin = 0
         vmax = 80
@@ -448,7 +826,7 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         level = 'Column'
         quantName = None
     elif var.lower() == 'cape':
-        data = getData(storm, date, init, fhour, ['cape'], level, model, group = 'surface')[0]
+        data = getData(storm, date, init, fhour, ['cape'], level, model, group = 'surface', t = t)[0]
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
         vmin = 0
         vmax = 4000
@@ -458,7 +836,7 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         quantName = 'Max (2x2): '
         quant = data.sel(longitude = slice(lon - 1, lon + 1), latitude = slice(lat - 1, lat + 1)).max(['latitude', 'longitude'])
     elif var.lower() == 'cinh':
-        data = getData(storm, date, init, fhour, ['cin'], level, model, group = 'surface')[0]
+        data = getData(storm, date, init, fhour, ['cin'], level, model, group = 'surface', t = t)[0]
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
         vmin = -250
         vmax = 0
@@ -468,7 +846,7 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         quantName = None
         lc = 'white'
     elif var.lower() == 'sst':
-        data = getData(storm, date, init, fhour, ['sst'], level, model, group = 'surface')[0] - 273.15
+        data = getData(storm, date, init, fhour, ['sst'], level, model, group = 'surface', t = t)[0] - 273.15
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
         vmin = 0
         vmax = 32
@@ -478,7 +856,7 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         quantName = 'Average (2x2): '
         quant = data.sel(longitude = slice(lon - 1, lon + 1), latitude = slice(lat - 1, lat + 1)).mean(['latitude', 'longitude'])
     elif var.lower() == 'gust':
-        data = getData(storm, date, init, fhour, ['gust'], level, model, group = 'surface')[0] * 1.94384
+        data = getData(storm, date, init, fhour, ['gust'], level, model, group = 'surface', t = t)[0] * 1.94384
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
         vmin = 0
         vmax = 160
@@ -488,7 +866,7 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         quantName = 'Max (2x2): '
         quant = data.sel(longitude = slice(lon - 1, lon + 1), latitude = slice(lat - 1, lat + 1)).max(['latitude', 'longitude'])
     elif var.lower() == 'slp':
-        data = getData(storm, date, init, fhour, ['prmsl'], level, model, group = 'meanSea')[0] / 100
+        data = getData(storm, date, init, fhour, ['prmsl'], level, model, group = 'meanSea', t = t)[0] / 100
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
         vmin = 900
         vmax = 1010
@@ -498,7 +876,7 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         quantName = 'Min (2x2): '
         quant = data.sel(longitude = slice(lon - 1, lon + 1), latitude = slice(lat - 1, lat + 1)).min(['latitude', 'longitude'])
     elif var.lower() == 'srh':
-        data = getData(storm, date, init, fhour, ['hlcy'], '3000m', model, group = 'heightAboveGroundLayer')[0]
+        data = getData(storm, date, init, fhour, ['hlcy'], '3000m', model, group = 'heightAboveGroundLayer', t = t)[0]
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
         vmin = -1000
         vmax = 1000
@@ -509,7 +887,7 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         quantName = 'Avg (2x2): '
         quant = data.sel(longitude = slice(lon - 1, lon + 1), latitude = slice(lat - 1, lat + 1)).mean(['latitude', 'longitude'])
     elif var.lower() == 'eff':
-        sst = getData(storm, date, init, fhour, ['sst'], level, model, group = 'surface')[0]
+        sst = getData(storm, date, init, fhour, ['sst'], level, model, group = 'surface', t = t)[0]
         t0 = getData(storm, date, init, fhour, ['t'], 'tropopause', model, group = 'tropopause', newFile = False)[0]
         data = ((sst - t0) / t0) * 100
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
@@ -523,9 +901,9 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
     elif var.lower() == 'diseq':
         CKCD = 0.9 
 
-        sst = getData(storm, date, init, fhour, ['sst'], 'surface', model, group = 'surface')[0]
-        data = getData(storm, date, init, fhour, ['t', 'q'], '2m', model, group = 'heightAboveGround', newFile = False)
-        slp = getData(storm, date, init, fhour, ['prmsl'], level, model, group = 'meanSea', newFile = False)[0] / 100
+        sst = getData(storm, date, init, fhour, ['sst'], 'surface', model, group = 'surface', t = t)[0]
+        data = getData(storm, date, init, fhour, ['t', 'q'], '2m', model, group = 'heightAboveGround', newFile = False, t = t)
+        slp = getData(storm, date, init, fhour, ['prmsl'], level, model, group = 'meanSea', newFile = False, t = t)[0] / 100
         t2, q2 = data[0], data[1]
         data = moistEnthalpy(sst, sat_specific_humidity(sst, slp)) - moistEnthalpy(t2, q2) 
 
@@ -540,10 +918,10 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
     elif var.lower() == 'mpi':
         CKCD = 0.9 
 
-        sst = getData(storm, date, init, fhour, ['sst'], 'surface', model, group = 'surface')[0]
-        data = getData(storm, date, init, fhour, ['t', 'q'], '2m', model, group = 'heightAboveGround', newFile = False)
-        t0 = getData(storm, date, init, fhour, ['t'], 'tropopause', model, group = 'tropopause', newFile = False)[0]
-        slp = getData(storm, date, init, fhour, ['prmsl'], level, model, group = 'meanSea', newFile = False)[0] / 100
+        sst = getData(storm, date, init, fhour, ['sst'], 'surface', model, group = 'surface', t = t)[0]
+        data = getData(storm, date, init, fhour, ['t', 'q'], '2m', model, group = 'heightAboveGround', newFile = False, t = t)
+        t0 = getData(storm, date, init, fhour, ['t'], 'tropopause', model, group = 'tropopause', newFile = False, t = t)[0]
+        slp = getData(storm, date, init, fhour, ['prmsl'], level, model, group = 'meanSea', newFile = False, t = t)[0] / 100
         t2, q2 = data[0], data[1]
         eff = ((sst - t0) / t0)
         dtK = moistEnthalpy(sst, sat_specific_humidity(sst, slp)) - moistEnthalpy(t2, q2) 
@@ -557,16 +935,45 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         level = 'Column'
         quantName = 'Average (5x5): '
         quant = data.sel(longitude = slice(lon - 2.5, lon + 2.5), latitude = slice(lat - 2.5, lat + 2.5)).mean(['latitude', 'longitude'])
+    elif var.lower() == 'vpr':
+        CKCD = 0.9 
+
+        sst = getData(storm, date, init, fhour, ['sst'], 'surface', model, group = 'surface', t = t)[0]
+        data = getData(storm, date, init, fhour, ['t', 'q'], ['2m', '2m'], model, group = 'heightAboveGround', newFile = False, t = t)
+        t0 = getData(storm, date, init, fhour, ['t'], 'tropopause', model, group = 'tropopause', newFile = False, t = t)[0]
+        slp = getData(storm, date, init, fhour, ['prmsl'], level, model, group = 'meanSea', newFile = False, t = t)[0] / 100
+        t2, q2 = data[0], data[1]
+        eff = ((sst - t0) / t0)
+        dtK = moistEnthalpy(sst, sat_specific_humidity(sst, slp)) - moistEnthalpy(t2, q2) 
+        mpi = np.sqrt(CKCD * eff * dtK) * 1.94384
+
+        data = getData(storm, date, init, fhour, ['u', 'v'], [[200, 850], [200, 850]], model, t = t, newFile = False)
+        u = data[0].sel(isobaricInhPa = 200) - data[0].sel(isobaricInhPa = 850)
+        v = data[1].sel(isobaricInhPa = 200) - data[1].sel(isobaricInhPa = 850)
+        shear = ((u**2 + v**2)**0.5) * 1.94384
+
+        rh = getData(storm, date, init, fhour, ['r'], [np.arange(400, 750, 25)], model, t = t, newFile = False)[0].mean('isobaricInhPa')
+
+        data = (shear * (100 - rh)) / mpi 
+
+        lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
+        vmin = 0
+        vmax = 20
+        cmp = cmap.probs4()
+        longName = 'Proxy (dimensionless)'
+        level = 'Ventilation'
+        quantName = 'Average (5x5): '
+        quant = data.sel(longitude = slice(lon - 2.5, lon + 2.5), latitude = slice(lat - 2.5, lat + 2.5)).mean(['latitude', 'longitude'])
     elif var.lower() == 'lhf':
         RHO = 1.2
         Lv = 2.5 * 10**6
         Cp = 1004.64
         Ce = Ch = 1.2 * 10**-3
 
-        sst = getData(storm, date, init, fhour, ['sst'], 'surface', model, group = 'surface')[0]
-        q02 = getData(storm, date, init, fhour, ['q'], '2m', model, group = 'heightAboveGround', newFile = False)[0]
-        wind = getData(storm, date, init, fhour, ['u', 'v'], '10m', model, group = 'heightAboveGround', newFile = False)
-        slp = getData(storm, date, init, fhour, ['prmsl'], level, model, group = 'meanSea', newFile = False)[0] / 100
+        sst = getData(storm, date, init, fhour, ['sst'], 'surface', model, group = 'surface', t = t)[0]
+        q02 = getData(storm, date, init, fhour, ['q'], '2m', model, group = 'heightAboveGround', newFile = False, t = t)[0]
+        wind = getData(storm, date, init, fhour, ['u', 'v'], '10m', model, group = 'heightAboveGround', newFile = False, t = t)
+        slp = getData(storm, date, init, fhour, ['prmsl'], level, model, group = 'meanSea', newFile = False, t = t)[0] / 100
         U10 = (wind[0]**2 + wind[1]**2)**0.5
         q00 = sat_specific_humidity(sst, slp) 
         data = RHO * Lv * Ce * U10 * (q00 - q02)
@@ -585,10 +992,10 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         Cp = 1004.64
         Ce = Ch = 1.2 * 10**-3
 
-        sst = getData(storm, date, init, fhour, ['sst'], 'surface', model, group = 'surface')[0]
-        t02 = getData(storm, date, init, fhour, ['t'], '2m', model, group = 'heightAboveGround', newFile = False)[0]
-        wind = getData(storm, date, init, fhour, ['u', 'v'], '10m', model, group = 'heightAboveGround', newFile = False)
-        slp = getData(storm, date, init, fhour, ['prmsl'], level, model, group = 'meanSea', newFile = False)[0] / 100
+        sst = getData(storm, date, init, fhour, ['sst'], 'surface', model, group = 'surface', t = t)[0]
+        t02 = getData(storm, date, init, fhour, ['t'], '2m', model, group = 'heightAboveGround', newFile = False, t = t)[0]
+        wind = getData(storm, date, init, fhour, ['u', 'v'], '10m', model, group = 'heightAboveGround', newFile = False, t = t)
+        slp = getData(storm, date, init, fhour, ['prmsl'], level, model, group = 'meanSea', newFile = False, t = t)[0] / 100
         U10 = (wind[0]**2 + wind[1]**2)**0.5
         data = RHO * Cp * Ch * U10 * (sst - t02)
 
@@ -601,8 +1008,8 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         quantName = 'Average (5x5): '
         quant = data.sel(longitude = slice(lon - 2.5, lon + 2.5), latitude = slice(lat - 2.5, lat + 2.5)).mean(['latitude', 'longitude'])
     elif var.lower() == 'tdiff':
-        sst = getData(storm, date, init, fhour, ['sst'], 'surface', model, group = 'surface')[0]
-        t02 = getData(storm, date, init, fhour, ['t'], '2m', model, group = 'heightAboveGround', newFile = False)[0]
+        sst = getData(storm, date, init, fhour, ['sst'], 'surface', model, group = 'surface', t = t)[0]
+        t02 = getData(storm, date, init, fhour, ['t'], '2m', model, group = 'heightAboveGround', newFile = False, t = t)[0]
         data = sst - t02
 
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
@@ -613,10 +1020,10 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         level = 'SST -'
         quantName = 'Average (5x5): '
         quant = data.sel(longitude = slice(lon - 2.5, lon + 2.5), latitude = slice(lat - 2.5, lat + 2.5)).mean(['latitude', 'longitude'])
-    elif var.lower() == 'qdiff':
-        sst = getData(storm, date, init, fhour, ['sst'], 'surface', model, group = 'surface')[0]
-        q02 = getData(storm, date, init, fhour, ['q'], '2m', model, group = 'heightAboveGround', newFile = False)[0]
-        slp = getData(storm, date, init, fhour, ['prmsl'], level, model, group = 'meanSea', newFile = False)[0] / 100
+    elif var.lower() == 'qdiff' and level.lower() == 'surface':
+        sst = getData(storm, date, init, fhour, ['sst'], 'surface', model, group = 'surface', t = t)[0]
+        q02 = getData(storm, date, init, fhour, ['q'], '2m', model, group = 'heightAboveGround', newFile = False, t = t)[0]
+        slp = getData(storm, date, init, fhour, ['prmsl'], level, model, group = 'meanSea', newFile = False, t = t)[0] / 100
         q00 = sat_specific_humidity(sst, slp) 
         data = q00 - q02
 
@@ -627,6 +1034,32 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         longName = 'Q2m (kg/kg)'
         level = 'Q0m -'
         lc = 'white'
+        quantName = 'Average (5x5): '
+        quant = data.sel(longitude = slice(lon - 2.5, lon + 2.5), latitude = slice(lat - 2.5, lat + 2.5)).mean(['latitude', 'longitude'])
+    elif var.lower() == 'qdiff':
+        data = getData(storm, date, init, fhour, ['t', 'q'], level, model, newFile = False, t = t)
+        tm, q = data[0], data[1]
+        data = sat_specific_humidity(tm, int(level)) - q  
+
+        lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
+        vmin = 0
+        vmax = 0.01
+        cmp = cmap.probs4()
+        longName = 'Saturation Deficit (kg/kg)'
+        level = f'{level} hPa'
+        quantName = 'Average (5x5): '
+        quant = data.sel(longitude = slice(lon - 2.5, lon + 2.5), latitude = slice(lat - 2.5, lat + 2.5)).mean(['latitude', 'longitude'])
+    elif var.lower() == 'nqdiff':
+        data = getData(storm, date, init, fhour, ['t', 'q'], level, model, newFile = False, t = t)
+        tm, q = data[0], data[1]
+        data = (sat_specific_humidity(tm, int(level)) - q) / q  
+
+        lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
+        vmin = 0
+        vmax = 0.5
+        cmp = cmap.probs4()
+        longName = 'Normalized Saturation Deficit (dimensionless)'
+        level = f'{level} hPa'
         quantName = 'Average (5x5): '
         quant = data.sel(longitude = slice(lon - 2.5, lon + 2.5), latitude = slice(lat - 2.5, lat + 2.5)).mean(['latitude', 'longitude'])
     elif var.lower() == 'shear':
@@ -640,7 +1073,7 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
             level = 'Deep-Layer'
             l = [['200', '850'], ['200', '850']]
         
-        data = getData(storm, date, init, fhour, ['u', 'v'], l, model)
+        data = getData(storm, date, init, fhour, ['u', 'v'], l, model, t = t)
         u = data[0].sel(isobaricInhPa = l[0][0]) - data[0].sel(isobaricInhPa = l[0][1])
         v = data[1].sel(isobaricInhPa = l[0][0]) - data[1].sel(isobaricInhPa = l[0][1])
         data = ((u**2 + v**2)**0.5) * 1.94384
@@ -654,7 +1087,7 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         quant = (((u.sel(longitude = slice(lon - 2.5, lon + 2.5), latitude = slice(lat - 2.5, lat + 2.5)).mean(['latitude', 'longitude'])**2)
                + (v.sel(longitude = slice(lon - 2.5, lon + 2.5), latitude = slice(lat - 2.5, lat + 2.5)).mean(['latitude', 'longitude'])**2))**0.5) * 1.94384
     else:
-        data = getData(storm, date, init, fhour, ['refc'], level, model, group = 'atmosphereSingleLayer')[0]
+        data = getData(storm, date, init, fhour, ['refc'], level, model, group = 'atmosphereSingleLayer', t = t)[0]
         lon, lat = np.nanmean(data.longitude.values), np.nanmean(data.latitude.values)
         vmin = -10
         vmax = 70
@@ -664,7 +1097,10 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
         lc = 'white'
         quantName = None
     
-    ax = makeMap([lon - 5.5, lon + 5.5, lat - 4.5, lat + 4.5], (18, 9), lc) 
+    if t.lower() == 'parent':
+        ax = makeMap([lon - 25.5, lon + 25.5, lat - 20, lat + 20], (18, 9), lc, interval = 5) 
+    else:
+        ax = makeMap([lon - 5.5, lon + 5.5, lat - 4.5, lat + 4.5], (18, 9), lc) 
 
     c = ax.pcolormesh(data.longitude, data.latitude, data, vmin = vmin, vmax = vmax, cmap = cmp)
 
@@ -675,7 +1111,10 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
     ax.set_title(f'{storm.upper()}\nDeelan Jariwala', fontsize=10, loc='right') 
 
     if quantName != None:
-        ax.text(0.5, 0.95, f" {quantName} {round(float(quant.values), 1)}{longName.split('(')[1][:-1]} ", ha='center', va = 'center', fontsize = 12, transform=ax.transAxes, color = 'red', bbox={'facecolor': 'white', 'edgecolor': 'None', 'alpha': 0.75})
+        if longName.split('(')[1][:-1].lower() != 'dimensionless':
+            ax.text(0.5, 0.95, f" {quantName} {round(float(quant.values), 1)}{longName.split('(')[1][:-1]} ", ha='center', va = 'center', fontsize = 12, transform=ax.transAxes, color = 'red', bbox={'facecolor': 'white', 'edgecolor': 'None', 'alpha': 0.75})
+        else:
+            ax.text(0.5, 0.95, f" {quantName} {round(float(quant.values), 1)}", ha='center', va = 'center', fontsize = 12, transform=ax.transAxes, color = 'red', bbox={'facecolor': 'white', 'edgecolor': 'None', 'alpha': 0.75})
 
     cbar = plt.colorbar(c, orientation = 'vertical', aspect = 50, pad = .02)
     cbar.ax.tick_params(axis='both', labelsize=9, left = False, bottom = False)
@@ -685,5 +1124,12 @@ def hafsPlot(storm, date, init, fhour, var, level = 1000, model = 'a'):
 
 # hafsPlot('09s', '12/20/2025', '1200', '0', 'wind', level = '850')
 # hafsPlot('93s', '12/17/2025', '1800', '126', 'dewp', level = '2m')
-# hafsPlot('09s', '12/19/2025', '1200', '108', 'hel')#, level = 'lower')#, '850')
-# hafsPlot('13l', '10/28/2025', '1200', '3', 'tdiff')
+# hafsPlot('09s', '12/20/2025', '1800', '3', 'mfc_s')#, level = 'lower')#, '850')
+# hafsPlot('13l', '10/28/2025', '1200', '3', 'vpr', 'none', 'a', t = 'parent')
+# hafsPlot('13l', '10/28/2025', '1200', '3', 'mss', 'deep')
+# hafsPlot('11l', '10/10/2025', '0000', '3', 'mss', 'deep')
+# hafsPlot('05l', '8/21/2025', '1200', '3', 'tadv_ss', '850', t = 'parent')
+# hafsPlot('20l', '10/25/2023', '1200', '3', 'fgn_ss', '850', t = 'parent')
+# ventPlot('18e', '10/23/2023', '1800', '3', '500')#, 'tfp', '850')
+# hafsCrossSectionPlot('13l', '10/31/2025', '0000', '6', 'thetae', 'v')
+# hafsCrossSectionPlot('18e', '10/23/2023', '1800', '3', 'tadv', 'h')
