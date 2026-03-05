@@ -1,0 +1,2009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CycloWeb</title>
+  <link rel="icon" type="image/png" href="IMG_3545.PNG" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; }
+
+    body {
+      background: #fff;
+      color: #111;
+      font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+      font-size: 14px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      border-bottom: 2px solid #111;
+      padding: .5rem 1rem;
+      display: flex;
+      align-items: baseline;
+      gap: 1.5rem;
+      flex-shrink: 0;
+    }
+    header h1 { font-size: 14px; font-weight: bold; letter-spacing: .05em; }
+    header span { font-size: 11px; color: #555; }
+
+    /* ── Main layout ── */
+    .layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Left panel: parameters ── */
+    .left-panel {
+      width: 230px;
+      flex-shrink: 0;
+      border-right: 1px solid #bbb;
+      padding: .9rem .85rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: .6rem;
+    }
+
+    .param-panel { display: none; flex-direction: column; gap: .55rem; }
+    .param-panel.active { display: flex; }
+
+    .param-title { font-size: 13px; font-weight: bold; }
+    .param-desc  { font-size: 11px; color: #666; line-height: 1.4; }
+
+    .field { display: flex; flex-direction: column; gap: .15rem; }
+    .field label { font-size: 11px; color: #444; }
+    .field input {
+      background: #fff;
+      border: 1px solid #999;
+      color: #111;
+      font-family: inherit;
+      font-size: 13px;
+      padding: .25rem .35rem;
+      width: 100%;
+    }
+    .field input:focus { outline: 1px solid #111; }
+    .field input.optional { border-style: dashed; }
+    .field .hint { font-size: 11px; color: #888; }
+
+    button.submit {
+      background: #111;
+      border: 1px solid #111;
+      color: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px;
+      padding: .3rem .9rem;
+      align-self: flex-start;
+      margin-top: .2rem;
+    }
+    button.submit:disabled { opacity: .4; cursor: not-allowed; }
+    button.submit:hover:not(:disabled) { background: #333; }
+
+    .status { font-size: 10px; min-height: .9rem; }
+    .status.loading { color: #555; }
+    .status.error   { color: #b00; white-space: pre-wrap; }
+    .status.success { color: #080; }
+
+    /* ── Right panel: tabs + image ── */
+    .right-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: flex-end;
+      border-bottom: 1px solid #aaa;
+      flex-shrink: 0;
+    }
+    .tab-btn {
+      background: none;
+      border: 1px solid transparent;
+      border-bottom: none;
+      color: #666;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px;
+      padding: .3rem .85rem;
+      margin-bottom: -1px;
+    }
+    .tab-btn:hover { color: #111; }
+    .tab-btn.active {
+      color: #111;
+      border-color: #aaa;
+      border-bottom-color: #fff;
+      background: #fff;
+    }
+
+    /* ── Image area ── */
+    .image-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      overflow: auto;
+    }
+
+    .image-area img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: none;
+      border: 0px solid #ddd;
+    }
+    .image-area img.visible { display: block; }
+
+    .image-links {
+      display: none;
+      gap: 1rem;
+      margin-top: .4rem;
+      font-size: 11px;
+    }
+    .image-links.visible { display: flex; }
+    .image-links a { color: #111; text-decoration: underline; }
+
+    .image-placeholder {
+      font-size: 11px;
+      color: #bbb;
+    }
+
+    /* ── View toggle (output | ref) ── */
+    .view-toggle {
+      display: flex;
+      justify-content: flex-end;
+      border-top: 1px solid #aaa;
+      flex-shrink: 0;
+    }
+    .view-btn {
+      background: none;
+      border: 1px solid transparent;
+      border-top: none;
+      color: #666;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px;
+      padding: .3rem .85rem;
+      margin-top: -1px;
+    }
+    .view-btn:hover { color: #111; }
+    .view-btn.active {
+      color: #111;
+      border-color: #aaa;
+      border-top-color: #fff;
+      background: #fff;
+    }
+
+    /* ── Reference area ── */
+    .ref-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: .8rem 1rem;
+      display: none;
+    }
+    .ref-area.visible { display: block; }
+
+    .ref-panel { display: none; }
+    .ref-panel.active { display: block; }
+
+    .ref-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 1.5rem;
+    }
+
+    .ref-section { margin-bottom: 1rem; }
+    .ref-section h3 {
+      font-size: 10px;
+      font-weight: bold;
+      letter-spacing: .08em;
+      color: #666;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: .2rem;
+      margin-bottom: .4rem;
+    }
+
+    .ref-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+    .ref-table td {
+      padding: .12rem .3rem;
+      vertical-align: top;
+    }
+    .ref-table td.code {
+      font-weight: bold;
+      white-space: nowrap;
+      color: #111;
+      width: 6em;
+    }
+    .ref-table td.note { color: #666; }
+    .ref-table tr:nth-child(even) td { background: #f8f8f8; }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .2rem .35rem;
+      font-size: 11px;
+    }
+    .tag-list span {
+      background: #f4f4f4;
+      border: 1px solid #ddd;
+      padding: .05rem .3rem;
+    }
+
+    /* ── A-Deck consensus table ── */
+    .adeck-table-wrap {
+      display: none;
+      margin-top: .6rem;
+      width: 100%;
+      overflow-x: auto;
+    }
+    .adeck-table-wrap.visible { display: block; }
+    .adeck-table {
+      width: auto;
+      border-collapse: collapse;
+      font-size: 11px;
+      margin: 0 auto;
+    }
+    .adeck-table th {
+      border-bottom: 1px solid #aaa;
+      padding: .2rem .8rem;
+      text-align: center;
+      font-weight: bold;
+      color: #555;
+      letter-spacing: .05em;
+      font-size: 10px;
+    }
+    .adeck-table td {
+      padding: .15rem .8rem;
+      text-align: center;
+    }
+    .adeck-table tr:nth-child(even) td { background: #f8f8f8; }
+
+    /* ── F-Deck fix output ── */
+    .fdeck-output-wrap {
+      display: none;
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+    }
+    .fdeck-output-wrap.visible { display: block; }
+    .fdeck-output {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+      font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+    }
+    .fdeck-output tr:nth-child(even) td { background: #f8f8f8; }
+    .fdeck-output td {
+      padding: .1rem .4rem;
+      white-space: nowrap;
+      color: #333;
+    }
+    .fix-plot-btn {
+      background: #111;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 9px;
+      padding: .1rem .3rem;
+      white-space: nowrap;
+    }
+    .fix-plot-btn:hover { background: #444; }
+
+    .fdeck-output thead td {
+      font-weight: bold;
+      color: #555;
+      font-size: 9px;
+      letter-spacing: .05em;
+      border-bottom: 1px solid #aaa;
+      background: #fff;
+      position: sticky;
+      top: 0;
+    }
+
+    /* ── Table area ── */
+    .table-area {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      min-height: 0;
+      padding: .4rem .6rem;
+    }
+    .table-area.visible { display: flex; }
+
+    .fix-row-active td { background: #fffbcc !important; }
+
+    /* ── ACE table ── */
+    .ace-output-wrap {
+      display: none;
+      flex-direction: column;
+      min-height: 0;
+      flex: 1;
+    }
+    .ace-output-wrap.visible { display: flex; }
+    .ace-ersst-btns {
+      display: flex;
+      gap: .5rem;
+      padding: .3rem 0 .4rem;
+      flex-shrink: 0;
+    }
+    .ace-ersst-btn {
+      background: #111;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 9px;
+      padding: .2rem .5rem;
+    }
+    .ace-ersst-btn:hover { background: #444; }
+    .ace-table-wrap {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+    }
+    .ace-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+    }
+    .ace-table th {
+      border-bottom: 1px solid #aaa;
+      padding: .2rem .8rem;
+      text-align: center;
+      font-size: 10px;
+      cursor: pointer;
+      user-select: none;
+      position: sticky;
+      top: 0;
+      background: #fff;
+      white-space: nowrap;
+    }
+    .ace-table th:hover { background: #f0f0f0; }
+    .ace-table td {
+      padding: .15rem .8rem;
+      text-align: center;
+    }
+    .ace-table tr:nth-child(even) td { background: #f8f8f8; }
+    .ace-top td { background: #e8f5e9 !important; }
+    .ace-bot td { background: #fce4ec !important; }
+
+    /* ── About area ── */
+    .about-area {
+      display: none;
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.8rem 2rem;
+      flex-direction: column;
+      gap: 1.4rem;
+    }
+    .about-area.visible { display: flex; }
+
+    .about-section h2 {
+      font-size: 10px;
+      font-weight: bold;
+      letter-spacing: .08em;
+      color: #666;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: .2rem;
+      margin-bottom: .5rem;
+    }
+    .about-section p {
+      font-size: 12px;
+      line-height: 1.6;
+      color: #333;
+      max-width: 560px;
+    }
+    .about-section a {
+      font-size: 12px;
+      color: #111;
+      text-decoration: underline;
+    }
+
+    .info-btn {
+      margin-top: auto;
+      background: none;
+      border: none;
+      border-top: 1px solid #ddd;
+      color: #888;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 11px;
+      padding: .4rem 0;
+      text-align: left;
+      width: 100%;
+    }
+    .info-btn:hover { color: #111; }
+    .info-btn.active { color: #111; font-weight: bold; }
+
+    /* ── Mobile ── */
+    @media (max-width: 640px) {
+      .layout { flex-direction: column; }
+
+      .left-panel {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #bbb;
+        max-height: 45vh;
+        overflow-y: auto;
+      }
+
+      .right-panel { flex: 1; min-height: 0; }
+
+      .tabs { justify-content: flex-start; flex-wrap: wrap; }
+
+
+      .ref-cols { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>CYCLOWEB</h1>
+  <span>Satellite Imagery &amp; Model Diagnostics / Deelan Jariwala</span>
+</header>
+
+<div class="layout">
+
+  <!-- ── Left: parameter forms ── -->
+  <div class="left-panel">
+
+    <div class="param-panel active" id="params-plot">
+      <div class="param-title">GOES / Himawari</div>
+      <div class="param-desc">GOES-R (16/18/19) and Himawari (8/9) via AWS.</div>
+      <div class="field">
+        <label>SATELLITE</label>
+        <input id="plot-satellite" type="text" placeholder="16, 18, H9" />
+        <span class="hint">16 18 19 H8 H9</span>
+      </div>
+      <div class="field">
+        <label>DATE</label>
+        <input id="plot-date" type="text" placeholder="MM/DD/YYYY" />
+      </div>
+      <div class="field">
+        <label>TIME (UTC)</label>
+        <input id="plot-time" type="text" placeholder="1800" maxlength="4" />
+      </div>
+      <div class="field">
+        <label>LAT</label>
+        <input id="plot-lat" type="text" placeholder="25.0" />
+      </div>
+      <div class="field">
+        <label>LON</label>
+        <input id="plot-lon" type="text" placeholder="-80.0" />
+      </div>
+      <div class="field">
+        <label>BAND</label>
+        <input id="plot-band" type="text" placeholder="13" />
+        <span class="hint">channel number</span>
+      </div>
+      <div class="field">
+        <label>COLORMAP</label>
+        <input id="plot-cmap" type="text" placeholder="irg" class="optional" />
+        <span class="hint">optional</span>
+      </div>
+      <div class="field">
+        <label>ZOOM</label>
+        <input id="plot-zoom" type="text" placeholder="2" class="optional" />
+        <span class="hint">optional</span>
+      </div>
+      <button class="submit" onclick="runPlot()">run</button>
+      <div class="status" id="plot-status"></div>
+    </div>
+
+    <div class="param-panel" id="params-mcfetch">
+      <div class="param-title">McIDAS</div>
+      <div class="param-desc">Older geostationary archive via SSEC. Covers GOES 1–15, GMS, MTSAT, early Himawari.</div>
+      <div class="field">
+        <label>SATELLITE</label>
+        <input id="mc-satellite" type="text" placeholder="G8, G12, 8" />
+      </div>
+      <div class="field">
+        <label>DATE</label>
+        <input id="mc-date" type="text" placeholder="MM/DD/YYYY" />
+      </div>
+      <div class="field">
+        <label>TIME (UTC)</label>
+        <input id="mc-time" type="text" placeholder="1800" maxlength="4" />
+      </div>
+      <div class="field">
+        <label>LAT</label>
+        <input id="mc-lat" type="text" placeholder="25.0" />
+      </div>
+      <div class="field">
+        <label>LON</label>
+        <input id="mc-lon" type="text" placeholder="-80.0" />
+      </div>
+      <div class="field">
+        <label>BAND</label>
+        <input id="mc-band" type="text" placeholder="4" />
+        <span class="hint">3=WV  4=IR</span>
+      </div>
+      <div class="field">
+        <label>COLORMAP</label>
+        <input id="mc-cmap" type="text" placeholder="irg" class="optional" />
+        <span class="hint">optional</span>
+      </div>
+      <div class="field">
+        <label>ZOOM (max 2)</label>
+        <input id="mc-zoom" type="text" placeholder="2" class="optional" />
+        <span class="hint">optional</span>
+      </div>
+      <button class="submit" onclick="runMcfetch()">run</button>
+      <div class="status" id="mc-status"></div>
+    </div>
+
+    <div class="param-panel" id="params-hafs">
+      <div class="param-title">HAFS</div>
+      <div class="param-desc">Hurricane Analysis and Forecast System (HAFS-A/B) real-time output.</div>
+      <div class="field">
+        <label>STORM</label>
+        <input id="hafs-storm" type="text" placeholder="09l" />
+        <span class="hint">NNX format</span>
+      </div>
+      <div class="field">
+        <label>INIT DATE</label>
+        <input id="hafs-date" type="text" placeholder="MM/DD/YYYY" />
+      </div>
+      <div class="field">
+        <label>INIT HOUR (UTC)</label>
+        <input id="hafs-init" type="text" placeholder="12" maxlength="2" />
+        <span class="hint">00 06 12 18</span>
+      </div>
+      <div class="field">
+        <label>FCST HOUR</label>
+        <input id="hafs-fhour" type="text" placeholder="024" maxlength="3" />
+        <span class="hint">e.g. 024 048</span>
+      </div>
+      <div class="field">
+        <label>VARIABLE</label>
+        <input id="hafs-var" type="text" placeholder="diseq" />
+        <span class="hint">temp wind rh vort pwat cape sst slp shear…</span>
+      </div>
+      <div class="field">
+        <label>LEVEL (hPa)</label>
+        <input id="hafs-level" type="text" placeholder="850" class="optional" />
+        <span class="hint">optional</span>
+      </div>
+      <div class="field">
+        <label>MODEL</label>
+        <input id="hafs-model" type="text" placeholder="a" maxlength="1" class="optional" />
+        <span class="hint">a or b</span>
+      </div>
+      <div class="field">
+        <label>DOMAIN</label>
+        <input id="hafs-domain" type="text" placeholder="storm" class="optional" />
+        <span class="hint">storm or parent</span>
+      </div>
+      <button class="submit" onclick="runHafs()">run</button>
+      <div class="status" id="hafs-status"></div>
+    </div>
+
+    <div class="param-panel" id="params-tcprimed">
+      <div class="param-title">TC-PRIMED</div>
+      <div class="param-desc">Passive microwave + IR two-panel from the TC-PRIMED archive.</div>
+      <div class="field">
+        <label>STORM</label>
+        <input id="tc-storm" type="text" placeholder="AL11" />
+        <span class="hint">xxXX format, e.g. AL11 EP20 IO06</span>
+      </div>
+      <div class="field">
+        <label>SATELLITE</label>
+        <input id="tc-satellite" type="text" placeholder="AMSR" />
+        <span class="hint">ATMS AMSR GMI SSMI SSMIS MHS TMI</span>
+      </div>
+      <div class="field">
+        <label>DATE</label>
+        <input id="tc-date" type="text" placeholder="MM/DD/YYYY" />
+      </div>
+      <div class="field">
+        <label>TIME (UTC)</label>
+        <input id="tc-time" type="text" placeholder="1800" maxlength="4" />
+      </div>
+      <div class="field">
+        <label>CHANNEL</label>
+        <input id="tc-datatype" type="text" placeholder="mid" class="optional" />
+        <span class="hint">mid (85-91 GHz) or low (36-37 GHz)</span>
+      </div>
+      <div class="field">
+        <label>COLOR RGB</label>
+        <input id="tc-color" type="text" placeholder="false" class="optional" />
+        <span class="hint">true or false</span>
+      </div>
+      <button class="submit" onclick="runTcprimed()">run</button>
+      <div class="status" id="tc-status"></div>
+    </div>
+
+    <div class="param-panel" id="params-adeck">
+      <div class="param-title">A-Deck Consensus</div>
+      <div class="param-desc">Averaged A-Deck guidance with SST overlay for current-year storms.</div>
+      <div class="field">
+        <label>STORM</label>
+        <input id="ad-storm" type="text" placeholder="al10" />
+        <span class="hint">ATCF ID, e.g. al10 ep03 wp05</span>
+      </div>
+      <div class="field">
+        <label>DATE</label>
+        <input id="ad-date" type="text" placeholder="MM/DD/YYYY" />
+      </div>
+      <div class="field">
+        <label>INIT HOUR (UTC)</label>
+        <input id="ad-time" type="text" placeholder="06" maxlength="2" />
+        <span class="hint">00 06 12 18</span>
+      </div>
+      <div class="field">
+        <label>MODELS</label>
+        <input id="ad-models" type="text" placeholder="hfai,hfbi,hwrf" />
+        <span class="hint">comma-separated ATCF model IDs</span>
+      </div>
+      <button class="submit" onclick="runAdeck()">run</button>
+      <div class="status" id="ad-status"></div>
+    </div>
+
+    <div class="param-panel" id="params-shipsri">
+      <div class="param-title">SHIPS RI</div>
+      <div class="param-desc">Random-forest 24h intensity prediction from SHIPS predictors.</div>
+      <div class="field">
+        <label>STORM</label>
+        <input id="sh-storm" type="text" placeholder="al13" />
+        <span class="hint">ATCF ID, e.g. al13 ep05</span>
+      </div>
+      <div class="field">
+        <label>YEAR</label>
+        <input id="sh-year" type="text" placeholder="2025" maxlength="4" />
+      </div>
+      <div class="field">
+        <label>MONTH</label>
+        <input id="sh-month" type="text" placeholder="10" maxlength="2" />
+      </div>
+      <div class="field">
+        <label>DAY</label>
+        <input id="sh-day" type="text" placeholder="24" maxlength="2" />
+      </div>
+      <div class="field">
+        <label>HOUR (UTC)</label>
+        <input id="sh-hour" type="text" placeholder="12" maxlength="2" class="optional" />
+        <span class="hint">00 06 12 18 — optional, tries all</span>
+      </div>
+      <button class="submit" onclick="runShipsri()">run</button>
+      <div class="status" id="sh-status"></div>
+    </div>
+
+
+    <div class="param-panel" id="params-hrrr">
+      <div class="param-title">HRRR</div>
+      <div class="param-desc">High-Resolution Rapid Refresh model from AWS.</div>
+      <div class="field">
+        <label>REGION</label>
+        <input id="hr-region" type="text" placeholder="GOM" />
+        <span class="hint">GOM SE NE MA SC MW GP SW NW US EUS WUS</span>
+      </div>
+      <div class="field">
+        <label>DATE</label>
+        <input id="hr-date" type="text" placeholder="MM/DD/YYYY" />
+      </div>
+      <div class="field">
+        <label>INIT HOUR (UTC)</label>
+        <input id="hr-init" type="text" placeholder="18" maxlength="2" />
+        <span class="hint">00–23</span>
+      </div>
+      <div class="field">
+        <label>FCST HOUR</label>
+        <input id="hr-fhour" type="text" placeholder="06" maxlength="2" />
+        <span class="hint">00–48</span>
+      </div>
+      <div class="field">
+        <label>VARIABLE</label>
+        <input id="hr-var" type="text" placeholder="temp" />
+        <span class="hint">temp wind rh vort pwat cape sst slp shear prcp…</span>
+      </div>
+      <div class="field">
+        <label>LEVEL</label>
+        <input id="hr-level" type="text" placeholder="850" class="optional" />
+        <span class="hint">hPa or lower/upper/mid/deep — optional</span>
+      </div>
+      <button class="submit" onclick="runHrrr()">run</button>
+      <div class="status" id="hr-status"></div>
+    </div>
+
+    <div class="param-panel" id="params-ersst">
+      <div class="param-title">ERSST Composite</div>
+      <div class="param-desc">ERSSTv5 SST anomaly composites with 30-year sliding climatology via PSL OPeNDAP.</div>
+      <div class="field">
+        <label>MONTH</label>
+        <input id="er-month" type="text" placeholder="6" maxlength="2" />
+        <span class="hint">1–12</span>
+      </div>
+      <div class="field">
+        <label>YEARS</label>
+        <input id="er-years" type="text" placeholder="1997,2015,2023" />
+        <span class="hint">comma-separated</span>
+      </div>
+      <div class="field">
+        <label>TYPE</label>
+        <input id="er-type" type="text" placeholder="anomalies" class="optional" />
+        <span class="hint">anomalies or std — optional</span>
+      </div>
+      <div class="field">
+        <label>STANDARDIZED</label>
+        <input id="er-sd" type="text" placeholder="false" class="optional" />
+        <span class="hint">true or false — optional</span>
+      </div>
+      <button class="submit" onclick="runErsst()">run</button>
+      <div class="status" id="er-status"></div>
+    </div>
+
+    <div class="param-panel" id="params-ace">
+      <div class="param-title">ACE Timeseries</div>
+      <div class="param-desc">Accumulated Cyclone Energy by year from HURDAT2. Click column headers to sort. Top/bottom 10 years link to ERSST composite.</div>
+      <div class="field">
+        <label>BASIN</label>
+        <input id="ac-basin" type="text" placeholder="AL" maxlength="2" />
+        <span class="hint">AL EP</span>
+      </div>
+      <div class="field">
+        <label>START YEAR</label>
+        <input id="ac-start" type="text" placeholder="1951" maxlength="4" />
+      </div>
+      <div class="field">
+        <label>END YEAR</label>
+        <input id="ac-end" type="text" placeholder="2024" maxlength="4" />
+      </div>
+      <div class="field">
+        <label>LAT BOUNDS</label>
+        <input id="ac-lat1" type="text" placeholder="0" class="optional" style="width:3.5rem" />
+        <span style="padding:0 .2rem">–</span>
+        <input id="ac-lat2" type="text" placeholder="90" class="optional" style="width:3.5rem" />
+        <span class="hint">optional, S to N</span>
+      </div>
+      <div class="field">
+        <label>LON BOUNDS</label>
+        <input id="ac-lon1" type="text" placeholder="-120" class="optional" style="width:3.5rem" />
+        <span style="padding:0 .2rem">–</span>
+        <input id="ac-lon2" type="text" placeholder="0" class="optional" style="width:3.5rem" />
+        <span class="hint">optional, W to E</span>
+      </div>
+      <button class="submit" onclick="runAce()">run</button>
+      <div class="status" id="ac-status"></div>
+    </div>
+
+    <div class="param-panel" id="params-era5">
+      <div class="param-title">ERA5 Reanalysis</div>
+      <div class="param-desc">0.25° ERA5 pressure-level and surface diagnostic plots via CDS API.</div>
+      <div class="field">
+        <label>STORM NAME</label>
+        <input id="e5-storm" type="text" placeholder="Earl" class="optional" />
+        <span class="hint">HURDAT2 name — overrides lat/lon if provided</span>
+      </div>
+      <div class="field">
+        <label>LAT</label>
+        <input id="e5-lat" type="text" placeholder="17" class="optional" />
+        <span class="hint">required if no storm name</span>
+      </div>
+      <div class="field">
+        <label>LON</label>
+        <input id="e5-lon" type="text" placeholder="-59" class="optional" />
+        <span class="hint">required if no storm name</span>
+      </div>
+      <div class="field">
+        <label>MONTH</label>
+        <input id="e5-month" type="text" placeholder="9" maxlength="2" />
+      </div>
+      <div class="field">
+        <label>DAY</label>
+        <input id="e5-day" type="text" placeholder="3" maxlength="2" />
+      </div>
+      <div class="field">
+        <label>YEAR</label>
+        <input id="e5-year" type="text" placeholder="2022" maxlength="4" />
+      </div>
+      <div class="field">
+        <label>HOUR (UTC)</label>
+        <input id="e5-hour" type="text" placeholder="12" maxlength="2" />
+      </div>
+      <div class="field">
+        <label>PLOTTYPE</label>
+        <input id="e5-plottype" type="text" placeholder="wind" />
+        <span class="hint">wind temp tempadv thetae divergence rh windplot tempplot dewplot mslp sheardiag</span>
+      </div>
+      <div class="field">
+        <label>LEVEL</label>
+        <input id="e5-level" type="text" placeholder="850" class="optional" />
+        <span class="hint">hPa — required for pressure-level plots</span>
+      </div>
+      <button class="submit" onclick="runEra5()">run</button>
+      <div class="status" id="e5-status"></div>
+    </div>
+
+    <div class="param-panel" id="params-metar">
+      <div class="param-title">METAR Time Series</div>
+      <div class="param-desc">96-hour METAR time series for temperature, pressure, or wind from any ICAO station.</div>
+      <div class="field">
+        <label>STATION</label>
+        <input id="mt-station" type="text" placeholder="KMIA" maxlength="6" />
+        <span class="hint">ICAO station code</span>
+      </div>
+      <div class="field">
+        <label>PLOTTYPE</label>
+        <input id="mt-plottype" type="text" placeholder="temp" />
+        <span class="hint">temp &nbsp; pres &nbsp; wind</span>
+      </div>
+      <button class="submit" onclick="runMetar()">run</button>
+      <div class="status" id="mt-status"></div>
+    </div>
+
+    <div class="param-panel" id="params-radar">
+      <div class="param-title">NEXRAD Radar</div>
+      <div class="param-desc">Archive NEXRAD reflectivity from AWS. Leave radar blank or use NONE to auto-select the nearest site to lat/lon.</div>
+      <div class="field">
+        <label>RADAR</label>
+        <input id="rad-radar" type="text" placeholder="NONE" maxlength="6" class="optional" />
+        <span class="hint">4-letter NEXRAD site ID — or NONE for nearest</span>
+      </div>
+      <div class="field">
+        <label>DATE</label>
+        <input id="rad-date" type="text" placeholder="05/20/2013" maxlength="10" />
+        <span class="hint">MM/DD/YYYY</span>
+      </div>
+      <div class="field">
+        <label>TIME (UTC)</label>
+        <input id="rad-time" type="text" placeholder="2030" maxlength="4" />
+      </div>
+      <div class="field">
+        <label>LAT</label>
+        <input id="rad-lat" type="text" placeholder="35" />
+      </div>
+      <div class="field">
+        <label>LON</label>
+        <input id="rad-lon" type="text" placeholder="-97.5" />
+      </div>
+      <div class="field">
+        <label>CMAP</label>
+        <input id="rad-cmap" type="text" placeholder="ref" class="optional" />
+        <span class="hint">ref ref2–ref9 &nbsp; cod1 cod2 &nbsp; tc1 &nbsp; mn &nbsp; gs &nbsp; pivotal &nbsp; cold &nbsp; random</span>
+      </div>
+      <div class="field">
+        <label>ZOOM</label>
+        <input id="rad-zoom" type="text" placeholder="2" class="optional" />
+        <span class="hint">-2 to 1 (default 2 = full domain)</span>
+      </div>
+      <button class="submit" onclick="runRadar()">run</button>
+      <div class="status" id="rad-status"></div>
+    </div>
+
+    <div class="param-panel" id="params-fdeck">
+      <div class="param-title">F-Deck Fixes</div>
+      <div class="param-desc">Subjective Dvorak (DVTS) fixes from the NHC F-Deck, colored by CI number.</div>
+      <div class="field">
+        <label>STORM ID</label>
+        <input id="fd-storm" type="text" placeholder="AL11" maxlength="6" />
+        <span class="hint">basin + number, e.g. AL11 EP05 CP01</span>
+      </div>
+      <div class="field">
+        <label>YEAR</label>
+        <input id="fd-year" type="text" placeholder="2017" maxlength="4" />
+      </div>
+      <button class="submit" onclick="runFdeck()">run</button>
+      <div class="status" id="fd-status"></div>
+    </div>
+
+    <div class="param-panel" id="params-about"></div>
+
+    <button class="info-btn" id="info-btn">info / about</button>
+
+  </div><!-- /left-panel -->
+
+  <!-- ── Right: tabs + image ── -->
+  <div class="right-panel">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="plot">GOES / Himawari</button>
+      <button class="tab-btn"        data-tab="mcfetch">MCFETCH</button>
+      <button class="tab-btn"        data-tab="radar">NEXRAD</button>
+      <button class="tab-btn"        data-tab="tcprimed">TC-PRIMED</button>
+      <button class="tab-btn"        data-tab="hafs">HAFS</button>
+      <button class="tab-btn"        data-tab="hrrr">HRRR</button>
+      <button class="tab-btn"        data-tab="era5">ERA5</button>
+      <button class="tab-btn"        data-tab="ersst">ERSST</button>
+      <button class="tab-btn"        data-tab="ace">ACE</button>
+      <button class="tab-btn"        data-tab="adeck">A-Deck</button>
+      <button class="tab-btn"        data-tab="fdeck">F-Deck</button>
+      <button class="tab-btn"        data-tab="shipsri">SHIPS RI</button>
+      <button class="tab-btn"        data-tab="metar">METAR</button>
+    </div>
+    <div class="image-area" id="view-output">
+      <span class="image-placeholder" id="img-placeholder">output will appear here</span>
+      <img id="result-img" src="" alt="" />
+      <div class="image-links" id="result-links">
+        <a id="link-img"  href="#" target="_blank">open image</a>
+        <a id="link-extra" href="#" target="_blank" style="display:none"></a>
+      </div>
+    </div>
+
+    <!-- ── Table area ── -->
+    <div class="table-area" id="view-table">
+      <div class="fdeck-output-wrap" id="fdeck-output-wrap">
+        <table class="fdeck-output">
+          <thead><tr><td colspan="99" id="fdeck-output-header"></td></tr></thead>
+          <tbody id="fdeck-output-body"></tbody>
+        </table>
+      </div>
+      <div class="adeck-table-wrap" id="adeck-table-wrap">
+        <table class="adeck-table">
+          <thead>
+            <tr><th>HOUR</th><th>LAT</th><th>LON</th><th>WIND (kt)</th></tr>
+          </thead>
+          <tbody id="adeck-table-body"></tbody>
+        </table>
+      </div>
+      <div class="ace-output-wrap" id="ace-output-wrap">
+        <div class="ace-ersst-btns">
+          <button class="ace-ersst-btn" onclick="aceToErsst('top')">top 10 → ERSST</button>
+          <button class="ace-ersst-btn" onclick="aceToErsst('bottom')">bottom 10 → ERSST</button>
+        </div>
+        <div class="ace-table-wrap">
+          <table class="ace-table">
+            <thead>
+              <tr>
+                <th onclick="sortAce('rank')">Rank <span id="ace-sort-rank"></span></th>
+                <th onclick="sortAce('year')">Year <span id="ace-sort-year"></span></th>
+                <th onclick="sortAce('ace')">Season ACE <span id="ace-sort-ace"></span></th>
+              </tr>
+            </thead>
+            <tbody id="ace-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Reference area ── -->
+    <div class="ref-area" id="view-ref">
+
+      <!-- Satellite reference (GOES / Himawari / McIDAS) -->
+      <div class="ref-panel active" id="ref-satellite">
+        <div class="ref-cols">
+
+          <div>
+            <div class="ref-section">
+              <h3>BASIN REGIONS</h3>
+              <table class="ref-table">
+                <tr><td class="code">NATL</td><td class="note">North Atlantic</td></tr>
+                <tr><td class="code">TATL</td><td class="note">Tropical Atlantic</td></tr>
+                <tr><td class="code">WATL</td><td class="note">Western Atlantic</td></tr>
+                <tr><td class="code">CATL</td><td class="note">Central Atlantic</td></tr>
+                <tr><td class="code">EATL</td><td class="note">Eastern Atlantic</td></tr>
+                <tr><td class="code">MDR</td><td class="note">Main Dev. Region</td></tr>
+                <tr><td class="code">CV</td><td class="note">Cape Verde</td></tr>
+                <tr><td class="code">GOM</td><td class="note">Gulf of Mexico</td></tr>
+                <tr><td class="code">EPAC</td><td class="note">Eastern Pacific</td></tr>
+                <tr><td class="code">CPAC</td><td class="note">Central Pacific</td></tr>
+                <tr><td class="code">WPAC</td><td class="note">Western Pacific</td></tr>
+                <tr><td class="code">IO</td><td class="note">Indian Ocean</td></tr>
+                <tr><td class="code">BOB</td><td class="note">Bay of Bengal</td></tr>
+                <tr><td class="code">ARB</td><td class="note">Arabian Sea</td></tr>
+                <tr><td class="code">SWIO</td><td class="note">SW Indian Ocean</td></tr>
+                <tr><td class="code">SEIO</td><td class="note">SE Indian Ocean</td></tr>
+              </table>
+            </div>
+            <div class="ref-section">
+              <h3>US REGIONS</h3>
+              <table class="ref-table">
+                <tr><td class="code">NE</td><td class="note">Northeast</td></tr>
+                <tr><td class="code">MA</td><td class="note">Mid-Atlantic</td></tr>
+                <tr><td class="code">SE</td><td class="note">Southeast</td></tr>
+                <tr><td class="code">SC</td><td class="note">South Central</td></tr>
+                <tr><td class="code">MW</td><td class="note">Midwest</td></tr>
+                <tr><td class="code">GP</td><td class="note">Great Plains</td></tr>
+                <tr><td class="code">SW</td><td class="note">Southwest</td></tr>
+                <tr><td class="code">NW</td><td class="note">Northwest</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            <div class="ref-section">
+              <h3>IR COLORMAPS</h3>
+              <div class="tag-list">
+                <span>gs</span><span>avn</span><span>funktop</span><span>jsl</span><span>rainbow</span><span>rainbow2</span><span>rbtop</span><span>rbtop2</span><span>rbtop2.5</span><span>rbtop3</span><span>rbtop4</span><span>rbtop5</span><span>bd</span><span>bd.5</span><span>bd2</span><span>bd3</span><span>bd4</span><span>bd5</span><span>rbbd</span><span>ibtracs</span><span>ibtracs2</span><span>ibtracs3</span><span>rammb</span><span>nhc</span><span>wu</span><span>shrek</span><span>hand</span><span>ryglicki</span><span>candy</span><span>bl</span><span>blcold</span><span>spooky</span><span>lava</span><span>ice</span><span>icy</span><span>ice2</span><span>santa</span><span>gay</span><span>cu</span><span>oldcody</span><span>cody</span><span>icecream</span><span>asir</span><span>volcano</span><span>blob</span><span>whaticouldvedone</span><span>msfcir1</span><span>codyir</span><span>cmyk</span><span>chatgpt</span><span>chatgpt2</span><span>chatgpt3</span><span>chatgpt4</span><span>o2</span><span>mean</span><span>wind</span><span>wind2</span><span>icup</span><span>cloudy</span><span>cs</span><span>ncdc</span><span>ref</span><span>irca</span><span>ir</span><span>ira</span><span>irb</span><span>irc</span><span>ird</span><span>ire</span><span>irf</span><span>irg</span><span>oldirg</span><span>irh</span><span>iri</span><span>irj</span><span>irk</span><span>irl</span><span>irm</span><span>irn</span><span>iro</span><span>irp</span><span>irq</span><span>irr</span><span>irs</span><span>irt</span><span>iru</span><span>irv</span><span>irw</span><span>irx</span><span>iry</span><span>irz</span><span>ir1</span><span>ir2</span><span>ir3</span><span>ir4</span><span>ir5</span><span>ir6</span><span>ir7</span><span>ir8</span><span>ir9</span><span>ir10</span><span>ir11</span><span>ir12</span><span>ir13</span><span>ir14</span><span>ir15</span><span>ir16</span><span>ir17</span><span>ir18</span><span>ir19</span><span>ir20</span><span>ir21</span><span>ir22</span><span>ir23</span><span>ir24</span><span>ir25</span><span>ir26</span><span>ir27</span><span>ir28</span><span>ir29</span><span>ir30</span><span>ir31</span>
+              </div>
+            </div>
+
+            <div class="ref-section">
+              <h3>WV COLORMAPS</h3>
+              <div class="tag-list">
+                <span>msfc</span><span>psu</span><span>wv</span><span>wv2</span><span>wv3</span><span>wv4</span><span>wv5</span><span>wv6</span><span>wv7</span><span>wv8</span><span>wv9</span><span>wv9.5</span><span>wv10</span><span>wv11</span><span>wv12</span><span>wv13</span><span>wv13.5</span><span>wv14</span><span>wv15</span><span>wv16</span><span>wv17</span><span>wv18</span><span>wv19</span><span>wv20</span><span>wv21</span><span>wv22</span><span>wv23</span><span>wv24</span><span>wv25</span><span>wv26</span><span>wv27</span><span>wv28</span><span>wv29</span><span>wv30</span><span>wv31</span><span>wv32</span><span>wv33</span><span>ghost</span><span>wv34</span><span>wv35</span><span>wv36</span><span>wv37</span><span>wv38</span><span>wv39</span><span>wv39.5</span><span>wv40</span><span>wv41</span><span>wv42</span><span>wv43</span><span>wv44</span><span>wv45</span><span>wv46</span><span>wv47</span><span>wv48</span><span>wv49</span><span>wv50</span><span>wv51</span><span>wv52</span><span>wv53</span><span>uv</span><span>fig</span><span>copper</span><span>bajaflash</span><span>simple</span><span>simple2</span><span>test</span><span>watermelon</span><span>halloween</span><span>irg</span><span>ssd</span><span>mikewv</span><span>codywv</span><span>aswv</span><span>aswvold</span><span>gs</span><span>hand</span><span>dark</span><span>oldwv</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- /ref-satellite -->
+
+      <!-- HAFS reference -->
+      <div class="ref-panel" id="ref-hafs">
+        <div class="ref-cols">
+          <div>
+            <div class="ref-section">
+              <h3>LEVEL-REQUIRED VARIABLES</h3>
+              <table class="ref-table">
+                <tr><td class="code">temp</td><td class="note">Temperature</td></tr>
+                <tr><td class="code">dewp</td><td class="note">Dewpoint</td></tr>
+                <tr><td class="code">wind</td><td class="note">Wind speed + barbs</td></tr>
+                <tr><td class="code">vvel</td><td class="note">Vertical velocity</td></tr>
+                <tr><td class="code">rh</td><td class="note">Relative humidity</td></tr>
+                <tr><td class="code">vort</td><td class="note">Absolute vorticity (1/s)</td></tr>
+                <tr><td class="code">absv</td><td class="note">Absolute vorticity</td></tr>
+                <tr><td class="code">hgt</td><td class="note">Geopotential height</td></tr>
+                <tr><td class="code">pv</td><td class="note">Potential vorticity</td></tr>
+                <tr><td class="code">theta</td><td class="note">Potential temperature</td></tr>
+                <tr><td class="code">thetae</td><td class="note">Equiv. potential temperature</td></tr>
+                <tr><td class="code">thetae_anom</td><td class="note">Theta-e anomaly</td></tr>
+                <tr><td class="code">ci</td><td class="note">Coupling Index (K)</td></tr>
+                <tr><td class="code">mss</td><td class="note">Moist Bulk Stability [dThetaE/dZ] (K/m)</td></tr>
+                <tr><td class="code">ss</td><td class="note">Bulk Static Stability [dTheta/dZ] (K/m)</td></tr>
+                <tr><td class="code">s</td><td class="note">Γd − Γ (C/km)</td></tr>
+                <tr><td class="code">ratio</td><td class="note">Reduction Ratio (10m/700mb)</td></tr>
+                <tr><td class="code">tadv / tadv_s / tadv_ss</td><td class="note">Temperature advection</td></tr>
+                <tr><td class="code">mfc / mfc_s / mfc_ss</td><td class="note">Moisture flux convergence</td></tr>
+                <tr><td class="code">div / div_s / div_ss</td><td class="note">Divergence</td></tr>
+                <tr><td class="code">mflx / mflx_s / mflx_ss</td><td class="note">Vertical Mass Flux (kg/m²s)</td></tr>
+                <tr><td class="code">tfp / tfp_s / tfp_ss</td><td class="note">Thermal Front Parameter (K/m²)</td></tr>
+                <tr><td class="code">twp / twp_s / twp_ss</td><td class="note">Thermal Wind CPS Approximation (m/s)</td></tr>
+                <tr><td class="code">thg / thg_s / thg_ss</td><td class="note">Thickness Gradient (dimensionless)</td></tr>
+                <tr><td class="code">okw / okw_s / okw_ss</td><td class="note">Okubo-Weiss</td></tr>
+                <tr><td class="code">fgn / fgn_s / fgn_ss</td><td class="note">Frontogenesis</td></tr>
+                <tr><td class="code">diab / diab_s / diab_ss</td><td class="note">Apparent Heat Source (K/hr)</td></tr>
+                <tr><td class="code">thadv / thadv_s / thadv_ss</td><td class="note">Theta advection</td></tr>
+                <tr><td class="code">thedv / thedv_s / thedv_ss</td><td class="note">Theta-e advection</td></tr>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="ref-section">
+              <h3>SURFACE / INTEGRATED VARIABLES</h3>
+              <table class="ref-table">
+                <tr><td class="code">pwat</td><td class="note">Precipitable water</td></tr>
+                <tr><td class="code">cape</td><td class="note">CAPE</td></tr>
+                <tr><td class="code">cinh</td><td class="note">CIN</td></tr>
+                <tr><td class="code">sst</td><td class="note">Sea surface temperature</td></tr>
+                <tr><td class="code">gust</td><td class="note">Wind gusts</td></tr>
+                <tr><td class="code">slp</td><td class="note">Sea level pressure</td></tr>
+                <tr><td class="code">srh</td><td class="note">Storm-relative helicity</td></tr>
+                <tr><td class="code">eff</td><td class="note">Carnot Efficiency (%)</td></tr>
+                <tr><td class="code">diseq</td><td class="note">Thermodynamic Disequilibrium (J/kg)</td></tr>
+                <tr><td class="code">mpi / mpi_s</td><td class="note">Maximum Potential Intensity (kt)</td></tr>
+                <tr><td class="code">vpr</td><td class="note">Ventilation Proxy (dimensionless)</td></tr>
+                <tr><td class="code">chim</td><td class="note">Entropy Deficit (dimensionless)</td></tr>
+                <tr><td class="code">vi</td><td class="note">Ventilation Index (dimensionless)</td></tr>
+                <tr><td class="code">lhf</td><td class="note">Latent heat flux</td></tr>
+                <tr><td class="code">shf</td><td class="note">Sensible heat flux</td></tr>
+                <tr><td class="code">tdiff</td><td class="note">SST − T2m (K)</td></tr>
+                <tr><td class="code">qdiff</td><td class="note">Saturation Deficit (kg/kg)</td></tr>
+                <tr><td class="code">nqdiff</td><td class="note">Normalized Saturation Deficit</td></tr>
+                <tr><td class="code">mse</td><td class="note">Moist Static Energy (J/kg)</td></tr>
+                <tr><td class="code">vmse</td><td class="note">MSE Advection (W/m²)</td></tr>
+                <tr><td class="code">shear</td><td class="note">Wind shear (level: upper/mid/deep)</td></tr>
+                <tr><td class="code">ref</td><td class="note">Reflectivity (dBz)</td></tr>
+              </table>
+            </div>
+            <div class="ref-section">
+              <h3>NOTES</h3>
+              <table class="ref-table">
+                <tr><td class="code">storm</td><td class="note">NNX format — e.g. 09l, 01e, 02w</td></tr>
+                <tr><td class="code">init</td><td class="note">00 / 06 / 12 / 18</td></tr>
+                <tr><td class="code">fhour</td><td class="note">e.g. 024, 048, 120</td></tr>
+                <tr><td class="code">model</td><td class="note">a (default) or b</td></tr>
+                <tr><td class="code">domain</td><td class="note">storm (default) or parent</td></tr>
+                <tr><td class="code">level</td><td class="note">hPa (e.g. 850, 500, 200) &nbsp;|&nbsp; sfc &nbsp; 2m &nbsp; 10m &nbsp; 3000m &nbsp; tropopause &nbsp;|&nbsp; lower / upper / mid / deep (shear layers)</td></tr>
+                <tr><td class="code">_s suffix</td><td class="note">smooth once</td></tr>
+                <tr><td class="code">_ss suffix</td><td class="note">smooth twice</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div><!-- /ref-hafs -->
+
+      <!-- TC-PRIMED reference -->
+      <div class="ref-panel" id="ref-tcprimed">
+        <div class="ref-cols">
+          <div class="ref-section">
+            <h3>SENSORS</h3>
+            <table class="ref-table">
+              <tr><td class="code">ATMS</td><td class="note">Advanced Technology Microwave Sounder (mid + low)</td></tr>
+              <tr><td class="code">AMSR</td><td class="note">Advanced Microwave Scanning Radiometer (mid + low)</td></tr>
+              <tr><td class="code">GMI</td><td class="note">GPM Microwave Imager (mid + low)</td></tr>
+              <tr><td class="code">SSMI</td><td class="note">Special Sensor Microwave/Imager (mid + low)</td></tr>
+              <tr><td class="code">SSMIS</td><td class="note">SSMI/Sounder (mid + low)</td></tr>
+              <tr><td class="code">MHS</td><td class="note">Microwave Humidity Sounder (mid only)</td></tr>
+              <tr><td class="code">TMI</td><td class="note">TRMM Microwave Imager (mid + low)</td></tr>
+            </table>
+          </div>
+          <div class="ref-section">
+            <h3>PARAMETERS</h3>
+            <table class="ref-table">
+              <tr><td class="code">storm</td><td class="note">xxXX — basin + number, e.g. AL11, EP20, IO06, WP03</td></tr>
+              <tr><td class="code">date</td><td class="note">MM/DD/YYYY of the overpass</td></tr>
+              <tr><td class="code">time</td><td class="note">Nearest overpass time is selected automatically</td></tr>
+              <tr><td class="code">mid</td><td class="note">85–91 GHz channel (deep convection signal)</td></tr>
+              <tr><td class="code">low</td><td class="note">36–37 GHz channel (liquid water signal); MHS not supported</td></tr>
+              <tr><td class="code">color</td><td class="note">true = RGB composite from H/V polarization ratio</td></tr>
+            </table>
+          </div>
+        </div>
+      </div><!-- /ref-tcprimed -->
+
+      <!-- A-Deck reference -->
+      <div class="ref-panel" id="ref-adeck">
+        <div class="ref-cols">
+          <div>
+            <div class="ref-section">
+              <h3>PARAMETERS</h3>
+              <table class="ref-table">
+                <tr><td class="code">storm</td><td class="note">ATCF ID — e.g. al10, ep03, wp05</td></tr>
+                <tr><td class="code">date</td><td class="note">MM/DD/YYYY of initialization</td></tr>
+                <tr><td class="code">time</td><td class="note">Synoptic hour — 00, 06, 12, 18</td></tr>
+                <tr><td class="code">models</td><td class="note">Comma-separated ATCF model IDs</td></tr>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="ref-section">
+              <h3>COMMON MODELS</h3>
+              <table class="ref-table">
+                <tr><td class="code">OFCI</td><td class="note">Official NHC forecast</td></tr>
+                <tr><td class="code">HFAI / HFBI</td><td class="note">HAFS-A / HAFS-B (interpolated)</td></tr>
+                <tr><td class="code">HWFI</td><td class="note">HWRF (interpolated)</td></tr>
+                <tr><td class="code">EMXI</td><td class="note">ECMWF (interpolated)</td></tr>
+                <tr><td class="code">AVNI</td><td class="note">GFS (interpolated)</td></tr>
+                <tr><td class="code">NAMI</td><td class="note">NAM (interpolated)</td></tr>
+                <tr><td class="code">CTCI</td><td class="note">CTCX consensus (interpolated)</td></tr>
+                <tr><td class="code">ICON</td><td class="note">ICON model</td></tr>
+                <tr><td class="code">UKX</td><td class="note">UK Met Office</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div><!-- /ref-adeck -->
+
+      <!-- SHIPS RI reference -->
+      <div class="ref-panel" id="ref-shipsri">
+        <div class="ref-cols">
+          <div>
+            <div class="ref-section">
+              <h3>PARAMETERS</h3>
+              <table class="ref-table">
+                <tr><td class="code">storm</td><td class="note">ATCF ID — e.g. al13, ep05</td></tr>
+                <tr><td class="code">year</td><td class="note">4-digit year</td></tr>
+                <tr><td class="code">month</td><td class="note">Month number (1–12)</td></tr>
+                <tr><td class="code">day</td><td class="note">Day number (1–31)</td></tr>
+                <tr><td class="code">hour</td><td class="note">00, 06, 12, 18 — optional, tries all if omitted</td></tr>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="ref-section">
+              <h3>OUTPUT</h3>
+              <table class="ref-table">
+                <tr><td class="code">Distribution</td><td class="note">Random forest tree predictions histogram</td></tr>
+                <tr><td class="code">Prediction</td><td class="note">Ensemble-mean 24h intensity forecast (kt)</td></tr>
+                <tr><td class="code">RI prob.</td><td class="note">% of trees predicting ≥30 kt intensification</td></tr>
+                <tr><td class="code">Shear arrow</td><td class="note">200–850mb shear magnitude + direction</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div><!-- /ref-shipsri -->
+
+      <!-- HRRR reference -->
+      <div class="ref-panel" id="ref-hrrr">
+        <div class="ref-cols">
+          <div>
+            <div class="ref-section">
+              <h3>LEVEL-REQUIRED VARIABLES</h3>
+              <table class="ref-table">
+                <tr><td class="code">temp</td><td class="note">Temperature (C)</td></tr>
+                <tr><td class="code">dewp</td><td class="note">Dewpoint 2m (C)</td></tr>
+                <tr><td class="code">wind</td><td class="note">Wind speed (kt)</td></tr>
+                <tr><td class="code">vvel</td><td class="note">Vertical velocity (m/s)</td></tr>
+                <tr><td class="code">rh</td><td class="note">Relative humidity (%)</td></tr>
+                <tr><td class="code">vort</td><td class="note">Absolute vorticity (1/s)</td></tr>
+                <tr><td class="code">hgt</td><td class="note">Geopotential height (dm)</td></tr>
+                <tr><td class="code">pv</td><td class="note">Potential vorticity (PVU)</td></tr>
+                <tr><td class="code">theta</td><td class="note">Potential temperature (K)</td></tr>
+                <tr><td class="code">thetae</td><td class="note">Equiv. potential temperature (K)</td></tr>
+                <tr><td class="code">mss</td><td class="note">Moist bulk stability (K/m)</td></tr>
+                <tr><td class="code">ss</td><td class="note">Bulk static stability (K/m)</td></tr>
+                <tr><td class="code">s</td><td class="note">Lapse rate stability (C/km)</td></tr>
+                <tr><td class="code">ratio</td><td class="note">10m/700mb wind ratio</td></tr>
+                <tr><td class="code">mflx / mflx_s / mflx_ss</td><td class="note">Vertical mass flux (kg/m²s)</td></tr>
+                <tr><td class="code">tadv / tadv_s / tadv_ss</td><td class="note">Temperature advection (K/hr)</td></tr>
+                <tr><td class="code">thadv / thadv_s / thadv_ss</td><td class="note">Theta advection (K/hr)</td></tr>
+                <tr><td class="code">thedv / thedv_s / thedv_ss</td><td class="note">Theta-e advection (K/hr)</td></tr>
+                <tr><td class="code">mfc / mfc_s / mfc_ss</td><td class="note">Moisture flux convergence</td></tr>
+                <tr><td class="code">div / div_s / div_ss</td><td class="note">Divergence (1/s)</td></tr>
+                <tr><td class="code">okw / okw_s / okw_ss</td><td class="note">Okubo-Weiss (1/s²)</td></tr>
+                <tr><td class="code">fgn / fgn_s / fgn_ss</td><td class="note">Frontogenesis (K/100km/3hr)</td></tr>
+                <tr><td class="code">tfp / tfp_s / tfp_ss</td><td class="note">Thermal frontal parameter</td></tr>
+                <tr><td class="code">twp / twp_s / twp_ss</td><td class="note">Thermal wind CPS approx (m/s)</td></tr>
+                <tr><td class="code">thg / thg_s / thg_ss</td><td class="note">Thickness gradient</td></tr>
+                <tr><td class="code">qdiff / nqdiff</td><td class="note">Saturation deficit (kg/kg)</td></tr>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="ref-section">
+              <h3>SURFACE / INTEGRATED VARIABLES</h3>
+              <table class="ref-table">
+                <tr><td class="code">pwat</td><td class="note">Precipitable water (mm)</td></tr>
+                <tr><td class="code">cape</td><td class="note">CAPE (J/kg)</td></tr>
+                <tr><td class="code">cinh</td><td class="note">CIN (J/kg)</td></tr>
+                <tr><td class="code">sst</td><td class="note">Sea surface temperature (C)</td></tr>
+                <tr><td class="code">gust</td><td class="note">Wind gusts (kt)</td></tr>
+                <tr><td class="code">slp</td><td class="note">Sea level pressure (hPa)</td></tr>
+                <tr><td class="code">srh</td><td class="note">0–3km storm-relative helicity</td></tr>
+                <tr><td class="code">eff</td><td class="note">Carnot efficiency (%)</td></tr>
+                <tr><td class="code">diseq</td><td class="note">Thermodynamic disequilibrium (J/kg)</td></tr>
+                <tr><td class="code">mpi</td><td class="note">Max potential intensity (kt)</td></tr>
+                <tr><td class="code">vpr</td><td class="note">Ventilation proxy (dimensionless)</td></tr>
+                <tr><td class="code">lhf</td><td class="note">Latent heat flux (W/m²)</td></tr>
+                <tr><td class="code">shf</td><td class="note">Sensible heat flux (W/m²)</td></tr>
+                <tr><td class="code">tdiff</td><td class="note">SST − T2m (K)</td></tr>
+                <tr><td class="code">ci</td><td class="note">Coupling index (K)</td></tr>
+                <tr><td class="code">shear</td><td class="note">Wind shear — level: upper/mid/deep</td></tr>
+                <tr><td class="code">prcp</td><td class="note">Precipitation type (categorical)</td></tr>
+                <tr><td class="code">snow</td><td class="note">Snowfall depth (in)</td></tr>
+                <tr><td class="code">ref</td><td class="note">1km composite reflectivity (dBz)</td></tr>
+              </table>
+            </div>
+            <div class="ref-section">
+              <h3>NOTES</h3>
+              <table class="ref-table">
+                <tr><td class="code">region</td><td class="note">GOM SE NE MA SC MW GP SW NW US EUS WUS</td></tr>
+                <tr><td class="code">init</td><td class="note">2-digit UTC hour, e.g. 18</td></tr>
+                <tr><td class="code">fhour</td><td class="note">Forecast hour, e.g. 06</td></tr>
+                <tr><td class="code">level</td><td class="note">hPa (e.g. 850, 500, 200) &nbsp;|&nbsp; sfc &nbsp; 2m &nbsp; 10m &nbsp; 3000m &nbsp; tropopause &nbsp;|&nbsp; lower / upper / mid / deep (shear layers)</td></tr>
+                <tr><td class="code">_s suffix</td><td class="note">Gaussian smooth once (σ=5)</td></tr>
+                <tr><td class="code">_ss suffix</td><td class="note">Gaussian smooth twice (σ=15)</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div><!-- /ref-hrrr -->
+
+      <!-- ERSST reference -->
+      <div class="ref-panel" id="ref-ersst">
+        <div class="ref-cols">
+          <div>
+            <div class="ref-section">
+              <h3>PARAMETERS</h3>
+              <table class="ref-table">
+                <tr><td class="code">month</td><td class="note">Month number (1–12)</td></tr>
+                <tr><td class="code">years</td><td class="note">Comma-separated list of years to composite</td></tr>
+                <tr><td class="code">type</td><td class="note">anomalies (default) or std</td></tr>
+                <tr><td class="code">sd</td><td class="note">true = standardized by 30-yr std dev; false = global-mean anomaly</td></tr>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="ref-section">
+              <h3>OUTPUT</h3>
+              <table class="ref-table">
+                <tr><td class="code">anomalies</td><td class="note">Composite mean SST anomaly across all years</td></tr>
+                <tr><td class="code">std</td><td class="note">Inter-year standard deviation of the anomalies</td></tr>
+              </table>
+            </div>
+            <div class="ref-section">
+              <h3>NOTES</h3>
+              <table class="ref-table">
+                <tr><td class="code">source</td><td class="note">NOAA ERSSTv5 monthly mean via PSL OPeNDAP</td></tr>
+                <tr><td class="code">climo</td><td class="note">30-year sliding window (or 1854–1883 if year &lt; 1884)</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div><!-- /ref-ersst -->
+
+      <!-- ERA5 reference -->
+      <div class="ref-panel" id="ref-era5">
+        <div class="ref-cols">
+          <div>
+            <div class="ref-section">
+              <h3>PARAMETERS</h3>
+              <table class="ref-table">
+                <tr><td class="code">lat / lon</td><td class="note">Center coordinate</td></tr>
+                <tr><td class="code">month</td><td class="note">Month number (1–12)</td></tr>
+                <tr><td class="code">day</td><td class="note">Day of month</td></tr>
+                <tr><td class="code">year</td><td class="note">4-digit year</td></tr>
+                <tr><td class="code">hour</td><td class="note">UTC hour (00–23)</td></tr>
+                <tr><td class="code">plottype</td><td class="note">See plot types below</td></tr>
+                <tr><td class="code">level</td><td class="note">Pressure level (hPa) — required for pressure-level plots</td></tr>
+              </table>
+            </div>
+            <div class="ref-section">
+              <h3>PRESSURE-LEVEL PLOTS</h3>
+              <table class="ref-table">
+                <tr><td class="code">wind</td><td class="note">Wind streamlines and magnitude (kts)</td></tr>
+                <tr><td class="code">temp</td><td class="note">Air temperature (°C)</td></tr>
+                <tr><td class="code">tempadv</td><td class="note">Temperature advection (°C/hr)</td></tr>
+                <tr><td class="code">thetae</td><td class="note">Equivalent potential temperature Θe (K)</td></tr>
+                <tr><td class="code">divergence</td><td class="note">Wind divergence (smoothed)</td></tr>
+                <tr><td class="code">rh</td><td class="note">Relative humidity (%)</td></tr>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="ref-section">
+              <h3>SURFACE PLOTS</h3>
+              <table class="ref-table">
+                <tr><td class="code">windplot</td><td class="note">10m wind field and radial profile</td></tr>
+                <tr><td class="code">tempplot</td><td class="note">10m wind and 2m temperature (°F)</td></tr>
+                <tr><td class="code">dewplot</td><td class="note">10m wind and 2m dewpoint (°F)</td></tr>
+                <tr><td class="code">mslp</td><td class="note">Mean sea level pressure (hPa)</td></tr>
+              </table>
+            </div>
+            <div class="ref-section">
+              <h3>SHEAR PLOTS</h3>
+              <table class="ref-table">
+                <tr><td class="code">sheardiag</td><td class="note">Wind shear diagnostics (4 layers) + shear distribution — returns two images</td></tr>
+              </table>
+            </div>
+            <div class="ref-section">
+              <h3>NOTES</h3>
+              <table class="ref-table">
+                <tr><td class="code">source</td><td class="note">0.25° ERA5 reanalysis via CDS API</td></tr>
+                <tr><td class="code">domain</td><td class="note">±15° lat / ±20° lon around center (pressure); ±7.5° for windplot</td></tr>
+                <tr><td class="code">sheardiag</td><td class="note">Second image (distribution) linked below output</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div><!-- /ref-era5 -->
+
+      <!-- METAR reference -->
+      <div class="ref-panel" id="ref-metar">
+        <div class="ref-title">METAR Time Series</div>
+        <div class="ref-body">
+          <div class="ref-section">
+            <h3>PARAMETERS</h3>
+            <table class="ref-table">
+              <tr><td class="code">station</td><td class="note">ICAO station code, e.g. KMIA, KBWI, EGLL</td></tr>
+              <tr><td class="code">plottype</td><td class="note">temp, pres, or wind</td></tr>
+            </table>
+          </div>
+          <div class="ref-section">
+            <h3>PLOT TYPES</h3>
+            <table class="ref-table">
+              <tr><td class="code">temp</td><td class="note">Temperature &amp; dewpoint time series (°F)</td></tr>
+              <tr><td class="code">pres</td><td class="note">Sea-level pressure time series (mb)</td></tr>
+              <tr><td class="code">wind</td><td class="note">Wind speed &amp; gust time series (kt)</td></tr>
+            </table>
+          </div>
+          <div class="ref-section">
+            <h3>NOTES</h3>
+            <table class="ref-table">
+              <tr><td class="code">source</td><td class="note">aviationweather.gov METAR dataserver, 96 hours back</td></tr>
+              <tr><td class="code">data_url</td><td class="note">Raw CSV link returned in response for download</td></tr>
+            </table>
+          </div>
+        </div>
+      </div><!-- /ref-metar -->
+
+      <!-- NEXRAD reference -->
+      <div class="ref-panel" id="ref-radar">
+        <div class="ref-title">NEXRAD Radar</div>
+        <div class="ref-body">
+          <div class="ref-section">
+            <h3>PARAMETERS</h3>
+            <table class="ref-table">
+              <tr><td class="code">radar</td><td class="note">4-letter NEXRAD site ID, e.g. KTLX, KBWI — or NONE for nearest to lat/lon</td></tr>
+              <tr><td class="code">date</td><td class="note">MM/DD/YYYY</td></tr>
+              <tr><td class="code">time</td><td class="note">4-digit UTC, e.g. 2030</td></tr>
+              <tr><td class="code">lat / lon</td><td class="note">Center point — used to find nearest site when radar is NONE</td></tr>
+              <tr><td class="code">cmap</td><td class="note">Colormap (optional, default ref)</td></tr>
+              <tr><td class="code">zoom</td><td class="note">-2 to 1, default 2 = full domain</td></tr>
+            </table>
+          </div>
+          <div class="ref-section">
+            <h3>COLORMAPS</h3>
+            <table class="ref-table">
+              <tr><td class="code">ref</td><td class="note">Standard reflectivity (default)</td></tr>
+              <tr><td class="code">ref2 – ref9</td><td class="note">Reflectivity variants</td></tr>
+              <tr><td class="code">cod1 &nbsp; cod2</td><td class="note">COD-style reflectivity</td></tr>
+              <tr><td class="code">tc1</td><td class="note">TC-focused reflectivity</td></tr>
+              <tr><td class="code">mn</td><td class="note">Minnesota-style</td></tr>
+              <tr><td class="code">gs</td><td class="note">Grayscale</td></tr>
+              <tr><td class="code">pivotal</td><td class="note">Pivotal Weather style</td></tr>
+              <tr><td class="code">cold</td><td class="note">Cold-toned</td></tr>
+              <tr><td class="code">random</td><td class="note">Random colormap each run</td></tr>
+            </table>
+          </div>
+          <div class="ref-section">
+            <h3>NOTES</h3>
+            <table class="ref-table">
+              <tr><td class="code">source</td><td class="note">NEXRAD Level-II archive via AWS S3</td></tr>
+              <tr><td class="code">coverage</td><td class="note">CONUS sites, 1991–present (availability varies by site and date)</td></tr>
+            </table>
+          </div>
+        </div>
+      </div><!-- /ref-radar -->
+
+    </div><!-- /view-ref -->
+
+    <!-- ── About area ── -->
+    <div class="about-area" id="about-area">
+
+      <div class="about-section">
+        <h2>CYCLOWEB</h2>
+        <p>An interactive platform built for simplifying tropical cyclone research and monitoring. Originally hosted as a bot on Discord, this website hosts some of the more unique and frequently used features. Data is fetched and plotted on-demand from operational archives via a serverless backend running on Hugging Face Spaces. The underlying Python code for this project was written by Deelan Jariwala, while this website is almost entirely made by Anthropic's LLM, Claude.</p>
+      </div>
+
+      <div class="about-section">
+        <h2>ABOUT</h2>
+        <p>Deelan Jariwala is an atmospheric sciences student at the University of Miami with a focus on tropical cyclone structure and intensity change, occasionally dabbling in Python and machine learning.</p>
+      </div>
+
+      <div class="about-section">
+        <h2>TOOLS</h2>
+        <table class="ref-table" style="max-width:540px">
+          <tr><td class="code" style="width:9em">GOES / Himawari</td><td class="note">GOES-R (16/18/19) and Himawari (8/9) geostationary imagery via AWS S3 and GridSat GOES/B1</td></tr>
+          <tr><td class="code">McIDAS</td><td class="note">Historical geostationary archive via SSEC — GOES 1–15, GMS, MTSAT</td></tr>
+          <tr><td class="code">HAFS</td><td class="note">Real-time and archived HAFS-A/B hurricane forecast model diagnostic plots</td></tr>
+          <tr><td class="code">TC-PRIMED</td><td class="note">Passive microwave overpasses (85–91 and 36–37 GHz) from TC-PRIMED archive</td></tr>
+          <tr><td class="code">A-Deck</td><td class="note">Custom averaged ATCF model guidance track with SST underlay</td></tr>
+          <tr><td class="code">SHIPS RI</td><td class="note">Random-forest 24h intensity prediction trained on SHIPS predictors</td></tr>
+          <tr><td class="code">HRRR</td><td class="note">NOAA HRRR mesoscale model analysis and short-range forecast diagnostics</td></tr>
+          <tr><td class="code">ERSST</td><td class="note">ERSSTv5 sea surface temperature anomaly composites via NOAA PSL</td></tr>
+          <tr><td class="code">ERA5</td><td class="note">0.25° ERA5 reanalysis pressure-level and surface diagnostics via CDS API</td></tr>
+          <tr><td class="code">METAR</td><td class="note">96-hour surface observation time series from aviationweather.gov</td></tr>
+          <tr><td class="code">NEXRAD</td><td class="note">Archive NEXRAD Level-II radar reflectivity via AWS S3 — CONUS sites, 1991–present</td></tr>
+        </table>
+      </div>
+
+      <div class="about-section">
+        <h2>LINKS</h2>
+        <a href="https://x.com/WxTca" target="_blank">Deelan's Twitter Account</a>
+      </div>
+
+    </div><!-- /about-area -->
+
+    <div class="view-toggle">
+      <button class="view-btn active" data-view="output">output</button>
+      <button class="view-btn" data-view="table">table</button>
+      <button class="view-btn" data-view="ref">ref</button>
+    </div>
+
+  </div><!-- /right-panel -->
+
+</div><!-- /layout -->
+
+<script>
+  // Track active tool
+  let activeTab = 'plot';
+
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.param-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('params-' + btn.dataset.tab).classList.add('active');
+      activeTab = btn.dataset.tab;
+      // Sync ref panel to active tool
+      const refMap = { hafs: 'ref-hafs', tcprimed: 'ref-tcprimed', adeck: 'ref-adeck', shipsri: 'ref-shipsri', hrrr: 'ref-hrrr', ersst: 'ref-ersst', ace: 'ref-ersst', era5: 'ref-era5', metar: 'ref-metar', radar: 'ref-radar' };
+      const refId = refMap[activeTab] || 'ref-satellite';
+      document.querySelectorAll('.ref-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById(refId).classList.add('active');
+      // If coming from about, restore normal view
+      const aboutArea = document.getElementById('about-area');
+      const viewToggle = document.querySelector('.view-toggle');
+      document.getElementById('info-btn').classList.remove('active');
+      if (aboutArea.classList.contains('visible')) {
+        aboutArea.classList.remove('visible');
+        viewToggle.style.display = '';
+        switchView('output');
+      }
+      localStorage.setItem('cw_tab', activeTab); updateHash();
+    });
+  });
+
+  // Info button (bottom-left)
+  document.getElementById('info-btn').addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.param-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('params-about').classList.add('active');
+    activeTab = 'about';
+    const aboutArea = document.getElementById('about-area');
+    const viewToggle = document.querySelector('.view-toggle');
+    viewOutput.style.display = 'none';
+    viewTable.classList.remove('visible');
+    viewRef.classList.remove('visible');
+    viewToggle.style.display = 'none';
+    aboutArea.classList.add('visible');
+    document.getElementById('info-btn').classList.add('active');
+    localStorage.setItem('cw_tab', 'about'); updateHash();
+  });
+
+  // View toggle (output / table / ref)
+  const viewOutput = document.getElementById('view-output');
+  const viewTable  = document.getElementById('view-table');
+  const viewRef    = document.getElementById('view-ref');
+
+  function switchView(name) {
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.view-btn[data-view="${name}"]`).classList.add('active');
+    viewOutput.style.display = name === 'output' ? '' : 'none';
+    viewTable.classList.toggle('visible', name === 'table');
+    viewRef.classList.toggle('visible',   name === 'ref');
+  }
+
+  document.querySelectorAll('.view-btn').forEach(btn =>
+    btn.addEventListener('click', () => switchView(btn.dataset.view)));
+
+  const API_BASE = 'https://tcalert-cycloweb.hf.space';
+
+  function val(id) { return document.getElementById(id).value.trim(); }
+
+  function setStatus(prefix, type, msg) {
+    const el = document.getElementById(prefix + '-status');
+    el.className = 'status ' + type;
+    el.textContent = msg;
+  }
+
+  function showImage(imgUrl, extraUrl, extraLabel) {
+    switchView('output');
+    document.getElementById('img-placeholder').style.display = 'none';
+    const img = document.getElementById('result-img');
+    img.src = imgUrl;
+    img.classList.add('visible');
+    document.getElementById('link-img').href = imgUrl;
+    const links = document.getElementById('result-links');
+    links.classList.add('visible');
+    const extra = document.getElementById('link-extra');
+    if (extraUrl) {
+      extra.href = extraUrl;
+      extra.textContent = extraLabel;
+      extra.style.display = '';
+    } else {
+      extra.style.display = 'none';
+    }
+  }
+
+  function setLoading(prefix, btn) {
+    setStatus(prefix, 'loading', 'working...');
+    btn.disabled = true;
+  }
+
+  function setDone(prefix, btn) {
+    setStatus(prefix, 'success', 'done.');
+    btn.disabled = false;
+  }
+
+  function setError(prefix, btn, detail) {
+    setStatus(prefix, 'error', detail);
+    btn.disabled = false;
+  }
+
+  async function callAPI(endpoint, params) {
+    const url = new URL(API_BASE + endpoint);
+    Object.entries(params).forEach(([k, v]) => { if (v) url.searchParams.set(k, v); });
+    const res = await fetch(url);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(body.detail || res.statusText);
+    }
+    return res.json();
+  }
+
+  async function runPlot() {
+    const btn = event.target;
+    setLoading('plot', btn);
+    try {
+      const data = await callAPI('/plot', {
+        satellite: val('plot-satellite'),
+        date:      val('plot-date'),
+        time:      val('plot-time'),
+        lat:       val('plot-lat'),
+        lon:       val('plot-lon'),
+        band:      val('plot-band'),
+        cmap:      val('plot-cmap'),
+        zoom:      val('plot-zoom'),
+      });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), API_BASE + data.nc_url, 'download .nc');
+      setDone('plot', btn);
+    } catch (e) { setError('plot', btn, e.message); }
+  }
+
+  async function runMcfetch() {
+    const btn = event.target;
+    setLoading('mc', btn);
+    try {
+      const data = await callAPI('/mcfetch', {
+        satellite: val('mc-satellite'),
+        date:      val('mc-date'),
+        time:      val('mc-time'),
+        lat:       val('mc-lat'),
+        lon:       val('mc-lon'),
+        band:      val('mc-band'),
+        cmap:      val('mc-cmap'),
+        zoom:      val('mc-zoom'),
+      });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), API_BASE + data.nc_url, 'download .nc');
+      setDone('mc', btn);
+    } catch (e) { setError('mc', btn, e.message); }
+  }
+
+  async function runHafs() {
+    const btn = event.target;
+    setLoading('hafs', btn);
+    try {
+      const data = await callAPI('/hafs', {
+        storm:  val('hafs-storm'),
+        date:   val('hafs-date'),
+        init:   val('hafs-init'),
+        fhour:  val('hafs-fhour'),
+        var:    val('hafs-var'),
+        level:  val('hafs-level'),
+        model:  val('hafs-model'),
+        domain: val('hafs-domain'),
+      });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      setDone('hafs', btn);
+    } catch (e) { setError('hafs', btn, e.message); }
+  }
+
+  async function runTcprimed() {
+    const btn = event.target;
+    setLoading('tc', btn);
+    try {
+      const data = await callAPI('/tcprimed', {
+        storm:     val('tc-storm'),
+        satellite: val('tc-satellite'),
+        date:      val('tc-date'),
+        time:      val('tc-time'),
+        datatype:  val('tc-datatype') || 'mid',
+        color:     val('tc-color')    || 'false',
+      });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      setDone('tc', btn);
+    } catch (e) { setError('tc', btn, e.message); }
+  }
+
+  async function runAdeck() {
+    const btn = event.target;
+    setLoading('ad', btn);
+    try {
+      const data = await callAPI('/adeckavg', {
+        storm:  val('ad-storm'),
+        date:   val('ad-date'),
+        time:   val('ad-time'),
+        models: val('ad-models'),
+      });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      if (data.table && data.table.length) {
+        const tbody = document.getElementById('adeck-table-body');
+        tbody.innerHTML = data.table.map(r =>
+          `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`
+        ).join('');
+        document.getElementById('adeck-table-wrap').classList.add('visible');
+      }
+      setDone('ad', btn);
+    } catch (e) { setError('ad', btn, e.message); }
+  }
+
+  async function runHrrr() {
+    const btn = event.target;
+    setLoading('hr', btn);
+    try {
+      const data = await callAPI('/hrrr', {
+        region: val('hr-region'),
+        date:   val('hr-date'),
+        init:   val('hr-init'),
+        fhour:  val('hr-fhour'),
+        var:    val('hr-var'),
+        level:  val('hr-level'),
+      });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      setDone('hr', btn);
+    } catch (e) { setError('hr', btn, e.message); }
+  }
+
+  async function runErsst() {
+    const btn = event.target;
+    setLoading('er', btn);
+    try {
+      const data = await callAPI('/ersst', {
+        month: val('er-month'),
+        years: val('er-years').replace(/,*$/, ','),
+        type:  val('er-type'),
+        sd:    val('er-sd'),
+      });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      setDone('er', btn);
+    } catch (e) { setError('er', btn, e.message); }
+  }
+
+  // ── ACE ──────────────────────────────────────────────────────────────────
+
+  let _aceData = [];     // full row array [{year, ace, rank}]
+  let _aceTop10 = [];
+  let _aceBottom10 = [];
+  let _aceSortCol = 'rank';
+  let _aceSortAsc = true;
+
+  function renderAceTable() {
+    const rows = [..._aceData].sort((a, b) => {
+      const v = _aceSortAsc ? 1 : -1;
+      return a[_aceSortCol] < b[_aceSortCol] ? -v : a[_aceSortCol] > b[_aceSortCol] ? v : 0;
+    });
+    const top10Set    = new Set(_aceTop10);
+    const bottom10Set = new Set(_aceBottom10);
+    document.getElementById('ace-table-body').innerHTML = rows.map(r => {
+      const cls = top10Set.has(r.year) ? 'ace-top' : bottom10Set.has(r.year) ? 'ace-bot' : '';
+      return `<tr class="${cls}"><td>${r.rank}</td><td>${r.year}</td><td>${r.ace}</td></tr>`;
+    }).join('');
+  }
+
+  function sortAce(col) {
+    if (_aceSortCol === col) {
+      _aceSortAsc = !_aceSortAsc;
+    } else {
+      _aceSortCol = col;
+      _aceSortAsc = col === 'rank';   // rank/year default ascending, ace default descending
+      if (col === 'ace') _aceSortAsc = false;
+    }
+    ['rank', 'year', 'ace'].forEach(c => {
+      document.getElementById('ace-sort-' + c).textContent =
+        c === _aceSortCol ? (_aceSortAsc ? ' ▲' : ' ▼') : '';
+    });
+    renderAceTable();
+  }
+
+  async function runAce() {
+    const btn = event.target;
+    setLoading('ac', btn);
+    document.getElementById('ace-output-wrap').classList.remove('visible');
+    try {
+      const params = {
+        basin:      val('ac-basin'),
+        start_year: val('ac-start'),
+        end_year:   val('ac-end'),
+      };
+      const lat1 = val('ac-lat1'), lat2 = val('ac-lat2');
+      const lon1 = val('ac-lon1'), lon2 = val('ac-lon2');
+      if (lat1 && lat2) { params.lat1 = lat1; params.lat2 = lat2; }
+      if (lon1 && lon2) { params.lon1 = lon1; params.lon2 = lon2; }
+      const data = await callAPI('/ace', params);
+      _aceData    = data.years;
+      _aceTop10   = data.top10;
+      _aceBottom10 = data.bottom10;
+      _aceSortCol = 'rank';
+      _aceSortAsc = true;
+      document.getElementById('ace-sort-rank').textContent = ' ▲';
+      document.getElementById('ace-sort-year').textContent = '';
+      document.getElementById('ace-sort-ace').textContent  = '';
+      renderAceTable();
+      document.getElementById('ace-output-wrap').classList.add('visible');
+      switchView('table');
+      setDone('ac', btn);
+    } catch (e) { setError('ac', btn, e.message); }
+  }
+
+  function aceToErsst(which) {
+    const years = (which === 'top' ? _aceTop10 : _aceBottom10).join(',');
+    document.querySelector('.tab-btn[data-tab="ersst"]').click();
+    document.getElementById('er-years').value = years;
+  }
+
+  async function runEra5() {
+    const btn = event.target;
+    setLoading('e5', btn);
+    try {
+      const data = await callAPI('/era5', {
+        stormname: val('e5-storm'),
+        lat:       val('e5-lat'),
+        lon:       val('e5-lon'),
+        month:     val('e5-month'),
+        day:       val('e5-day'),
+        year:      val('e5-year'),
+        hour:      val('e5-hour'),
+        plottype:  val('e5-plottype'),
+        level:     val('e5-level'),
+      });
+      const extra = data.image_url2 ? API_BASE + data.image_url2 + '?t=' + Date.now() : null;
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), extra, 'shear distribution');
+      setDone('e5', btn);
+    } catch (e) { setError('e5', btn, e.message); }
+  }
+
+  async function runMetar() {
+    const btn = event.target;
+    setLoading('mt', btn);
+    try {
+      const data = await callAPI('/metar', {
+        station:  val('mt-station'),
+        plottype: val('mt-plottype'),
+      });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      setDone('mt', btn);
+    } catch (e) { setError('mt', btn, e.message); }
+  }
+
+  async function runRadar() {
+    const btn = event.target;
+    setLoading('rad', btn);
+    try {
+      const data = await callAPI('/radar', {
+        radar: val('rad-radar') || 'NONE',
+        date:  val('rad-date'),
+        time:  val('rad-time'),
+        lat:   val('rad-lat'),
+        lon:   val('rad-lon'),
+        cmap:  val('rad-cmap'),
+        zoom:  val('rad-zoom'),
+      });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      setDone('rad', btn);
+    } catch (e) { setError('rad', btn, e.message); }
+  }
+
+  async function runFdeck() {
+    const btn = event.target;
+    setLoading('fd', btn);
+    document.getElementById('fdeck-output-wrap').classList.remove('visible');
+    try {
+      const data = await callAPI('/fdeck', {
+        storm: val('fd-storm'),
+        year:  val('fd-year'),
+      });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      if (data.fixes && data.fixes.length) {
+        const lines = data.fixes.map(l => l.trim()).filter(l => l.length > 0);
+        window._fdeckLines = lines;
+        document.getElementById('fdeck-output-header').textContent =
+          `${lines.length} fix${lines.length !== 1 ? 'es' : ''}`;
+        document.getElementById('fdeck-output-body').innerHTML = lines.map((line, i) => {
+          const cells = line.split(',').map(c => `<td>${c.trim()}</td>`).join('');
+          return `<tr><td><button class="fix-plot-btn" onclick="plotFromFix(${i})">plot</button></td>${cells}</tr>`;
+        }).join('');
+        document.getElementById('fdeck-output-wrap').classList.add('visible');
+        switchView('table');
+      }
+      setDone('fd', btn);
+    } catch (e) { setError('fd', btn, e.message); }
+  }
+
+  function guessSatellite(basin, year) {
+    const y = parseInt(year);
+    const b = basin.toLowerCase();
+    if (b === 'al') {
+      if (y >= 1987 && y <= 1993) return 'b1';
+      if (y >= 2017 && y <= 2024) return '16';
+      if (y >= 2025)              return '19';
+    }
+    return '';
+  }
+
+  function plotFromFix(i) {
+    document.querySelectorAll('#fdeck-output-body tr').forEach(r => r.classList.remove('fix-row-active'));
+    document.querySelectorAll('#fdeck-output-body tr')[i].classList.add('fix-row-active');
+
+    const line   = window._fdeckLines[i];
+    const parts  = line.split(',').map(s => s.trim());
+    const dt     = parts[2];
+    const year   = dt.slice(0, 4);
+    const date   = `${dt.slice(4,6)}/${dt.slice(6,8)}/${year}`;
+    const time   = dt.slice(8,12);
+    const latStr = parts[7];
+    const lat    = (parseFloat(latStr.slice(0,-1)) / 100 * (latStr.slice(-1) === 'S' ? -1 : 1)).toFixed(1);
+    const lonStr = parts[8];
+    const lon    = (parseFloat(lonStr.slice(0,-1)) / 100 * (lonStr.slice(-1) === 'W' ? -1 : 1)).toFixed(1);
+    const sat    = guessSatellite(parts[0], year);
+
+    document.querySelector('.tab-btn[data-tab="plot"]').click();
+    switchView('output');
+    document.getElementById('plot-satellite').value = sat;
+    document.getElementById('plot-date').value = date;
+    document.getElementById('plot-time').value = time;
+    document.getElementById('plot-lat').value  = lat;
+    document.getElementById('plot-lon').value  = lon;
+    document.getElementById('plot-band').value = '13';
+    document.getElementById('plot-cmap').value = 'bd.5';
+  }
+
+  async function runShipsri() {
+    const btn = event.target;
+    setLoading('sh', btn);
+    try {
+      const data = await callAPI('/shipsri', {
+        storm: val('sh-storm'),
+        year:  val('sh-year'),
+        month: val('sh-month'),
+        day:   val('sh-day'),
+        hour:  val('sh-hour'),
+      });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      setDone('sh', btn);
+    } catch (e) { setError('sh', btn, e.message); }
+  }
+
+
+  // ── Persistence, Enter-to-submit, URL state ──
+
+  let _suppressHash = false;
+
+  function restoreInputs() {
+    document.querySelectorAll('.field input').forEach(i => {
+      const v = localStorage.getItem('cw_' + i.id);
+      if (v !== null) i.value = v;
+    });
+  }
+
+  function updateHash() {
+    if (_suppressHash) return;
+    const p = new URLSearchParams({ tab: activeTab });
+    const panel = document.getElementById('params-' + activeTab);
+    if (panel) panel.querySelectorAll('input').forEach(i => {
+      if (i.value.trim()) p.set(i.id, i.value.trim());
+    });
+    history.replaceState(null, '', '#' + p.toString());
+  }
+
+  function applyHash() {
+    if (!window.location.hash || window.location.hash === '#') return false;
+    const p = new URLSearchParams(window.location.hash.slice(1));
+    const tab = p.get('tab');
+    _suppressHash = true;
+    if (tab === 'about') {
+      document.getElementById('info-btn').click();
+    } else if (tab) {
+      document.querySelector(`.tab-btn[data-tab="${tab}"]`)?.click();
+    }
+    p.forEach((v, k) => { if (k !== 'tab') { const el = document.getElementById(k); if (el) el.value = v; } });
+    _suppressHash = false;
+    updateHash();
+    return true;
+  }
+
+  // Per-input: save to localStorage + debounced hash update; Enter → submit
+  let _ht = null;
+  document.querySelectorAll('.field input').forEach(i => {
+    i.addEventListener('input', () => {
+      localStorage.setItem('cw_' + i.id, i.value);
+      clearTimeout(_ht); _ht = setTimeout(updateHash, 400);
+    });
+    i.addEventListener('keydown', e => {
+      if (e.key === 'Enter') i.closest('.param-panel')?.querySelector('button.submit')?.click();
+    });
+  });
+
+  // Initialize: hash takes priority over localStorage
+  if (!applyHash()) {
+    restoreInputs();
+    const t = localStorage.getItem('cw_tab');
+    _suppressHash = true;
+    if (t === 'about') document.getElementById('info-btn').click();
+    else if (t) document.querySelector(`.tab-btn[data-tab="${t}"]`)?.click();
+    _suppressHash = false;
+  }
+
+</script>
+</body>
+</html>
