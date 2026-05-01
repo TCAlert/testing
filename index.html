@@ -71,6 +71,9 @@
     .field input:focus { outline: 1px solid #111; }
     .field input.optional { border-style: dashed; }
     .field .hint { font-size: 11px; color: #888; }
+    .stepper { display: flex; gap: .3rem; margin-top: .1rem; }
+    .step-btn { flex: 1; background: #fff; border: 1px solid #999; color: #111; cursor: pointer; font-family: inherit; font-size: 11px; padding: .2rem .3rem; }
+    .step-btn:hover { background: #f0f0f0; }
 
     button.submit {
       background: #111;
@@ -85,6 +88,18 @@
     }
     button.submit:disabled { opacity: .4; cursor: not-allowed; }
     button.submit:hover:not(:disabled) { background: #333; }
+    #sd-anomaly.active { background: #111 !important; color: #fff !important; }
+    #sd-anomaly.active:hover { background: #333 !important; }
+    #gdmi-cum.active { background: #111 !important; color: #fff !important; }
+    #gdmi-cum.active:hover { background: #333 !important; }
+    #track-gridded-btn.active { background: #111 !important; color: #fff !important; }
+    #track-gridded-btn.active:hover { background: #333 !important; }
+    #em-anomaly.active { background: #111 !important; color: #fff !important; }
+    #em-anomaly.active:hover { background: #333 !important; }
+    #em-contour.active { background: #111 !important; color: #fff !important; }
+    #em-contour.active:hover { background: #333 !important; }
+    .cbar-advanced { display: none; }
+    .cbar-advanced.open { display: contents; }
 
     .status { font-size: 10px; min-height: .9rem; }
     .status.loading { color: #555; }
@@ -123,6 +138,47 @@
       border-bottom-color: #fff;
       background: #fff;
     }
+    .tab-dropdown { position: relative; display: inline-block; }
+    .tab-dropdown-btn {
+      background: none;
+      border: 1px solid transparent;
+      border-bottom: none;
+      color: #666;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px;
+      padding: .3rem .85rem;
+      margin-bottom: -1px;
+    }
+    .tab-dropdown-btn:hover { color: #111; }
+    .tab-dropdown-btn.child-active {
+      color: #111;
+      border-color: #aaa;
+      border-bottom-color: #fff;
+      background: #fff;
+    }
+    .tab-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 1px);
+      left: 0;
+      background: #fff;
+      border: 1px solid #aaa;
+      z-index: 200;
+      flex-direction: column;
+      min-width: 100%;
+    }
+    .tab-dropdown.open .tab-dropdown-menu { display: flex; }
+    .tab-dropdown-menu .tab-btn {
+      border: none;
+      border-bottom: 1px solid #eee;
+      margin: 0;
+      white-space: nowrap;
+      text-align: left;
+    }
+    .tab-dropdown-menu .tab-btn:last-child { border-bottom: none; }
+    .tab-dropdown-menu .tab-btn:hover,
+    .tab-dropdown-menu .tab-btn.active { background: #f5f5f5; color: #111; }
 
     /* ── Image area ── */
     .image-area {
@@ -230,6 +286,15 @@
     }
     .ref-table td.note { color: #666; }
     .ref-table tr:nth-child(even) td { background: #f8f8f8; }
+    .ref-btn {
+      font-size: 10px;
+      padding: .1rem .4rem;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #333;
+      cursor: pointer;
+    }
+    .ref-btn:hover { background: #f0f0f0; }
 
     .tag-list {
       display: flex;
@@ -510,6 +575,101 @@
       <div class="status" id="plot-status"></div>
     </div>
 
+    <div class="param-panel" id="params-satanalysis">
+      <div class="param-title">IR Analysis</div>
+      <div class="param-desc">Satellite IR diagnostic and structure analysis.</div>
+      <div class="field">
+        <label>STORM NAME</label>
+        <input id="sa-storm" type="text" placeholder="Irma" />
+        <span class="hint">IBTrACS name</span>
+      </div>
+      <div class="field">
+        <label>DATE</label>
+        <input id="sa-date" type="text" placeholder="MM/DD/YYYY" />
+      </div>
+      <div class="field">
+        <label>TIME (UTC)</label>
+        <input id="sa-time" type="text" placeholder="1800" maxlength="4" />
+      </div>
+      <div class="field">
+        <label>BAND</label>
+        <select id="sa-band" style="font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.2rem .3rem;background:#fff;width:100%">
+          <optgroup label="Water Vapor">
+            <option value="8">8 — Upper WV (6.2 µm)</option>
+            <option value="9">9 — Mid WV (6.9 µm)</option>
+            <option value="10">10 — Low WV (7.3 µm)</option>
+          </optgroup>
+          <optgroup label="Infrared">
+            <option value="11">11 — Cloud-Top (8.4 µm)</option>
+            <option value="12">12 — Ozone (9.6 µm)</option>
+            <option value="13" selected>13 — Clean IR (10.3 µm)</option>
+            <option value="14">14 — IR Longwave (11.2 µm)</option>
+            <option value="15">15 — Dirty IR (12.3 µm)</option>
+            <option value="16">16 — CO2 (13.3 µm)</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="field">
+        <label>MODE</label>
+        <select id="sa-mode" style="font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.2rem .3rem;background:#fff"
+                onchange="var fd=this.value==='framediff';document.getElementById('sa-delta-wrap').style.display=fd?'':'none';document.getElementById('sa-filtration').style.display=fd?'':'none'">
+          <option value="diag">Diagnostic</option>
+          <option value="structure">Structure</option>
+          <option value="framediff">Frame Difference</option>
+        </select>
+      </div>
+      <div class="field" id="sa-delta-wrap" style="display:none">
+        <label>DELTA</label>
+        <select id="sa-delta" style="font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.2rem .3rem;background:#fff">
+          <option value="1">1 min</option>
+          <option value="5">5 min</option>
+          <option value="10">10 min</option>
+          <option value="30">30 min</option>
+          <option value="60">1 hr</option>
+          <option value="180" selected>3 hr</option>
+          <option value="360">6 hr</option>
+          <option value="720">12 hr</option>
+        </select>
+      </div>
+      <button type="button" onclick="document.getElementById('sa-adv').classList.toggle('open');this.textContent=document.getElementById('sa-adv').classList.contains('open')?'▲ advanced':'▼ advanced'"
+              style="margin-top:.2rem;font-family:inherit;font-size:9px;letter-spacing:.04em;
+                     padding:.2rem .5rem;border:1px solid #aaa;background:#fff;color:#555;
+                     cursor:pointer;align-self:flex-start">▼ advanced</button>
+      <div id="sa-adv" class="cbar-advanced">
+        <div class="field">
+          <label>LAT</label>
+          <input id="sa-lat" type="text" placeholder="25.0" class="optional" />
+          <span class="hint">overrides storm lookup</span>
+        </div>
+        <div class="field">
+          <label>LON</label>
+          <input id="sa-lon" type="text" placeholder="-80.0" class="optional" />
+        </div>
+        <div class="field">
+          <label>SATELLITE</label>
+          <input id="sa-satellite" type="text" placeholder="auto" class="optional" />
+          <span class="hint">auto: 19 (2025+), 18 (2022+), 16</span>
+        </div>
+        <div class="field">
+          <label>COLORMAP</label>
+          <input id="sa-cmap" type="text" placeholder="auto" class="optional" />
+          <span class="hint">optional</span>
+        </div>
+        <div class="field">
+          <label>MESO</label>
+          <input id="sa-meso" type="text" placeholder="1 or 2" class="optional" />
+          <span class="hint">omit for full disk</span>
+        </div>
+        <button id="sa-filtration" type="button" class="active" onclick="this.classList.toggle('active')"
+                style="display:none;margin-top:.3rem;font-family:inherit;font-size:9px;letter-spacing:.04em;
+                       padding:.2rem .5rem;border:1px solid #111;background:#fff;color:#111;
+                       cursor:pointer;align-self:flex-start"
+                >FILTER</button>
+      </div>
+      <button class="submit" onclick="runSatAnalysis()">run</button>
+      <div class="status" id="satanalysis-status"></div>
+    </div>
+
     <div class="param-panel" id="params-mcfetch">
       <div class="param-title">McIDAS</div>
       <div class="param-desc">Older geostationary archive via SSEC. Covers GOES 1–15, GMS, MTSAT, early Himawari.</div>
@@ -596,6 +756,55 @@
       </div>
       <button class="submit" onclick="runHafs()">run</button>
       <div class="status" id="hafs-status"></div>
+    </div>
+
+    <div class="param-panel" id="params-gdmi">
+      <div class="param-title">DeepMind</div>
+      <div class="param-desc">Google DeepMind FNV3 1000-member ensemble TC track density map.</div>
+      <div class="field">
+        <label>INIT DATE</label>
+        <input id="gdmi-init" type="text" placeholder="MM/DD/YYYY" />
+      </div>
+      <div class="field">
+        <label>INIT HOUR (UTC)</label>
+        <input id="gdmi-init-hr" type="text" placeholder="12" maxlength="2" />
+        <div class="stepper">
+          <button class="step-btn" onclick="stepGdmiTime('init',-1)">&#9664; 6h</button>
+          <button class="step-btn" onclick="stepGdmiTime('init',+1)">6h &#9654;</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>VALID DATE</label>
+        <input id="gdmi-date" type="text" placeholder="MM/DD/YYYY" />
+      </div>
+      <div class="field">
+        <label>VALID HOUR (UTC)</label>
+        <input id="gdmi-date-hr" type="text" placeholder="12" maxlength="2" />
+        <div class="stepper">
+          <button class="step-btn" onclick="stepGdmiTime('valid',-1)">&#9664; 6h</button>
+          <button class="step-btn" onclick="stepGdmiTime('valid',+1)">6h &#9654;</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>REGION</label>
+        <input id="gdmi-region" type="text" placeholder="NATL" class="optional" />
+        <span class="hint">optional</span>
+      </div>
+      <button id="gdmi-cum" type="button" class="active" onclick="this.classList.toggle('active')"
+              style="margin-top:.3rem;font-family:inherit;font-size:9px;letter-spacing:.04em;
+                     padding:.2rem .5rem;border:1px solid #111;background:#fff;color:#111;
+                     cursor:pointer;align-self:flex-start"
+              >CUM</button>
+      <button class="submit" onclick="runGdmi()">run</button>
+      <div class="status" id="gdmi-status"></div>
+      <div id="series-table-wrap" style="display:none;margin-top:.5rem;max-height:300px;overflow-y:auto">
+        <table class="adeck-table" style="width:100%">
+          <thead>
+            <tr><th>FHOUR</th><th>LAT</th><th>LON</th><th>VMAX (kt)</th></tr>
+          </thead>
+          <tbody id="series-table-body"></tbody>
+        </table>
+      </div>
     </div>
 
     <div class="param-panel" id="params-tcprimed">
@@ -688,6 +897,85 @@
       <div class="status" id="sh-status"></div>
     </div>
 
+    <div class="param-panel" id="params-ships-lsdiag">
+      <div class="param-title">SHIPS Diagnostics</div>
+      <div class="param-desc">Historical SHIPS lsdiag environmental diagnostics — AL/EP 1982–2023, WP/IO/SH 1990–2021.</div>
+      <div class="field">
+        <label>BASIN</label>
+        <select id="sd-basin" style="font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.2rem .3rem;background:#fff" onchange="reloadShipsStorms()">
+          <option value="AL">AL (Atlantic)</option>
+          <option value="EP">EP (East Pacific)</option>
+          <option value="WP">WP (West Pacific)</option>
+          <option value="IO">IO (Indian Ocean)</option>
+          <option value="SH">SH (Southern Hemisphere)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>YEAR</label>
+        <select id="sd-year" style="font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.2rem .3rem;background:#fff"></select>
+      </div>
+      <div class="field">
+        <label>STORM</label>
+        <select id="sd-storm" style="font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.2rem .3rem;background:#fff;width:100%"></select>
+      </div>
+      <div class="field">
+        <label>PREDICTOR</label>
+        <select id="sd-pred" style="font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.2rem .3rem;background:#fff;width:100%">
+          <option value="composite">composite</option>
+          <option value="SHDC">deep shear (0–500 km)</option>
+          <option value="SHRS">850–500 hPa shear</option>
+          <option value="SHGC">generalized shear</option>
+          <option value="DSST">SST</option>
+          <option value="HEAD">MPI headroom</option>
+          <option value="VMPI">MPI</option>
+          <option value="RHMD">mid-level RH</option>
+          <option value="RHLO">low-level RH</option>
+          <option value="NOHC">ocean heat content</option>
+          <option value="T200">200 hPa temperature</option>
+          <option value="D200">200 hPa divergence</option>
+          <option value="Z850">850 hPa vorticity</option>
+          <option value="PENV">env. pressure anomaly</option>
+          <option value="VPR">ventilation index (proxy)</option>
+        </select>
+      </div>
+      <button id="sd-anomaly" type="button" onclick="this.classList.toggle('active')"
+              style="margin-top:.3rem;font-family:inherit;font-size:9px;letter-spacing:.04em;
+                     padding:.2rem .5rem;border:1px solid #111;background:#fff;color:#111;
+                     cursor:pointer;align-self:flex-start"
+              >ANOM</button>
+      <button class="submit" onclick="runShipsMap()">run map</button>
+      <div class="param-title" style="margin-top:.7rem;font-size:8px;letter-spacing:.04em">RT / RECENT STORM</div>
+      <div class="param-desc" style="margin-bottom:.3rem">2023–present storms. Uses ATCF b-deck (past track) + NHC stext forecasts.</div>
+      <div class="field">
+        <label>STORM ID</label>
+        <input id="sd-rt-storm" type="text" placeholder="e.g. AL052024" maxlength="8"
+               style="font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.2rem .3rem;width:100%;box-sizing:border-box">
+      </div>
+      <div style="display:flex;gap:.3rem">
+        <div class="field" style="flex:1">
+          <label>MON</label>
+          <input id="sd-rt-mon" type="number" min="1" max="12" placeholder="8"
+                 style="font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.2rem .3rem;width:100%;box-sizing:border-box">
+        </div>
+        <div class="field" style="flex:1">
+          <label>DAY</label>
+          <input id="sd-rt-day" type="number" min="1" max="31" placeholder="17"
+                 style="font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.2rem .3rem;width:100%;box-sizing:border-box">
+        </div>
+        <div class="field" style="flex:1">
+          <label>HR</label>
+          <select id="sd-rt-hr" style="font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.2rem .3rem;width:100%">
+            <option value="">auto</option>
+            <option value="00">00z</option>
+            <option value="06">06z</option>
+            <option value="12">12z</option>
+            <option value="18">18z</option>
+          </select>
+        </div>
+      </div>
+      <button class="submit" onclick="runShipsMapRT()">run rt map</button>
+      <div class="status" id="sd-status"></div>
+    </div>
 
     <div class="param-panel" id="params-hrrr">
       <div class="param-title">HRRR</div>
@@ -752,13 +1040,87 @@
       <div class="status" id="er-status"></div>
     </div>
 
+    <div class="param-panel" id="params-20cr">
+      <div class="param-title">20CR Composite</div>
+      <div class="param-desc">20th Century Reanalysis v3 geopotential height anomaly composites with 30-year sliding climatology via PSL OPeNDAP.</div>
+      <div class="field">
+        <label>MONTH</label>
+        <input id="cr-month" type="text" placeholder="6" maxlength="2" />
+        <span class="hint">1–12</span>
+      </div>
+      <div class="field">
+        <label>YEARS</label>
+        <input id="cr-years" type="text" placeholder="1997,2015,2023" />
+        <span class="hint">comma-separated</span>
+      </div>
+      <div class="field">
+        <label>LEVEL</label>
+        <input id="cr-hgt" type="text" placeholder="500" class="optional" />
+        <span class="hint">pressure level in mb — optional</span>
+      </div>
+      <div class="field">
+        <label>TYPE</label>
+        <input id="cr-type" type="text" placeholder="anomalies" class="optional" />
+        <span class="hint">anomalies or std — optional</span>
+      </div>
+      <div class="field">
+        <label>STANDARDIZED</label>
+        <input id="cr-sd" type="text" placeholder="false" class="optional" />
+        <span class="hint">true or false — optional</span>
+      </div>
+      <div class="field">
+        <label>REGION</label>
+        <input id="cr-region" type="text" placeholder="NA" class="optional" />
+        <span class="hint">region key — optional</span>
+      </div>
+      <button class="submit" onclick="runCr20()">run</button>
+      <div class="status" id="cr-status"></div>
+    </div>
+
+    <div class="param-panel" id="params-ersst-ts">
+      <div class="param-title">ERSST Timeseries</div>
+      <div class="param-desc">ERSSTv5 regional SST anomaly timeseries via PSL OPeNDAP. Click column headers to sort. Top/bottom 10 years link to ERSST composite.</div>
+      <div class="field">
+        <label>MONTH</label>
+        <input id="et-month" type="text" placeholder="9" maxlength="2" />
+        <span class="hint">1–12</span>
+      </div>
+      <div class="field">
+        <label>START YEAR</label>
+        <input id="et-start" type="text" placeholder="1950" maxlength="4" />
+      </div>
+      <div class="field">
+        <label>END YEAR</label>
+        <input id="et-end" type="text" placeholder="2024" maxlength="4" />
+      </div>
+      <div class="field">
+        <label>LAT BOUNDS</label>
+        <input id="et-lat1" type="text" placeholder="0" style="width:3.5rem" />
+        <span style="padding:0 .2rem">–</span>
+        <input id="et-lat2" type="text" placeholder="30" style="width:3.5rem" />
+        <span class="hint">S to N</span>
+      </div>
+      <div class="field">
+        <label>LON BOUNDS</label>
+        <input id="et-lon1" type="text" placeholder="160" style="width:3.5rem" />
+        <span style="padding:0 .2rem">–</span>
+        <input id="et-lon2" type="text" placeholder="270" style="width:3.5rem" />
+        <span class="hint">W to E (0–360)</span>
+      </div>
+      <button class="submit" onclick="runErsstTs()">run</button>
+      <div class="status" id="et-status"></div>
+    </div>
+
     <div class="param-panel" id="params-ace">
       <div class="param-title">ACE Timeseries</div>
-      <div class="param-desc">Accumulated Cyclone Energy by year from HURDAT2. Click column headers to sort. Top/bottom 10 years link to ERSST composite.</div>
+      <div class="param-desc">Accumulated Cyclone Energy by year. Click column headers to sort. Top/bottom 10 years link to ERSST composite.</div>
       <div class="field">
         <label>BASIN</label>
-        <input id="ac-basin" type="text" placeholder="AL" maxlength="2" />
-        <span class="hint">AL EP</span>
+        <select id="ac-basin">
+          <option value="AL" selected>Atlantic (AL)</option>
+          <option value="EP">East Pacific (EP)</option>
+          <option value="WP">West Pacific (WP)</option>
+        </select>
       </div>
       <div class="field">
         <label>START YEAR</label>
@@ -767,6 +1129,13 @@
       <div class="field">
         <label>END YEAR</label>
         <input id="ac-end" type="text" placeholder="2024" maxlength="4" />
+      </div>
+      <div class="field">
+        <label>CUTOFF</label>
+        <input id="ac-day2" type="text" placeholder="MM-DD" maxlength="5" class="optional" style="width:4rem" />
+        <span style="padding:0 .2rem">–</span>
+        <input id="ac-day" type="text" placeholder="12-31" maxlength="5" class="optional" style="width:4rem" value="12-31" />
+        <span class="hint">optional, MM-DD range</span>
       </div>
       <div class="field">
         <label>LAT BOUNDS</label>
@@ -784,6 +1153,49 @@
       </div>
       <button class="submit" onclick="runAce()">run</button>
       <div class="status" id="ac-status"></div>
+    </div>
+
+    <div class="param-panel" id="params-pca">
+      <div class="param-title">ERSST PCA / EOF</div>
+      <div class="param-desc">Empirical Orthogonal Function analysis of ERSSTv5 SST anomalies. Returns the PC timeseries for the selected EOF, detrended and z-scored.</div>
+      <div class="field">
+        <label>START YEAR</label>
+        <input id="pca-start" type="text" placeholder="1951" maxlength="4" />
+      </div>
+      <div class="field">
+        <label>END YEAR</label>
+        <input id="pca-end" type="text" placeholder="2025" maxlength="4" />
+      </div>
+      <div class="field">
+        <label>LAT BOUNDS</label>
+        <input id="pca-lat1" type="text" placeholder="0" style="width:3.5rem" />
+        <span style="padding:0 .2rem">–</span>
+        <input id="pca-lat2" type="text" placeholder="70" style="width:3.5rem" />
+        <span class="hint">S to N</span>
+      </div>
+      <div class="field">
+        <label>LON BOUNDS</label>
+        <input id="pca-lon1" type="text" placeholder="270" style="width:3.5rem" />
+        <span style="padding:0 .2rem">–</span>
+        <input id="pca-lon2" type="text" placeholder="359" style="width:3.5rem" />
+        <span class="hint">W to E</span>
+      </div>
+      <div class="field">
+        <label>EOF NUM</label>
+        <input id="pca-eof" type="text" placeholder="1" maxlength="2" />
+      </div>
+      <div class="field">
+        <label>PCA MONTHS</label>
+        <input id="pca-months" type="text" placeholder="1,2,...,12" class="optional" />
+        <span class="hint">optional, comma-sep, default all 12</span>
+      </div>
+      <div class="field">
+        <label>TABLE MONTH</label>
+        <input id="pca-table-month" type="text" placeholder="" maxlength="2" class="optional" />
+        <span class="hint">optional, default: avg across PCA months</span>
+      </div>
+      <button class="submit" onclick="runPca()">run</button>
+      <div class="status" id="pca-status"></div>
     </div>
 
     <div class="param-panel" id="params-era5">
@@ -832,6 +1244,218 @@
       </div>
       <button class="submit" onclick="runEra5()">run</button>
       <div class="status" id="e5-status"></div>
+    </div>
+
+    <div class="param-panel" id="params-icoads">
+      <div class="param-title">ICOADS Ship Observations</div>
+      <div class="param-desc">ICOADS marine surface observations overlaid on ERA5 background fields via CDS API.</div>
+      <div class="field">
+        <label>STORM NAME</label>
+        <input id="ic-storm" type="text" placeholder="Dorian" class="optional" />
+        <span class="hint">HURDAT2 name — overrides lat/lon if provided</span>
+      </div>
+      <div class="field">
+        <label>MONTH</label>
+        <input id="ic-month" type="text" placeholder="9" maxlength="2" />
+      </div>
+      <div class="field">
+        <label>DAY</label>
+        <input id="ic-day" type="text" placeholder="3" maxlength="2" />
+      </div>
+      <div class="field">
+        <label>YEAR</label>
+        <input id="ic-year" type="text" placeholder="2019" maxlength="4" />
+      </div>
+      <div class="field">
+        <label>HOUR (UTC)</label>
+        <input id="ic-hour" type="text" placeholder="12" maxlength="2" />
+      </div>
+      <div class="field">
+        <label>PLOTTYPE</label>
+        <input id="ic-plottype" type="text" placeholder="wind" />
+        <span class="hint">wind temp tempadv thetae divergence mslp</span>
+      </div>
+      <div class="field">
+        <label>LEVEL</label>
+        <input id="ic-level" type="text" placeholder="1000" class="optional" />
+        <span class="hint">hPa — required for pressure-level plots</span>
+      </div>
+      <button type="button" onclick="document.getElementById('ic-adv').classList.toggle('open');this.textContent=document.getElementById('ic-adv').classList.contains('open')?'▲ advanced':'▼ advanced'"
+              style="margin-top:.2rem;font-family:inherit;font-size:9px;letter-spacing:.04em;
+                     padding:.2rem .5rem;border:1px solid #aaa;background:#fff;color:#555;
+                     cursor:pointer;align-self:flex-start">▼ advanced</button>
+      <div id="ic-adv" class="cbar-advanced">
+        <div class="field">
+          <label>LAT OVERRIDE</label>
+          <input id="ic-lat" type="text" placeholder="25.0" class="optional" />
+          <span class="hint">overrides storm name lookup</span>
+        </div>
+        <div class="field">
+          <label>LON OVERRIDE</label>
+          <input id="ic-lon" type="text" placeholder="-80.0" class="optional" />
+        </div>
+      </div>
+      <button class="submit" onclick="runIcoads()">run</button>
+      <div class="status" id="ic-status"></div>
+    </div>
+
+    <div class="param-panel" id="params-era5m">
+      <div class="param-title">ERA5 Monthly Composite</div>
+      <div class="param-desc">0.25° ERA5 monthly mean or anomaly composites via CDS API. Fixed 1991–2020 climatology.</div>
+      <div class="field">
+        <label>VARIABLE</label>
+        <select id="em-var" style="font-family:inherit;font-size:13px;border:1px solid #999;padding:.25rem .35rem;background:#fff;width:100%;color:#111">
+          <option value="shear">shear</option>
+          <option value="uwnd">uwnd</option>
+          <option value="hgt">hgt</option>
+          <option value="rh">rh</option>
+          <option value="thetae">thetae</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>MONTH</label>
+        <input id="em-month" type="text" placeholder="8" maxlength="2" />
+        <span class="hint">1–12</span>
+      </div>
+      <div class="field">
+        <label>YEARS</label>
+        <input id="em-years" type="text" placeholder="1997,2005,2010" />
+        <span class="hint">comma-separated</span>
+      </div>
+      <div class="field">
+        <label>REGION</label>
+        <select id="em-region" style="font-family:inherit;font-size:13px;border:1px solid #999;padding:.25rem .35rem;background:#fff;width:100%;color:#111">
+          <option value="custom">custom (set extent below)</option>
+          <optgroup label="Atlantic">
+            <option value="natl" selected>NATL</option>
+            <option value="tatl">TATL</option>
+            <option value="catl">CATL</option>
+            <option value="watl">WATL</option>
+            <option value="eatl">EATL</option>
+            <option value="fnatl">FNATL</option>
+            <option value="nwatl">NWATL</option>
+            <option value="neatl">NEATL</option>
+            <option value="swatl">SWATL</option>
+            <option value="seatl">SEATL</option>
+            <option value="mdr">MDR</option>
+            <option value="cv">CV</option>
+            <option value="sub">SUB</option>
+            <option value="satl1">SATL1</option>
+            <option value="satl2">SATL2</option>
+            <option value="satl3">SATL3</option>
+          </optgroup>
+          <optgroup label="Caribbean / Gulf">
+            <option value="car">CAR</option>
+            <option value="gom">GOM</option>
+            <option value="cag">CAG</option>
+            <option value="ca">CA</option>
+            <option value="ga">GA</option>
+            <option value="la">LA</option>
+          </optgroup>
+          <optgroup label="East Pacific">
+            <option value="epac">EPAC</option>
+            <option value="epac2">EPAC2</option>
+            <option value="cpac">CPAC</option>
+            <option value="hi">HI</option>
+            <option value="tpac">TPAC</option>
+          </optgroup>
+          <optgroup label="West Pacific">
+            <option value="wpac">WPAC</option>
+            <option value="wpac2">WPAC2</option>
+            <option value="wmdr">WMDR</option>
+            <option value="nmdr">NMDR</option>
+            <option value="phil">PHIL</option>
+            <option value="nwpac">NWPAC</option>
+            <option value="guam">GUAM</option>
+            <option value="scs">SCS</option>
+          </optgroup>
+          <optgroup label="Indian Ocean">
+            <option value="io">IO</option>
+            <option value="swio">SWIO</option>
+            <option value="seio">SEIO</option>
+            <option value="bob">BOB</option>
+            <option value="arb">ARB</option>
+          </optgroup>
+          <optgroup label="Pacific Basin">
+            <option value="npac">NPAC</option>
+            <option value="npac2">NPAC2</option>
+            <option value="enso">ENSO</option>
+            <option value="enso2">ENSO2</option>
+            <option value="eq">EQ</option>
+          </optgroup>
+          <optgroup label="Southern Hemisphere">
+            <option value="aus">AUS</option>
+            <option value="spac">SPAC</option>
+            <option value="scpac">SCPAC</option>
+            <option value="sepac">SEPAC</option>
+            <option value="sams">SAMS</option>
+            <option value="samn">SAMN</option>
+          </optgroup>
+          <optgroup label="Other">
+            <option value="us">US</option>
+            <option value="nam">NAM</option>
+            <option value="wus">WUS</option>
+            <option value="eus">EUS</option>
+            <option value="nafr">NAFR</option>
+            <option value="medi">MEDI</option>
+            <option value="global">GLOBAL</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="field">
+        <label>LEVEL</label>
+        <input id="em-level" type="text" placeholder="850" class="optional" />
+        <span class="hint">hPa — optional</span>
+      </div>
+      <button id="em-anomaly" type="button" onclick="this.classList.toggle('active')"
+              style="margin-top:.3rem;font-family:inherit;font-size:9px;letter-spacing:.04em;
+                     padding:.2rem .5rem;border:1px solid #111;background:#fff;color:#111;
+                     cursor:pointer;align-self:flex-start"
+              >ANOMALY</button>
+      <button type="button" onclick="document.getElementById('em-cbar').classList.toggle('open');this.textContent=document.getElementById('em-cbar').classList.contains('open')?'▲ advanced':'▼ advanced'"
+              style="margin-top:.2rem;font-family:inherit;font-size:9px;letter-spacing:.04em;
+                     padding:.2rem .5rem;border:1px solid #aaa;background:#fff;color:#555;
+                     cursor:pointer;align-self:flex-start">▼ advanced</button>
+      <div id="em-cbar" class="cbar-advanced">
+        <div class="field">
+          <label>CBAR MIN</label>
+          <input id="em-mini" type="text" placeholder="-30" class="optional" />
+        </div>
+        <div class="field">
+          <label>CBAR MAX</label>
+          <input id="em-maxi" type="text" placeholder="30" class="optional" />
+        </div>
+        <div class="field">
+          <label>CBAR STEP</label>
+          <input id="em-steps" type="text" placeholder="5" class="optional" />
+        </div>
+        <button id="em-contour" type="button" class="active" onclick="this.classList.toggle('active')"
+                style="margin-top:.2rem;font-family:inherit;font-size:9px;letter-spacing:.04em;
+                       padding:.2rem .5rem;border:1px solid #111;background:#fff;color:#111;
+                       cursor:pointer;align-self:flex-start"
+                >CONTOUR</button>
+        <div style="margin-top:.4rem;font-size:9px;letter-spacing:.04em;color:#555;font-weight:bold">CUSTOM EXTENT (overrides region)</div>
+        <div class="field">
+          <label>WEST LON</label>
+          <input id="em-lon1" type="text" placeholder="-100" class="optional" />
+          <span class="hint">negative = west of prime meridian</span>
+        </div>
+        <div class="field">
+          <label>EAST LON</label>
+          <input id="em-lon2" type="text" placeholder="-10" class="optional" />
+        </div>
+        <div class="field">
+          <label>SOUTH LAT</label>
+          <input id="em-lat1" type="text" placeholder="0" class="optional" />
+          <span class="hint">negative = southern hemisphere</span>
+        </div>
+        <div class="field">
+          <label>NORTH LAT</label>
+          <input id="em-lat2" type="text" placeholder="40" class="optional" />
+        </div>
+      </div>
+      <button class="submit" onclick="runEra5m()">run</button>
+      <div class="status" id="em-status"></div>
     </div>
 
     <div class="param-panel" id="params-metar">
@@ -892,15 +1516,23 @@
 
     <div class="param-panel" id="params-fdeck">
       <div class="param-title">F-Deck Fixes</div>
-      <div class="param-desc">Subjective Dvorak (DVTS) fixes from the NHC F-Deck, colored by CI number.</div>
+      <div class="param-desc">Dvorak fixes from the NHC F-Deck, colored by CI number.</div>
       <div class="field">
         <label>STORM ID</label>
-        <input id="fd-storm" type="text" placeholder="AL11" maxlength="6" />
+        <input id="fd-storm" type="text" placeholder="AL11" maxlength="100" />
         <span class="hint">basin + number, e.g. AL11 EP05 CP01</span>
       </div>
       <div class="field">
         <label>YEAR</label>
         <input id="fd-year" type="text" placeholder="2017" maxlength="4" />
+      </div>
+      <div class="field">
+        <label>FIX TYPE</label>
+        <select id="fd-fixtype" style="font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.1rem .2rem;background:#fff">
+          <option value="DVTS">Subjective Dvorak (DVTS)</option>
+          <option value="DVTO">Objective Dvorak (DVTO)</option>
+          <option value="AIRC">Aircraft (AIRC)</option>
+        </select>
       </div>
       <button class="submit" onclick="runFdeck()">run</button>
       <div class="status" id="fd-status"></div>
@@ -915,19 +1547,47 @@
   <!-- ── Right: tabs + image ── -->
   <div class="right-panel">
     <div class="tabs">
-      <button class="tab-btn active" data-tab="plot">GOES / Himawari</button>
-      <button class="tab-btn"        data-tab="mcfetch">MCFETCH</button>
-      <button class="tab-btn"        data-tab="radar">NEXRAD</button>
-      <button class="tab-btn"        data-tab="tcprimed">TC-PRIMED</button>
-      <button class="tab-btn"        data-tab="hafs">HAFS</button>
-      <button class="tab-btn"        data-tab="hrrr">HRRR</button>
-      <button class="tab-btn"        data-tab="era5">ERA5</button>
-      <button class="tab-btn"        data-tab="ersst">ERSST</button>
-      <button class="tab-btn"        data-tab="ace">ACE</button>
-      <button class="tab-btn"        data-tab="adeck">A-Deck</button>
-      <button class="tab-btn"        data-tab="fdeck">F-Deck</button>
-      <button class="tab-btn"        data-tab="shipsri">SHIPS RI</button>
-      <button class="tab-btn"        data-tab="metar">METAR</button>
+      <div class="tab-dropdown">
+        <button class="tab-dropdown-btn child-active">imagery ▾</button>
+        <div class="tab-dropdown-menu">
+          <button class="tab-btn active" data-tab="plot">GOES / Himawari</button>
+          <button class="tab-btn"        data-tab="satanalysis">Analysis</button>
+          <button class="tab-btn"        data-tab="mcfetch">MCFETCH</button>
+          <button class="tab-btn"        data-tab="radar">NEXRAD</button>
+          <button class="tab-btn"        data-tab="tcprimed">TC-PRIMED</button>
+        </div>
+      </div>
+      <div class="tab-dropdown">
+        <button class="tab-dropdown-btn">models ▾</button>
+        <div class="tab-dropdown-menu">
+          <button class="tab-btn" data-tab="hafs">HAFS</button>
+          <button class="tab-btn" data-tab="hrrr">HRRR</button>
+          <button class="tab-btn" data-tab="gdmi">DeepMind</button>
+        </div>
+      </div>
+      <div class="tab-dropdown">
+        <button class="tab-dropdown-btn">reanalysis ▾</button>
+        <div class="tab-dropdown-menu">
+          <button class="tab-btn" data-tab="era5">ERA5</button>
+          <button class="tab-btn" data-tab="era5m">ERA5 Monthly</button>
+          <button class="tab-btn" data-tab="ersst">ERSST</button>
+          <button class="tab-btn" data-tab="20cr">20CR</button>
+          <button class="tab-btn" data-tab="ersst-ts">ERSST TS</button>
+          <button class="tab-btn" data-tab="ace">ACE</button>
+          <button class="tab-btn" data-tab="pca">PCA</button>
+          <button class="tab-btn" data-tab="icoads">ICOADS</button>
+        </div>
+      </div>
+      <div class="tab-dropdown">
+        <button class="tab-dropdown-btn">ATCF ▾</button>
+        <div class="tab-dropdown-menu">
+          <button class="tab-btn" data-tab="adeck">A-Deck</button>
+          <button class="tab-btn" data-tab="fdeck">F-Deck</button>
+          <button class="tab-btn" data-tab="shipsri">SHIPS RI</button>
+          <button class="tab-btn" data-tab="ships-lsdiag">SHIPS Diag</button>
+        </div>
+      </div>
+      <button class="tab-btn" data-tab="metar">METAR</button>
     </div>
     <div class="image-area" id="view-output">
       <span class="image-placeholder" id="img-placeholder">output will appear here</span>
@@ -936,10 +1596,49 @@
         <a id="link-img"  href="#" target="_blank">open image</a>
         <a id="link-extra" href="#" target="_blank" style="display:none"></a>
       </div>
+      <div id="series-cvar-wrap" style="display:none;margin-top:.5rem;text-align:center">
+        <label style="font-size:9px;font-weight:bold;letter-spacing:.04em;margin-right:.3rem">COLORBAR:</label>
+        <select id="series-cvar-sel" class="ref-btn" onchange="rerunSeriesWithCvar(this)">
+          <option value="vmax">vmax</option>
+          <option value="slp">slp</option>
+          <option value="rmw">rmw</option>
+          <option value="lat">lat</option>
+          <option value="lon">lon</option>
+        </select>
+      </div>
+      <div id="track-gridded-wrap" style="display:none;margin-top:.5rem;text-align:center">
+        <button id="track-gridded-btn" type="button" onclick="rerunTrackWithGridded(this)"
+                style="font-family:inherit;font-size:9px;letter-spacing:.04em;
+                       padding:.2rem .5rem;border:1px solid #111;background:#fff;color:#111;
+                       cursor:pointer">GRIDDED</button>
+      </div>
+      <div id="probs-continuous-wrap" style="display:none;margin-top:.5rem;text-align:center">
+        <button id="probs-continuous-btn" type="button" onclick="rerunProbsWithContinuous(this)"
+                style="font-family:inherit;font-size:9px;letter-spacing:.04em;
+                       padding:.2rem .5rem;border:1px solid #111;background:#fff;color:#111;
+                       cursor:pointer">CONTINUOUS</button>
+      </div>
     </div>
 
     <!-- ── Table area ── -->
     <div class="table-area" id="view-table">
+      <div class="fdeck-output-wrap" id="icoads-output-wrap">
+        <table class="fdeck-output">
+          <thead>
+            <tr><th>STATION</th><th>LAT</th><th>LON</th><th>WIND (kt)</th><th>DIR (°)</th><th>SLP (hPa)</th><th>TEMP (°C)</th><th>DEWP (°C)</th></tr>
+          </thead>
+          <tbody id="icoads-obs-body"></tbody>
+        </table>
+      </div>
+      <div class="fdeck-output-wrap" id="gdmi-output-wrap">
+        <table class="fdeck-output">
+          <thead>
+            <tr><td colspan="11" id="gdmi-output-header" style="font-weight:bold">Run a map to populate storm list.</td></tr>
+            <tr><td>ID</td><td>Start</td><td>End</td><td>Init Lat</td><td>Init Lon</td><td>Peak (kt)</td><td>Members</td><td></td><td></td><td></td><td></td></tr>
+          </thead>
+          <tbody id="gdmi-storms-body"></tbody>
+        </table>
+      </div>
       <div class="fdeck-output-wrap" id="fdeck-output-wrap">
         <table class="fdeck-output">
           <thead><tr><td colspan="99" id="fdeck-output-header"></td></tr></thead>
@@ -954,10 +1653,45 @@
           <tbody id="adeck-table-body"></tbody>
         </table>
       </div>
+      <div class="ace-output-wrap" id="ersst-ts-output-wrap">
+        <div class="ace-ersst-btns">
+          <select id="et-composite-type" class="ace-ersst-btn" style="font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.1rem .2rem;cursor:pointer">
+            <option value="sst">SST</option>
+            <option value="hgt">HGT</option>
+          </select>
+          <button class="ace-ersst-btn" onclick="ersstTsToComposite('top')">top 10 →</button>
+          <button class="ace-ersst-btn" onclick="ersstTsToComposite('bottom')">bottom 10 →</button>
+          <span class="status" id="et-composite-status" style="font-size:9px"></span>
+          <input id="et-corr-month" type="text" placeholder="mo" maxlength="2" style="width:2.4rem;font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.1rem .2rem" />
+          <button class="ace-ersst-btn" onclick="runCorrInline('ersst-ts')">→ Corr</button>
+          <span class="status" id="et-corr-status" style="font-size:9px"></span>
+        </div>
+        <div class="ace-table-wrap">
+          <table class="ace-table">
+            <thead>
+              <tr>
+                <th onclick="sortErsstTs('rank')">Rank <span id="et-sort-rank"></span></th>
+                <th onclick="sortErsstTs('year')">Year <span id="et-sort-year"></span></th>
+                <th onclick="sortErsstTs('anom')">Anomaly (°C) <span id="et-sort-anom"></span></th>
+              </tr>
+            </thead>
+            <tbody id="ersst-ts-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="ace-output-wrap" id="ace-output-wrap">
         <div class="ace-ersst-btns">
-          <button class="ace-ersst-btn" onclick="aceToErsst('top')">top 10 → ERSST</button>
-          <button class="ace-ersst-btn" onclick="aceToErsst('bottom')">bottom 10 → ERSST</button>
+          <select id="ac-composite-type" class="ace-ersst-btn" style="font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.1rem .2rem;cursor:pointer">
+            <option value="sst">SST</option>
+            <option value="hgt">HGT</option>
+          </select>
+          <button class="ace-ersst-btn" onclick="aceToComposite('top')">top 10 →</button>
+          <button class="ace-ersst-btn" onclick="aceToComposite('bottom')">bottom 10 →</button>
+          <span class="status" id="ac-composite-status" style="font-size:9px"></span>
+          <input id="ac-corr-month" type="text" placeholder="mo" maxlength="2" style="width:2.4rem;font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.1rem .2rem" />
+          <button class="ace-ersst-btn" onclick="runCorrInline('ace')">→ Corr</button>
+          <span class="status" id="ac-corr-status" style="font-size:9px"></span>
         </div>
         <div class="ace-table-wrap">
           <table class="ace-table">
@@ -969,6 +1703,26 @@
               </tr>
             </thead>
             <tbody id="ace-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="ace-output-wrap" id="pca-output-wrap">
+        <div class="ace-ersst-btns">
+          <input id="pca-corr-month" type="text" placeholder="mo" maxlength="2" style="width:2.4rem;font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.1rem .2rem" />
+          <button class="ace-ersst-btn" onclick="runCorrInline('pca')">→ Corr</button>
+          <span class="status" id="pca-corr-status" style="font-size:9px"></span>
+        </div>
+        <div class="ace-table-wrap">
+          <table class="ace-table">
+            <thead>
+              <tr>
+                <th onclick="sortPca('rank')">Rank <span id="pca-sort-rank"></span></th>
+                <th onclick="sortPca('year')">Year <span id="pca-sort-year"></span></th>
+                <th onclick="sortPca('pc')">PC Value <span id="pca-sort-pc"></span></th>
+              </tr>
+            </thead>
+            <tbody id="pca-table-body"></tbody>
           </table>
         </div>
       </div>
@@ -1212,6 +1966,35 @@
         </div>
       </div><!-- /ref-shipsri -->
 
+      <!-- SHIPS Lsdiag reference -->
+      <div class="ref-panel" id="ref-ships-lsdiag">
+        <div class="ref-cols">
+          <div>
+            <div class="ref-section">
+              <h3>PANELS</h3>
+              <table class="ref-table">
+                <tr><td class="code">Intensity vs MPI</td><td class="note">VMAX and MPI (kt) at T=0</td></tr>
+                <tr><td class="code">Wind Shear</td><td class="note">Deep (850–200 mb) and upper (500–200 mb) shear (kt); 10/20 kt reference lines</td></tr>
+                <tr><td class="code">SST</td><td class="note">Sea surface temperature (°C) at storm center; 26 °C reference line</td></tr>
+                <tr><td class="code">Humidity</td><td class="note">Relative humidity (%) at 850–700, 700–500, and 500–300 mb</td></tr>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="ref-section">
+              <h3>SOURCE</h3>
+              <table class="ref-table">
+                <tr><td class="code">Data</td><td class="note">SHIPS lsdiag (RAMMB/CIRA) — AL/EP 1982–2023, WP/IO/SH 1990–2021</td></tr>
+                <tr><td class="code">T=0</td><td class="note">All values are at the analysis time of each 6-hourly SHIPS initialization</td></tr>
+                <tr><td class="code">MPI</td><td class="note">VMPI — maximum potential intensity from thermodynamic environment</td></tr>
+                <tr><td class="code">Shear</td><td class="note">Raw value ÷ 10 = kt</td></tr>
+                <tr><td class="code">SST</td><td class="note">CSST — raw value ÷ 10 = °C</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div><!-- /ref-ships-lsdiag -->
+
       <!-- HRRR reference -->
       <div class="ref-panel" id="ref-hrrr">
         <div class="ref-cols">
@@ -1321,6 +2104,40 @@
         </div>
       </div><!-- /ref-ersst -->
 
+      <!-- 20CR reference -->
+      <div class="ref-panel" id="ref-20cr">
+        <div class="ref-cols">
+          <div>
+            <div class="ref-section">
+              <h3>PARAMETERS</h3>
+              <table class="ref-table">
+                <tr><td class="code">month</td><td class="note">Month number (1–12)</td></tr>
+                <tr><td class="code">years</td><td class="note">Comma-separated list of years to composite</td></tr>
+                <tr><td class="code">hgt</td><td class="note">Pressure level in mb (default 500)</td></tr>
+                <tr><td class="code">type</td><td class="note">anomalies (default) or std</td></tr>
+                <tr><td class="code">sd</td><td class="note">true = standardized by 30-yr std dev; false = global-mean anomaly</td></tr>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="ref-section">
+              <h3>OUTPUT</h3>
+              <table class="ref-table">
+                <tr><td class="code">anomalies</td><td class="note">Composite mean height anomaly across all years</td></tr>
+                <tr><td class="code">std</td><td class="note">Inter-year standard deviation of the anomalies</td></tr>
+              </table>
+            </div>
+            <div class="ref-section">
+              <h3>NOTES</h3>
+              <table class="ref-table">
+                <tr><td class="code">source</td><td class="note">NOAA 20th Century Reanalysis v3 monthly mean via PSL OPeNDAP</td></tr>
+                <tr><td class="code">climo</td><td class="note">30-year sliding window (or 1806–1835 if year &lt; 1836)</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div><!-- /ref-20cr -->
+
       <!-- ERA5 reference -->
       <div class="ref-panel" id="ref-era5">
         <div class="ref-cols">
@@ -1366,7 +2183,7 @@
               </table>
             </div>
             <div class="ref-section">
-              <h3>NOTES</h3>
+              <h3>NOTES</h3> 
               <table class="ref-table">
                 <tr><td class="code">source</td><td class="note">0.25° ERA5 reanalysis via CDS API</td></tr>
                 <tr><td class="code">domain</td><td class="note">±15° lat / ±20° lon around center (pressure); ±7.5° for windplot</td></tr>
@@ -1445,6 +2262,7 @@
         </div>
       </div><!-- /ref-radar -->
 
+
     </div><!-- /view-ref -->
 
     <!-- ── About area ── -->
@@ -1506,11 +2324,17 @@
       btn.classList.add('active');
       document.getElementById('params-' + btn.dataset.tab).classList.add('active');
       activeTab = btn.dataset.tab;
+      if (activeTab === 'ships-lsdiag') loadShipsStorms();
       // Sync ref panel to active tool
-      const refMap = { hafs: 'ref-hafs', tcprimed: 'ref-tcprimed', adeck: 'ref-adeck', shipsri: 'ref-shipsri', hrrr: 'ref-hrrr', ersst: 'ref-ersst', ace: 'ref-ersst', era5: 'ref-era5', metar: 'ref-metar', radar: 'ref-radar' };
+      const refMap = { hafs: 'ref-hafs', tcprimed: 'ref-tcprimed', adeck: 'ref-adeck', shipsri: 'ref-shipsri', 'ships-lsdiag': 'ref-ships-lsdiag', hrrr: 'ref-hrrr', ersst: 'ref-ersst', '20cr': 'ref-20cr', 'ersst-ts': 'ref-ersst', ace: 'ref-ersst', pca: 'ref-ersst', era5: 'ref-era5', era5m: 'ref-era5', metar: 'ref-metar', radar: 'ref-radar' };
       const refId = refMap[activeTab] || 'ref-satellite';
       document.querySelectorAll('.ref-panel').forEach(p => p.classList.remove('active'));
       document.getElementById(refId).classList.add('active');
+      // Update dropdown parent active state
+      document.querySelectorAll('.tab-dropdown-btn').forEach(b => b.classList.remove('child-active'));
+      document.querySelectorAll('.tab-dropdown').forEach(d => d.classList.remove('open'));
+      const parentDropdown = btn.closest('.tab-dropdown');
+      if (parentDropdown) parentDropdown.querySelector('.tab-dropdown-btn').classList.add('child-active');
       // If coming from about, restore normal view
       const aboutArea = document.getElementById('about-area');
       const viewToggle = document.querySelector('.view-toggle');
@@ -1524,9 +2348,25 @@
     });
   });
 
+  // Dropdown tab groups
+  document.querySelectorAll('.tab-dropdown-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const dropdown = btn.closest('.tab-dropdown');
+      const isOpen = dropdown.classList.contains('open');
+      document.querySelectorAll('.tab-dropdown').forEach(d => d.classList.remove('open'));
+      if (!isOpen) dropdown.classList.add('open');
+    });
+  });
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.tab-dropdown').forEach(d => d.classList.remove('open'));
+  });
+
   // Info button (bottom-left)
   document.getElementById('info-btn').addEventListener('click', () => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-dropdown-btn').forEach(b => b.classList.remove('child-active'));
+    document.querySelectorAll('.tab-dropdown').forEach(d => d.classList.remove('open'));
     document.querySelectorAll('.param-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('params-about').classList.add('active');
     activeTab = 'about';
@@ -1546,6 +2386,12 @@
   const viewTable  = document.getElementById('view-table');
   const viewRef    = document.getElementById('view-ref');
 
+  function hideAllTables() {
+    ['icoads-output-wrap','gdmi-output-wrap','fdeck-output-wrap','adeck-table-wrap','ersst-ts-output-wrap','ace-output-wrap','pca-output-wrap'].forEach(id => {
+      document.getElementById(id).classList.remove('visible');
+    });
+  }
+
   function switchView(name) {
     document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
     document.querySelector(`.view-btn[data-view="${name}"]`).classList.add('active');
@@ -1557,9 +2403,39 @@
   document.querySelectorAll('.view-btn').forEach(btn =>
     btn.addEventListener('click', () => switchView(btn.dataset.view)));
 
-  const API_BASE = 'https://tcalert-cycloweb.hf.space';
+  const API_BASE = 'https://tcalert-cycloweb2.hf.space';
+
+  // GridSat-GOES satellite availability lookup (populated from CSV at startup)
+  const GOES_EAST = new Set(['goes08', 'goes12', 'goes13', 'goes14']);
+  const GOES_WEST = new Set(['goes09', 'goes10', 'goes11', 'goes15']);
+  const goesAvailability = new Map(); // 'YYYY-MM-DD' → ['goes08', ...]
+  fetch(`${API_BASE}/data/gridsat_goes_daily_satellite_availability.csv`)
+    .then(r => r.text())
+    .then(text => {
+      text.split('\n').slice(1).forEach(line => {
+        const parts = line.split(',');
+        if (parts.length < 6 || !parts[5]) return;
+        goesAvailability.set(parts[0], parts[5].trim().split(';'));
+      });
+    })
+    .catch(() => {});
 
   function val(id) { return document.getElementById(id).value.trim(); }
+
+  const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function monthName(m) { return MONTH_NAMES[(parseInt(m) - 1 + 1200) % 12]; }
+
+  function formatDayLabel(str) {
+    const [m, d] = str.split('-').map(Number);
+    return `${MONTH_NAMES[m - 1]} ${d}`;
+  }
+
+  function dateToDoy(str) {
+    const [m, d] = str.split('-').map(Number);
+    const date  = new Date(2001, m - 1, d); // 2001 = non-leap year
+    const start = new Date(2001, 0, 0);
+    return Math.floor((date - start) / 86400000);
+  }
 
   function setStatus(prefix, type, msg) {
     const el = document.getElementById(prefix + '-status');
@@ -1570,6 +2446,8 @@
   function showImage(imgUrl, extraUrl, extraLabel) {
     switchView('output');
     document.getElementById('img-placeholder').style.display = 'none';
+    document.getElementById('series-cvar-wrap').style.display = 'none';
+    document.getElementById('track-gridded-wrap').style.display = 'none';
     const img = document.getElementById('result-img');
     img.src = imgUrl;
     img.classList.add('visible');
@@ -1607,7 +2485,10 @@
     const res = await fetch(url);
     if (!res.ok) {
       const body = await res.json().catch(() => ({ detail: res.statusText }));
-      throw new Error(body.detail || res.statusText);
+      const detail = Array.isArray(body.detail)
+        ? body.detail.map(d => d.msg || JSON.stringify(d)).join('; ')
+        : (body.detail || res.statusText);
+      throw new Error(detail);
     }
     return res.json();
   }
@@ -1629,6 +2510,42 @@
       showImage(API_BASE + data.image_url + '?t=' + Date.now(), API_BASE + data.nc_url, 'download .nc');
       setDone('plot', btn);
     } catch (e) { setError('plot', btn, e.message); }
+  }
+
+  async function runSatAnalysis() {
+    const btn = event.target;
+    setLoading('satanalysis', btn);
+    try {
+      const mode = document.getElementById('sa-mode').value;
+      const endpoint = mode === 'structure' ? '/irstructure'
+                     : mode === 'framediff' ? '/framediff'
+                     : '/satdiag';
+      const dateParts = val('sa-date').split('/');
+      const year = dateParts.length === 3 ? dateParts[2] : '';
+      const params = {
+        date:      val('sa-date'),
+        time:      val('sa-time'),
+        satellite: val('sa-satellite'),
+        band:      document.getElementById('sa-band').value,
+        cmap:      val('sa-cmap'),
+        meso:      val('sa-meso'),
+      };
+      if (mode === 'framediff') {
+        params.delta = document.getElementById('sa-delta').value;
+        params.filtration = document.getElementById('sa-filtration').classList.contains('active') ? '1' : '0';
+      }
+      const lat = val('sa-lat'), lon = val('sa-lon');
+      if (lat && lon) {
+        params.lat = lat;
+        params.lon = lon;
+      } else {
+        params.storm = val('sa-storm');
+        params.year = year;
+      }
+      const data = await callAPI(endpoint, params);
+      showImage(API_BASE + data.image_url + '?t=' + Date.now());
+      setDone('satanalysis', btn);
+    } catch (e) { setError('satanalysis', btn, e.message); }
   }
 
   async function runMcfetch() {
@@ -1669,6 +2586,183 @@
     } catch (e) { setError('hafs', btn, e.message); }
   }
 
+  function stepGdmiTime(prefix, delta) {
+    const dateId = prefix === 'init' ? 'gdmi-init' : 'gdmi-date';
+    const hrId   = prefix === 'init' ? 'gdmi-init-hr' : 'gdmi-date-hr';
+    let dateStr = document.getElementById(dateId).value.trim();
+    let hr = parseInt(document.getElementById(hrId).value.trim() || '12', 10);
+    if (!dateStr) {
+      const now = new Date();
+      dateStr = `${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}/${now.getFullYear()}`;
+    }
+    const [m, d, y] = dateStr.split('/').map(Number);
+    const dt = new Date(y, m - 1, d);
+    hr += delta * 6;
+    if (hr >= 24) { hr -= 24; dt.setDate(dt.getDate() + 1); }
+    if (hr < 0)   { hr += 24; dt.setDate(dt.getDate() - 1); }
+    document.getElementById(dateId).value = `${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getDate()).padStart(2,'0')}/${dt.getFullYear()}`;
+    document.getElementById(hrId).value = String(hr).padStart(2, '0');
+  }
+
+  async function runGdmi() {
+    const btn = event.target;
+    setLoading('gdmi', btn);
+    document.getElementById('gdmi-output-wrap').classList.remove('visible');
+    try {
+      const cum = document.getElementById('gdmi-cum').classList.contains('active');
+      const data = await callAPI('/gdmi', {
+        init:    val('gdmi-init'),
+        init_hr: val('gdmi-init-hr'),
+        date:    val('gdmi-date'),
+        date_hr: val('gdmi-date-hr'),
+        region:  val('gdmi-region'),
+        cum,
+      });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      if (data.storms && data.storms.length) {
+        document.getElementById('gdmi-output-header').textContent = `${data.storms.length} storm${data.storms.length !== 1 ? 's' : ''} in initialization`;
+        document.getElementById('gdmi-storms-body').innerHTML = data.storms.map(s =>
+          `<tr><td>${s[0]}</td><td>${s[1].slice(0,10)}</td><td>${s[2].slice(0,10)}</td><td>${s[3]}</td><td>${s[4]}</td><td>${s[5]}</td><td>${s[6]}</td><td><select class="ref-btn" onchange="runGdmiTrack('${s[0]}', this)"><option value="">track</option><option value="vmax">vmax</option><option value="dvmax">dvmax</option><option value="slp">slp</option><option value="rmw">rmw</option><option value="lat">lat</option></select></td><td><select class="ref-btn" onchange="runGdmiSeries('${s[0]}', this)"><option value="">series</option><option value="vmax">vmax</option><option value="dvmax">dvmax</option><option value="slp">slp</option><option value="rmw">rmw</option><option value="lat">lat</option><option value="lon">lon</option></select></td><td><select class="ref-btn" onchange="runGdmiProbs('${s[0]}', this)"><option value="">probs</option><option value="vmax">vmax</option><option value="ri">ri</option></select></td><td><button class="ref-btn" onclick="runGdmiSize('${s[0]}')">size</button></td></tr>`
+        ).join('');
+        hideAllTables();
+        document.getElementById('gdmi-output-wrap').classList.add('visible');
+      }
+      setDone('gdmi', btn);
+      const st = document.getElementById('gdmi-status');
+      st.innerHTML = 'Done.<br><span style="cursor:pointer;text-decoration:underline;color:inherit" onclick="switchView(\'table\')">Storm list available in table tab.</span>';
+    } catch (e) { setError('gdmi', btn, e.message); }
+  }
+
+  async function runGdmiSize(storm) {
+    const st = document.getElementById('gdmi-status');
+    st.textContent = 'loading...';
+    try {
+      const data = await callAPI('/gdmi/size', {
+        init:    val('gdmi-init'),
+        init_hr: val('gdmi-init-hr'),
+        date:    val('gdmi-date'),
+        date_hr: val('gdmi-date-hr'),
+        storm,
+      });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      st.textContent = 'done.';
+    } catch (e) { st.textContent = 'error: ' + e.message; }
+  }
+
+  let _trackStorm = '', _trackVar = '', _trackGridded = false;
+
+  async function runGdmiTrack(storm, sel, gridded) {
+    const varName = sel ? sel.value : _trackVar;
+    if (sel) sel.value = '';
+    _trackStorm = storm;
+    _trackVar = varName;
+    _trackGridded = !!gridded;
+    const st = document.getElementById('gdmi-status');
+    st.textContent = 'loading...';
+    try {
+      const data = await callAPI('/gdmi/track', {
+        init:    val('gdmi-init'),
+        init_hr: val('gdmi-init-hr'),
+        date:    val('gdmi-date'),
+        date_hr: val('gdmi-date-hr'),
+        storm,
+        var:     varName,
+        gridded: _trackGridded ? 'true' : 'false',
+      });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      st.textContent = 'done.';
+      const gwrap = document.getElementById('track-gridded-wrap');
+      const gbtn = document.getElementById('track-gridded-btn');
+      gbtn.classList.toggle('active', _trackGridded);
+      gwrap.style.display = '';
+      if (data.table && data.table.length) {
+        const tbody = document.getElementById('series-table-body');
+        tbody.innerHTML = data.table.map(r =>
+          `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`
+        ).join('');
+        document.getElementById('series-table-wrap').style.display = '';
+      }
+    } catch (e) { st.textContent = 'error: ' + e.message; }
+  }
+
+  let _seriesStorm = '', _seriesVar = '';
+
+  async function runGdmiSeries(storm, sel, cvar) {
+    const varName = sel ? sel.value : _seriesVar;
+    if (sel) sel.value = '';
+    _seriesStorm = storm;
+    _seriesVar = varName;
+    const st = document.getElementById('gdmi-status');
+    st.textContent = 'loading...';
+    const params = {
+      init:    val('gdmi-init'),
+      init_hr: val('gdmi-init-hr'),
+      date:    val('gdmi-date'),
+      date_hr: val('gdmi-date-hr'),
+      storm,
+      var:     varName,
+    };
+    if (cvar) params.cvar = cvar;
+    try {
+      const data = await callAPI('/gdmi/series', params);
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      st.textContent = 'done.';
+      const wrap = document.getElementById('series-cvar-wrap');
+      const csel = document.getElementById('series-cvar-sel');
+      csel.value = cvar || varName;
+      wrap.style.display = '';
+      if (data.table && data.table.length) {
+        const tbody = document.getElementById('series-table-body');
+        tbody.innerHTML = data.table.map(r =>
+          `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`
+        ).join('');
+        document.getElementById('series-table-wrap').style.display = '';
+      }
+    } catch (e) { st.textContent = 'error: ' + e.message; }
+  }
+
+  let _probsStorm = '', _probsVar = '', _probsContinuous = false;
+
+  async function runGdmiProbs(storm, sel, continuous) {
+    const varName = sel ? sel.value : _probsVar;
+    if (sel) sel.value = '';
+    if (!varName) return;
+    _probsStorm = storm;
+    _probsVar = varName;
+    _probsContinuous = !!continuous;
+    const st = document.getElementById('gdmi-status');
+    st.textContent = 'loading...';
+    try {
+      const data = await callAPI('/gdmi/probs', {
+        init:       val('gdmi-init'),
+        init_hr:    val('gdmi-init-hr'),
+        date:       val('gdmi-date'),
+        date_hr:    val('gdmi-date-hr'),
+        storm,
+        var:        varName,
+        continuous: _probsContinuous ? 'true' : 'false',
+      });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      st.textContent = 'done.';
+      const wrap = document.getElementById('probs-continuous-wrap');
+      const btn = document.getElementById('probs-continuous-btn');
+      btn.classList.toggle('active', _probsContinuous);
+      wrap.style.display = '';
+    } catch (e) { st.textContent = 'error: ' + e.message; }
+  }
+
+  async function rerunProbsWithContinuous(btn) {
+    await runGdmiProbs(_probsStorm, null, !_probsContinuous);
+  }
+
+  async function rerunSeriesWithCvar(sel) {
+    await runGdmiSeries(_seriesStorm, null, sel.value);
+  }
+
+  async function rerunTrackWithGridded(btn) {
+    await runGdmiTrack(_trackStorm, null, !_trackGridded);
+  }
+
   async function runTcprimed() {
     const btn = event.target;
     setLoading('tc', btn);
@@ -1702,6 +2796,7 @@
         tbody.innerHTML = data.table.map(r =>
           `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`
         ).join('');
+        hideAllTables();
         document.getElementById('adeck-table-wrap').classList.add('visible');
       }
       setDone('ad', btn);
@@ -1738,6 +2833,143 @@
       showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
       setDone('er', btn);
     } catch (e) { setError('er', btn, e.message); }
+  }
+
+  async function runCr20() {
+    const btn = event.target;
+    setLoading('cr', btn);
+    try {
+      const data = await callAPI('/20cr', {
+        month:  val('cr-month'),
+        years:  val('cr-years').replace(/,*$/, ','),
+        hgt:    val('cr-hgt'),
+        type:   val('cr-type'),
+        sd:     val('cr-sd'),
+        region: val('cr-region'),
+      });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      setDone('cr', btn);
+    } catch (e) { setError('cr', btn, e.message); }
+  }
+
+  async function runEra5m() {
+    const btn = event.target;
+    setLoading('em', btn);
+    try {
+      const emAnom    = document.getElementById('em-anomaly').classList.contains('active');
+      const emContour = document.getElementById('em-contour').classList.contains('active');
+      const data = await callAPI('/era5m', {
+        var:     val('em-var'),
+        month:   val('em-month'),
+        years:   val('em-years'),
+        region:  val('em-region'),
+        type:    emAnom ? 'anomaly' : 'mean',
+        level:   val('em-level'),
+        mini:    val('em-mini'),
+        maxi:    val('em-maxi'),
+        steps:   val('em-steps'),
+        contour: emContour ? 'true' : 'false',
+        lon1:    val('em-lon1'),
+        lon2:    val('em-lon2'),
+        lat1:    val('em-lat1'),
+        lat2:    val('em-lat2'),
+      });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      setDone('em', btn);
+    } catch (e) { setError('em', btn, e.message); }
+  }
+
+  // ── ERSST Timeseries ─────────────────────────────────────────────────────
+
+  let _etData    = [];
+  let _etTop10   = [];
+  let _etBottom10 = [];
+  let _etSortCol = 'rank';
+  let _etSortAsc = true;
+
+  function renderErsstTsTable() {
+    const rows = [..._etData].sort((a, b) => {
+      const v = _etSortAsc ? 1 : -1;
+      return a[_etSortCol] < b[_etSortCol] ? -v : a[_etSortCol] > b[_etSortCol] ? v : 0;
+    });
+    const top10Set    = new Set(_etTop10);
+    const bottom10Set = new Set(_etBottom10);
+    document.getElementById('ersst-ts-table-body').innerHTML = rows.map(r => {
+      const cls = top10Set.has(r.year) ? 'ace-top' : bottom10Set.has(r.year) ? 'ace-bot' : '';
+      return `<tr class="${cls}"><td>${r.rank}</td><td>${r.year}</td><td>${r.anom.toFixed(2)}</td></tr>`;
+    }).join('');
+  }
+
+  function sortErsstTs(col) {
+    if (_etSortCol === col) {
+      _etSortAsc = !_etSortAsc;
+    } else {
+      _etSortCol = col;
+      _etSortAsc = col !== 'anom';
+    }
+    ['rank', 'year', 'anom'].forEach(c => {
+      document.getElementById('et-sort-' + c).textContent =
+        c === _etSortCol ? (_etSortAsc ? ' ▲' : ' ▼') : '';
+    });
+    renderErsstTsTable();
+  }
+
+  async function runErsstTs() {
+    const btn = event.target;
+    setLoading('et', btn);
+    document.getElementById('ersst-ts-output-wrap').classList.remove('visible');
+    try {
+      const data = await callAPI('/ersst-ts', {
+        month:      val('et-month'),
+        start_year: val('et-start'),
+        end_year:   val('et-end'),
+        lat1:       val('et-lat1'),
+        lat2:       val('et-lat2'),
+        lon1:       val('et-lon1'),
+        lon2:       val('et-lon2'),
+      });
+      _etData     = data.years;
+      _etTop10    = data.top10;
+      _etBottom10 = data.bottom10;
+      _etSortCol  = 'rank';
+      _etSortAsc  = true;
+      document.getElementById('et-sort-rank').textContent = ' ▲';
+      document.getElementById('et-sort-year').textContent = '';
+      document.getElementById('et-sort-anom').textContent = '';
+      renderErsstTsTable();
+      hideAllTables();
+      document.getElementById('ersst-ts-output-wrap').classList.add('visible');
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      switchView('table');
+      setDone('et', btn);
+    } catch (e) { setError('et', btn, e.message); }
+  }
+
+  function ersstTsToComposite(which) {
+    const years = (which === 'top' ? _etTop10 : _etBottom10).join(',');
+    if (document.getElementById('et-composite-type').value === 'hgt') {
+      run20crInline(years, val('et-month'), 'et');
+    } else {
+      document.querySelector('.tab-btn[data-tab="ersst"]').click();
+      document.getElementById('er-years').value = years;
+    }
+  }
+
+  async function run20crInline(years, month, prefix) {
+    const statusEl = document.getElementById(`${prefix}-composite-status`);
+    if (!month) { statusEl.className = 'status error'; statusEl.textContent = 'enter a month'; return; }
+    statusEl.className = 'status loading';
+    statusEl.textContent = 'working...';
+    try {
+      const data = await callAPI('/20cr', { month, years });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      switchView('output');
+      statusEl.className = 'status done';
+      statusEl.textContent = 'done';
+    } catch (e) {
+      statusEl.className = 'status error';
+      statusEl.textContent = e.message;
+    }
   }
 
   // ── ACE ──────────────────────────────────────────────────────────────────
@@ -1788,8 +3020,12 @@
       };
       const lat1 = val('ac-lat1'), lat2 = val('ac-lat2');
       const lon1 = val('ac-lon1'), lon2 = val('ac-lon2');
+      const aceDayRaw  = document.getElementById('ac-day').value.trim();
+      const aceDay2Raw = document.getElementById('ac-day2').value.trim();
       if (lat1 && lat2) { params.lat1 = lat1; params.lat2 = lat2; }
       if (lon1 && lon2) { params.lon1 = lon1; params.lon2 = lon2; }
+      if (aceDayRaw)  params.day  = dateToDoy(aceDayRaw);
+      if (aceDay2Raw) params.day2 = dateToDoy(aceDay2Raw);
       const data = await callAPI('/ace', params);
       _aceData    = data.years;
       _aceTop10   = data.top10;
@@ -1800,16 +3036,161 @@
       document.getElementById('ace-sort-year').textContent = '';
       document.getElementById('ace-sort-ace').textContent  = '';
       renderAceTable();
+      hideAllTables();
       document.getElementById('ace-output-wrap').classList.add('visible');
       switchView('table');
       setDone('ac', btn);
     } catch (e) { setError('ac', btn, e.message); }
   }
 
-  function aceToErsst(which) {
+  // ── PCA ───────────────────────────────────────────────────────────────────
+
+  let _pcaData = [];
+  let _pcaSortCol = 'rank';
+  let _pcaSortAsc = true;
+
+  function renderPcaTable() {
+    const rows = [..._pcaData].sort((a, b) => {
+      const v = _pcaSortAsc ? 1 : -1;
+      return a[_pcaSortCol] < b[_pcaSortCol] ? -v : a[_pcaSortCol] > b[_pcaSortCol] ? v : 0;
+    });
+    document.getElementById('pca-table-body').innerHTML = rows.map(r =>
+      `<tr><td>${r.rank}</td><td>${r.year}</td><td>${r.pc.toFixed(3)}</td></tr>`
+    ).join('');
+  }
+
+  function sortPca(col) {
+    if (_pcaSortCol === col) {
+      _pcaSortAsc = !_pcaSortAsc;
+    } else {
+      _pcaSortCol = col;
+      _pcaSortAsc = col !== 'pc';
+    }
+    ['rank', 'year', 'pc'].forEach(c => {
+      document.getElementById('pca-sort-' + c).textContent =
+        c === _pcaSortCol ? (_pcaSortAsc ? ' ▲' : ' ▼') : '';
+    });
+    renderPcaTable();
+  }
+
+  async function runPca() {
+    const btn = event.target;
+    setLoading('pca', btn);
+    document.getElementById('pca-output-wrap').classList.remove('visible');
+    try {
+      const params = {
+        start_year: val('pca-start'),
+        end_year:   val('pca-end'),
+        lat1:       val('pca-lat1'),
+        lat2:       val('pca-lat2'),
+        lon1:       val('pca-lon1'),
+        lon2:       val('pca-lon2'),
+        eof_num:    val('pca-eof') || '1',
+      };
+      const pcaMonths  = document.getElementById('pca-months')?.value?.trim();
+      const tableMonth = document.getElementById('pca-table-month')?.value?.trim();
+      if (pcaMonths)  params.pca_months  = pcaMonths;
+      if (tableMonth) params.table_month = tableMonth;
+      const data = await callAPI('/pca', params);
+      const sorted = [...data.years].sort((a, b) => b.pc - a.pc);
+      sorted.forEach((r, i) => r.rank = i + 1);
+      _pcaData = data.years.map(r => sorted.find(s => s.year === r.year));
+      _pcaSortCol = 'rank';
+      _pcaSortAsc = true;
+      document.getElementById('pca-sort-rank').textContent = ' ▲';
+      document.getElementById('pca-sort-year').textContent = '';
+      document.getElementById('pca-sort-pc').textContent   = '';
+      renderPcaTable();
+      hideAllTables();
+      document.getElementById('pca-output-wrap').classList.add('visible');
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      setDone('pca', btn);
+    } catch (e) { setError('pca', btn, e.message); }
+  }
+
+  function aceToComposite(which) {
     const years = (which === 'top' ? _aceTop10 : _aceBottom10).join(',');
-    document.querySelector('.tab-btn[data-tab="ersst"]').click();
-    document.getElementById('er-years').value = years;
+    if (document.getElementById('ac-composite-type').value === 'hgt') {
+      run20crInline(years, document.getElementById('ac-corr-month').value.trim(), 'ac');
+    } else {
+      document.querySelector('.tab-btn[data-tab="ersst"]').click();
+      document.getElementById('er-years').value = years;
+    }
+  }
+
+  // ── Correlation ───────────────────────────────────────────────────────────
+
+  async function runCorrInline(source) {
+    const btn        = event.target;
+    const statusId   = source === 'ersst-ts' ? 'et-corr-status' : source === 'pca' ? 'pca-corr-status' : 'ac-corr-status';
+    const monthId    = source === 'ersst-ts' ? 'et-corr-month'  : source === 'pca' ? 'pca-corr-month'  : 'ac-corr-month';
+    const statusEl   = document.getElementById(statusId);
+    statusEl.className = 'status loading';
+    statusEl.textContent = 'working...';
+    btn.disabled = true;
+    try {
+      let series, label, startYear, endYear, lat1, lat2, lon1, lon2;
+      if (source === 'ersst-ts') {
+        series    = _etData.map(r => r.anom);
+        startYear = _etData[0]?.year ?? '';
+        endYear   = _etData[_etData.length - 1]?.year ?? '';
+        lat1 = val('et-lat1'); lat2 = val('et-lat2');
+        lon1 = val('et-lon1'); lon2 = val('et-lon2');
+        label = `${monthName(val('et-month'))} ERSST TS`;
+      } else if (source === 'pca') {
+        series    = _pcaData.map(r => r.pc);
+        startYear = val('pca-start');
+        endYear   = val('pca-end');
+        label     = `EOF${val('pca-eof') || '1'} PC`;
+      } else {
+        series    = _aceData.map(r => r.ace);
+        startYear = val('ac-start');
+        endYear   = val('ac-end');
+        const userLat1 = val('ac-lat1'), userLat2 = val('ac-lat2');
+        const userLon1 = val('ac-lon1'), userLon2 = val('ac-lon2');
+        if (userLat1 && userLat2 && userLon1 && userLon2) {
+          lat1 = userLat1; lat2 = userLat2; lon1 = userLon1; lon2 = userLon2;
+          label = `${val('ac-basin').toUpperCase()} ACE in Box`;
+        } else {
+          const basin = val('ac-basin').toLowerCase();
+          if (basin === 'ep') { lat1 = '0'; lat2 = '90'; lon1 = '-180'; lon2 = '-80'; }
+          else                { lat1 = '0'; lat2 = '90'; lon1 = '-100'; lon2 = '0';   }
+          label = `${val('ac-basin').toUpperCase()} ACE`;
+        }
+      }
+      const monthInput = document.getElementById(monthId);
+      const corrMonth  = monthInput.value.trim() ||
+                         (source === 'ersst-ts' ? val('et-month') : '');
+      if (!corrMonth) {
+        statusEl.className = 'status error';
+        statusEl.textContent = 'enter a month';
+        btn.disabled = false;
+        return;
+      }
+      const params = {
+        csv:        series.join(','),
+        corr_month: corrMonth,
+        start_year: String(startYear),
+        end_year:   String(endYear),
+        label,
+      };
+      if (source === 'ace') {
+        const aceDay  = document.getElementById('ac-day')?.value?.trim();
+        const aceDay2 = document.getElementById('ac-day2')?.value?.trim();
+        if (aceDay)  { params.day_label  = formatDayLabel(aceDay); }
+        if (aceDay2) { params.day2_label = formatDayLabel(aceDay2); }
+      }
+      if (lat1 && lat2) { params.lat1 = lat1; params.lat2 = lat2; }
+      if (lon1 && lon2) { params.lon1 = lon1; params.lon2 = lon2; }
+      const data = await callAPI('/corr', params);
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      statusEl.className = 'status success';
+      statusEl.textContent = 'done';
+    } catch (e) {
+      statusEl.className = 'status error';
+      statusEl.textContent = e.message;
+    }
+    btn.disabled = false;
   }
 
   async function runEra5() {
@@ -1831,6 +3212,35 @@
       showImage(API_BASE + data.image_url + '?t=' + Date.now(), extra, 'shear distribution');
       setDone('e5', btn);
     } catch (e) { setError('e5', btn, e.message); }
+  }
+
+  async function runIcoads() {
+    const btn = event.target;
+    setLoading('ic', btn);
+    hideAllTables();
+    try {
+      const data = await callAPI('/icoads', {
+        stormname: val('ic-storm'),
+        lat:       val('ic-lat'),
+        lon:       val('ic-lon'),
+        month:     val('ic-month'),
+        day:       val('ic-day'),
+        year:      val('ic-year'),
+        hour:      val('ic-hour'),
+        plottype:  val('ic-plottype'),
+        level:     val('ic-level'),
+      });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      if (data.obs && data.obs.length) {
+        const fmt = v => (v == null || isNaN(v)) ? '—' : (+v).toFixed(1);
+        document.getElementById('icoads-obs-body').innerHTML = data.obs.map(r =>
+          `<tr><td>${r.station || '—'}</td><td>${fmt(r.latitude)}</td><td>${fmt(r.longitude)}</td><td>${fmt(r.windspd_kt)}</td><td>${fmt(r.winddir)}</td><td>${fmt(r.slp_hpa)}</td><td>${fmt(r.temp_c)}</td><td>${fmt(r.dewp_c)}</td></tr>`
+        ).join('');
+        document.getElementById('icoads-output-wrap').classList.add('visible');
+        switchView('table');
+      }
+      setDone('ic', btn);
+    } catch (e) { setError('ic', btn, e.message); }
   }
 
   async function runMetar() {
@@ -1870,8 +3280,9 @@
     document.getElementById('fdeck-output-wrap').classList.remove('visible');
     try {
       const data = await callAPI('/fdeck', {
-        storm: val('fd-storm'),
-        year:  val('fd-year'),
+        storm:    val('fd-storm'),
+        year:     val('fd-year'),
+        fix_type: document.getElementById('fd-fixtype').value,
       });
       showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
       if (data.fixes && data.fixes.length) {
@@ -1883,6 +3294,7 @@
           const cells = line.split(',').map(c => `<td>${c.trim()}</td>`).join('');
           return `<tr><td><button class="fix-plot-btn" onclick="plotFromFix(${i})">plot</button></td>${cells}</tr>`;
         }).join('');
+        hideAllTables();
         document.getElementById('fdeck-output-wrap').classList.add('visible');
         switchView('table');
       }
@@ -1890,14 +3302,30 @@
     } catch (e) { setError('fd', btn, e.message); }
   }
 
-  function guessSatellite(basin, year) {
-    const y = parseInt(year);
+  function guessSatellite(basin, dateKey) {
+    // dateKey: 'YYYY-MM-DD'
+    const year = parseInt(dateKey.slice(0, 4));
     const b = basin.toLowerCase();
+
+    // Pre-1994: GridSat-B1 (global)
+    if (year <= 1993) return 'b1';
+
+    // Modern GOES-R series preferred for 2017+ Atlantic
     if (b === 'al') {
-      if (y >= 1987 && y <= 1993) return 'b1';
-      if (y >= 2017 && y <= 2024) return '16';
-      if (y >= 2025)              return '19';
+      if (year >= 2025) return '19';
+      if (year >= 2017) return '16';
     }
+
+    // GridSat-GOES CSV lookup for pre-2017
+    const sats = goesAvailability.get(dateKey);
+    if (sats && sats.length) {
+      const wantEast = (b === 'al');
+      const preferred = wantEast ? GOES_EAST : GOES_WEST;
+      const fallback  = wantEast ? GOES_WEST : GOES_EAST;
+      const pick = sats.find(s => preferred.has(s)) || sats.find(s => fallback.has(s)) || sats[0];
+      return String(parseInt(pick.replace('goes', ''), 10)); // 'goes08' → '8'
+    }
+
     return '';
   }
 
@@ -1915,7 +3343,8 @@
     const lat    = (parseFloat(latStr.slice(0,-1)) / 100 * (latStr.slice(-1) === 'S' ? -1 : 1)).toFixed(1);
     const lonStr = parts[8];
     const lon    = (parseFloat(lonStr.slice(0,-1)) / 100 * (lonStr.slice(-1) === 'W' ? -1 : 1)).toFixed(1);
-    const sat    = guessSatellite(parts[0], year);
+    const dateKey = `${year}-${dt.slice(4,6)}-${dt.slice(6,8)}`;
+    const sat    = guessSatellite(parts[0], dateKey);
 
     document.querySelector('.tab-btn[data-tab="plot"]').click();
     switchView('output');
@@ -1924,7 +3353,7 @@
     document.getElementById('plot-time').value = time;
     document.getElementById('plot-lat').value  = lat;
     document.getElementById('plot-lon').value  = lon;
-    document.getElementById('plot-band').value = '13';
+    document.getElementById('plot-band').value = sat === 'b1' ? '4' : '13';
     document.getElementById('plot-cmap').value = 'bd.5';
   }
 
@@ -1942,6 +3371,91 @@
       showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
       setDone('sh', btn);
     } catch (e) { setError('sh', btn, e.message); }
+  }
+
+
+  // ── SHIPS Lsdiag ──
+
+  const _shipsCache = {};   // basin → storms array
+  let _shipsLoading = false;
+
+  function reloadShipsStorms() {
+    loadShipsStorms(true);
+  }
+
+  async function loadShipsStorms(force = false) {
+    const basin = document.getElementById('sd-basin').value;
+    if (!force && _shipsCache[basin]) { populateShipsStormList(); return; }
+    if (_shipsLoading) return;
+    _shipsLoading = true;
+    document.getElementById('sd-status').textContent = 'Loading storm list…';
+    try {
+      const data = await callAPI('/ships-lsdiag/storms', { basin });
+      _shipsCache[basin] = data.storms;
+      const years = [...new Set(data.storms.map(s => s.year))].sort((a, b) => b - a);
+      const ySel = document.getElementById('sd-year');
+      ySel.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
+      ySel.onchange = populateShipsStormList;
+      populateShipsStormList();
+      document.getElementById('sd-status').textContent = '';
+    } catch (e) {
+      document.getElementById('sd-status').textContent = 'Failed to load storm list.';
+    }
+    _shipsLoading = false;
+  }
+
+  function populateShipsStormList() {
+    const basin = document.getElementById('sd-basin').value;
+    const year  = parseInt(document.getElementById('sd-year').value);
+    const storms = (_shipsCache[basin] || []).filter(s => s.year === year);
+    document.getElementById('sd-storm').innerHTML = storms.map(s =>
+      `<option value="${s.id}">${s.name} — peak ${s.peak} kt</option>`
+    ).join('');
+  }
+
+  async function runShipsDiag() {
+    const btn = event.target;
+    setLoading('sd', btn);
+    try {
+      const storm = document.getElementById('sd-storm').value;
+      const data  = await callAPI('/ships-lsdiag/plot', { storm });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      setDone('sd', btn);
+    } catch (e) { setError('sd', btn, e.message); }
+  }
+
+  async function runShipsMap() {
+    const btn = event.target;
+    setLoading('sd', btn);
+    try {
+      const storm   = document.getElementById('sd-storm').value;
+      const pred    = document.getElementById('sd-pred').value;
+      const anomaly = document.getElementById('sd-anomaly').classList.contains('active');
+      const data  = await callAPI('/ships-lsdiag/map', { storm, pred, anomaly });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      setDone('sd', btn);
+    } catch (e) { setError('sd', btn, e.message); }
+  }
+
+  async function runShipsMapRT() {
+    const btn = event.target;
+    setLoading('sd', btn);
+    try {
+      const storm = document.getElementById('sd-rt-storm').value.trim().toUpperCase();
+      const mon   = parseInt(document.getElementById('sd-rt-mon').value);
+      const day   = parseInt(document.getElementById('sd-rt-day').value);
+      const hrVal = document.getElementById('sd-rt-hr').value;
+      const pred    = document.getElementById('sd-pred').value;
+      const anomaly = document.getElementById('sd-anomaly').classList.contains('active');
+      if (!storm) throw new Error('Enter a storm ID');
+      if (!mon || !day) throw new Error('Enter month and day');
+      const year = storm.length >= 8 ? parseInt(storm.slice(4)) : new Date().getFullYear();
+      const params = { storm, year, mon, day, pred, anomaly };
+      if (hrVal) params.hr = hrVal;
+      const data = await callAPI('/ships-lsdiag/map-rt', params);
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      setDone('sd', btn);
+    } catch (e) { setError('sd', btn, e.message); }
   }
 
 
