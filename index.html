@@ -92,6 +92,10 @@
     #sd-anomaly.active:hover { background: #333 !important; }
     #gdmi-cum.active { background: #111 !important; color: #fff !important; }
     #gdmi-cum.active:hover { background: #333 !important; }
+    #ic-icoads.active { background: #111 !important; color: #fff !important; }
+    #ic-icoads.active:hover { background: #333 !important; }
+    #ga-sliding.active { background: #111 !important; color: #fff !important; }
+    #ga-sliding.active:hover { background: #333 !important; }
     #track-gridded-btn.active { background: #111 !important; color: #fff !important; }
     #track-gridded-btn.active:hover { background: #333 !important; }
     #em-anomaly.active { background: #111 !important; color: #fff !important; }
@@ -1018,7 +1022,7 @@
       <div class="param-desc">ERSSTv5 SST anomaly composites with 30-year sliding climatology via PSL OPeNDAP.</div>
       <div class="field">
         <label>MONTH</label>
-        <input id="er-month" type="text" placeholder="6" maxlength="2" />
+        <input id="er-month" type="text" placeholder="6" maxlength="3" />
         <span class="hint">1–12</span>
       </div>
       <div class="field">
@@ -1045,7 +1049,7 @@
       <div class="param-desc">20th Century Reanalysis v3 geopotential height anomaly composites with 30-year sliding climatology via PSL OPeNDAP.</div>
       <div class="field">
         <label>MONTH</label>
-        <input id="cr-month" type="text" placeholder="6" maxlength="2" />
+        <input id="cr-month" type="text" placeholder="6" maxlength="3" />
         <span class="hint">1–12</span>
       </div>
       <div class="field">
@@ -1294,9 +1298,46 @@
           <label>LON OVERRIDE</label>
           <input id="ic-lon" type="text" placeholder="-80.0" class="optional" />
         </div>
+        <button id="ic-icoads" type="button" class="active" onclick="this.classList.toggle('active')"
+                style="margin-top:.3rem;font-family:inherit;font-size:9px;letter-spacing:.04em;
+                       padding:.2rem .5rem;border:1px solid #111;background:#fff;color:#111;
+                       cursor:pointer;align-self:flex-start">ICOADS OBS</button>
       </div>
       <button class="submit" onclick="runIcoads()">run</button>
       <div class="status" id="ic-status"></div>
+    </div>
+
+    <div class="param-panel" id="params-gridded-ace">
+      <div class="param-title">ACE Density Anomaly</div>
+      <div class="param-desc">Kernel-smoothed TC density anomaly map from IBTrACS. 150 km radius, Gaussian filter σ=3.</div>
+      <div class="field">
+        <label>BASIN</label>
+        <select id="ga-basin">
+          <option value="AL">AL</option>
+          <option value="EP">EP</option>
+          <option value="WP">WP</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>TYPE</label>
+        <select id="ga-dtype">
+          <option value="ACE">ACE</option>
+          <option value="TCG">TCG</option>
+          <option value="LMI">LMI</option>
+          <option value="LMI_C">LMI (count)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>YEARS</label>
+        <input id="ga-years" type="text" placeholder="2020,2023" />
+        <span class="hint">comma-separated</span>
+      </div>
+      <button id="ga-sliding" type="button" onclick="this.classList.toggle('active')"
+              style="margin-top:.3rem;font-family:inherit;font-size:9px;letter-spacing:.04em;
+                     padding:.2rem .5rem;border:1px solid #111;background:#fff;color:#111;
+                     cursor:pointer;align-self:flex-start">SLIDING CLIMO</button>
+      <button class="submit" onclick="runGriddedAce()">run</button>
+      <div class="status" id="ga-status"></div>
     </div>
 
     <div class="param-panel" id="params-era5m">
@@ -1314,7 +1355,7 @@
       </div>
       <div class="field">
         <label>MONTH</label>
-        <input id="em-month" type="text" placeholder="8" maxlength="2" />
+        <input id="em-month" type="text" placeholder="8" maxlength="3" />
         <span class="hint">1–12</span>
       </div>
       <div class="field">
@@ -1576,6 +1617,7 @@
           <button class="tab-btn" data-tab="ace">ACE</button>
           <button class="tab-btn" data-tab="pca">PCA</button>
           <button class="tab-btn" data-tab="icoads">ICOADS</button>
+          <button class="tab-btn" data-tab="gridded-ace">ACE DENSITY</button>
         </div>
       </div>
       <div class="tab-dropdown">
@@ -1606,6 +1648,17 @@
           <option value="lon">lon</option>
         </select>
       </div>
+      <div id="lmi-cvar-wrap" style="display:none;margin-top:.5rem;text-align:center">
+        <label style="font-size:9px;font-weight:bold;letter-spacing:.04em;margin-right:.3rem">COLORBAR:</label>
+        <select id="lmi-cvar-sel" class="ref-btn" onchange="rerunLmiWithCvar(this)">
+          <option value="lon">lon</option>
+          <option value="lat">lat</option>
+          <option value="time">time</option>
+          <option value="slp">slp</option>
+          <option value="rmw">rmw</option>
+          <option value="dvmax">dvmax</option>
+        </select>
+      </div>
       <div id="track-gridded-wrap" style="display:none;margin-top:.5rem;text-align:center">
         <button id="track-gridded-btn" type="button" onclick="rerunTrackWithGridded(this)"
                 style="font-family:inherit;font-size:9px;letter-spacing:.04em;
@@ -1618,23 +1671,40 @@
                        padding:.2rem .5rem;border:1px solid #111;background:#fff;color:#111;
                        cursor:pointer">CONTINUOUS</button>
       </div>
+      <div id="gdmi-intensity-wrap" style="display:none;margin-top:.5rem;text-align:center">
+        <button id="gdmi-intensity-btn" type="button" onclick="rerunGdmiWithIntensity(this)"
+                style="font-family:inherit;font-size:9px;letter-spacing:.04em;
+                       padding:.2rem .5rem;border:1px solid #111;background:#fff;color:#111;
+                       cursor:pointer">INTENSITY</button>
+      </div>
     </div>
 
     <!-- ── Table area ── -->
     <div class="table-area" id="view-table">
-      <div class="fdeck-output-wrap" id="icoads-output-wrap">
-        <table class="fdeck-output">
-          <thead>
-            <tr><th>STATION</th><th>LAT</th><th>LON</th><th>WIND (kt)</th><th>DIR (°)</th><th>SLP (hPa)</th><th>TEMP (°C)</th><th>DEWP (°C)</th></tr>
-          </thead>
-          <tbody id="icoads-obs-body"></tbody>
-        </table>
+      <div class="ace-output-wrap" id="icoads-output-wrap">
+        <div class="ace-table-wrap">
+          <table class="ace-table">
+            <thead>
+              <tr>
+                <th onclick="sortIcoads('station')">STATION <span id="ic-sort-station"></span></th>
+                <th onclick="sortIcoads('latitude')">LAT <span id="ic-sort-latitude"></span></th>
+                <th onclick="sortIcoads('longitude')">LON <span id="ic-sort-longitude"></span></th>
+                <th onclick="sortIcoads('windspd_kt')">WIND (kt) <span id="ic-sort-windspd_kt"> ▼</span></th>
+                <th onclick="sortIcoads('winddir')">DIR (°) <span id="ic-sort-winddir"></span></th>
+                <th onclick="sortIcoads('slp_hpa')">SLP (hPa) <span id="ic-sort-slp_hpa"></span></th>
+                <th onclick="sortIcoads('temp_c')">TEMP (°C) <span id="ic-sort-temp_c"></span></th>
+                <th onclick="sortIcoads('dewp_c')">DEWP (°C) <span id="ic-sort-dewp_c"></span></th>
+              </tr>
+            </thead>
+            <tbody id="icoads-obs-body"></tbody>
+          </table>
+        </div>
       </div>
       <div class="fdeck-output-wrap" id="gdmi-output-wrap">
         <table class="fdeck-output">
           <thead>
-            <tr><td colspan="11" id="gdmi-output-header" style="font-weight:bold">Run a map to populate storm list.</td></tr>
-            <tr><td>ID</td><td>Start</td><td>End</td><td>Init Lat</td><td>Init Lon</td><td>Peak (kt)</td><td>Members</td><td></td><td></td><td></td><td></td></tr>
+            <tr><td colspan="12" id="gdmi-output-header" style="font-weight:bold">Run a map to populate storm list.</td></tr>
+            <tr><td>ID</td><td>Start</td><td>End</td><td>Init Lat</td><td>Init Lon</td><td>Peak (kt)</td><td>Members</td><td></td><td></td><td></td><td></td><td></td></tr>
           </thead>
           <tbody id="gdmi-storms-body"></tbody>
         </table>
@@ -1658,6 +1728,7 @@
           <select id="et-composite-type" class="ace-ersst-btn" style="font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.1rem .2rem;cursor:pointer">
             <option value="sst">SST</option>
             <option value="hgt">HGT</option>
+            <option value="ace">ACE</option>
           </select>
           <button class="ace-ersst-btn" onclick="ersstTsToComposite('top')">top 10 →</button>
           <button class="ace-ersst-btn" onclick="ersstTsToComposite('bottom')">bottom 10 →</button>
@@ -1685,6 +1756,7 @@
           <select id="ac-composite-type" class="ace-ersst-btn" style="font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.1rem .2rem;cursor:pointer">
             <option value="sst">SST</option>
             <option value="hgt">HGT</option>
+            <option value="ace">ACE</option>
           </select>
           <button class="ace-ersst-btn" onclick="aceToComposite('top')">top 10 →</button>
           <button class="ace-ersst-btn" onclick="aceToComposite('bottom')">bottom 10 →</button>
@@ -1709,6 +1781,14 @@
 
       <div class="ace-output-wrap" id="pca-output-wrap">
         <div class="ace-ersst-btns">
+          <select id="pca-composite-type" class="ace-ersst-btn" style="font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.1rem .2rem;cursor:pointer">
+            <option value="sst">SST</option>
+            <option value="hgt">HGT</option>
+            <option value="ace">ACE</option>
+          </select>
+          <button class="ace-ersst-btn" onclick="pcaToComposite('top')">top 10 →</button>
+          <button class="ace-ersst-btn" onclick="pcaToComposite('bottom')">bottom 10 →</button>
+          <span class="status" id="pca-composite-status" style="font-size:9px"></span>
           <input id="pca-corr-month" type="text" placeholder="mo" maxlength="2" style="width:2.4rem;font-family:inherit;font-size:9px;border:1px solid #aaa;padding:.1rem .2rem" />
           <button class="ace-ersst-btn" onclick="runCorrInline('pca')">→ Corr</button>
           <span class="status" id="pca-corr-status" style="font-size:9px"></span>
@@ -2481,7 +2561,7 @@
 
   async function callAPI(endpoint, params) {
     const url = new URL(API_BASE + endpoint);
-    Object.entries(params).forEach(([k, v]) => { if (v) url.searchParams.set(k, v); });
+    Object.entries(params).forEach(([k, v]) => { if (v !== null && v !== undefined && v !== '') url.searchParams.set(k, v); });
     const res = await fetch(url);
     if (!res.ok) {
       const body = await res.json().catch(() => ({ detail: res.statusText }));
@@ -2604,33 +2684,67 @@
     document.getElementById(hrId).value = String(hr).padStart(2, '0');
   }
 
-  async function runGdmi() {
-    const btn = event.target;
-    setLoading('gdmi', btn);
+  let _gdmiPlotType = 'track';
+
+  async function runGdmi(plotType) {
+    _gdmiPlotType = plotType || 'track';
+    const btn = plotType ? null : (event && event.target);
+    if (btn) setLoading('gdmi', btn);
     document.getElementById('gdmi-output-wrap').classList.remove('visible');
     try {
       const cum = document.getElementById('gdmi-cum').classList.contains('active');
-      const data = await callAPI('/gdmi', {
+      const params = {
         init:    val('gdmi-init'),
         init_hr: val('gdmi-init-hr'),
         date:    val('gdmi-date'),
         date_hr: val('gdmi-date-hr'),
         region:  val('gdmi-region'),
         cum,
-      });
+      };
+      if (_gdmiPlotType !== 'track') params.plot_type = _gdmiPlotType;
+      const data = await callAPI('/gdmi', params);
       showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
       if (data.storms && data.storms.length) {
-        document.getElementById('gdmi-output-header').textContent = `${data.storms.length} storm${data.storms.length !== 1 ? 's' : ''} in initialization`;
-        document.getElementById('gdmi-storms-body').innerHTML = data.storms.map(s =>
-          `<tr><td>${s[0]}</td><td>${s[1].slice(0,10)}</td><td>${s[2].slice(0,10)}</td><td>${s[3]}</td><td>${s[4]}</td><td>${s[5]}</td><td>${s[6]}</td><td><select class="ref-btn" onchange="runGdmiTrack('${s[0]}', this)"><option value="">track</option><option value="vmax">vmax</option><option value="dvmax">dvmax</option><option value="slp">slp</option><option value="rmw">rmw</option><option value="lat">lat</option></select></td><td><select class="ref-btn" onchange="runGdmiSeries('${s[0]}', this)"><option value="">series</option><option value="vmax">vmax</option><option value="dvmax">dvmax</option><option value="slp">slp</option><option value="rmw">rmw</option><option value="lat">lat</option><option value="lon">lon</option></select></td><td><select class="ref-btn" onchange="runGdmiProbs('${s[0]}', this)"><option value="">probs</option><option value="vmax">vmax</option><option value="ri">ri</option></select></td><td><button class="ref-btn" onclick="runGdmiSize('${s[0]}')">size</button></td></tr>`
+        const groups = data.groups || {};
+        const groupCount = Object.keys(groups).length;
+        const headerText = `${data.storms.length} storm${data.storms.length !== 1 ? 's' : ''} in initialization` +
+          (groupCount ? ` · ${groupCount} group${groupCount !== 1 ? 's' : ''}` : '');
+        document.getElementById('gdmi-output-header').textContent = headerText;
+
+        const stormMap = {};
+        data.storms.forEach(s => { stormMap[s[0]] = s; });
+
+        const actionCells = id =>
+          `<td><select class="ref-btn" onchange="runGdmiTrack('${id}', this)"><option value="">track</option><option value="vmax">vmax</option><option value="dvmax">dvmax</option><option value="slp">slp</option><option value="rmw">rmw</option><option value="lat">lat</option></select></td>` +
+          `<td><select class="ref-btn" onchange="runGdmiSeries('${id}', this)"><option value="">series</option><option value="vmax">vmax</option><option value="dvmax">dvmax</option><option value="slp">slp</option><option value="rmw">rmw</option><option value="lat">lat</option><option value="lon">lon</option></select></td>` +
+          `<td><select class="ref-btn" onchange="runGdmiProbs('${id}', this)"><option value="">probs</option><option value="vmax">vmax</option><option value="ri">ri</option></select></td>` +
+          `<td><select class="ref-btn" onchange="runGdmiLmi('${id}', this)"><option value="">lmi</option><option value="lon">lon</option><option value="lat">lat</option><option value="time">time</option><option value="slp">slp</option><option value="rmw">rmw</option><option value="dvmax">dvmax</option></select></td>` +
+          `<td><button class="ref-btn" onclick="runGdmiSize('${id}')">size</button></td>`;
+
+        const stormRows = data.storms.map(s =>
+          `<tr><td>${s[0]}</td><td>${s[1].slice(0,10)}</td><td>${s[2].slice(0,10)}</td><td>${s[3]}</td><td>${s[4]}</td><td>${s[5]}</td><td>${s[6]}</td>${actionCells(s[0])}</tr>`
         ).join('');
+
+        const groupRows = Object.entries(groups).map(([letter, stats]) => {
+          return `<tr style="background:#f0f0f0;font-style:italic"><td><b>${letter}</b></td><td>${stats.min_start}</td><td>${stats.max_end}</td><td>${stats.avg_lat}</td><td>${stats.avg_lon}</td><td>${stats.max_peak}</td><td>${stats.n_samples}</td>${actionCells(letter)}</tr>`;
+        }).join('');
+
+        document.getElementById('gdmi-storms-body').innerHTML = stormRows + groupRows;
         hideAllTables();
         document.getElementById('gdmi-output-wrap').classList.add('visible');
       }
-      setDone('gdmi', btn);
+      const iwrap = document.getElementById('gdmi-intensity-wrap');
+      const ibtn  = document.getElementById('gdmi-intensity-btn');
+      ibtn.classList.toggle('active', _gdmiPlotType === 'intensity');
+      iwrap.style.display = '';
+      if (btn) setDone('gdmi', btn);
       const st = document.getElementById('gdmi-status');
       st.innerHTML = 'Done.<br><span style="cursor:pointer;text-decoration:underline;color:inherit" onclick="switchView(\'table\')">Storm list available in table tab.</span>';
-    } catch (e) { setError('gdmi', btn, e.message); }
+    } catch (e) { if (btn) setError('gdmi', btn, e.message); }
+  }
+
+  async function rerunGdmiWithIntensity() {
+    await runGdmi(_gdmiPlotType === 'intensity' ? 'track' : 'intensity');
   }
 
   async function runGdmiSize(storm) {
@@ -2647,6 +2761,40 @@
       showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
       st.textContent = 'done.';
     } catch (e) { st.textContent = 'error: ' + e.message; }
+  }
+
+  let _lmiStorm = '', _lmiVar = '';
+
+  async function runGdmiLmi(storm, sel, cvar) {
+    const varName = sel ? sel.value : _lmiVar;
+    if (sel) sel.value = '';
+    if (!varName) return;
+    _lmiStorm = storm;
+    _lmiVar = varName;
+    const st = document.getElementById('gdmi-status');
+    st.textContent = 'loading...';
+    const params = {
+      init:    val('gdmi-init'),
+      init_hr: val('gdmi-init-hr'),
+      date:    val('gdmi-date'),
+      date_hr: val('gdmi-date-hr'),
+      storm,
+      var:     varName,
+    };
+    if (cvar) params.cvar = cvar;
+    try {
+      const data = await callAPI('/gdmi/lmi', params);
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      st.textContent = 'done.';
+      const wrap = document.getElementById('lmi-cvar-wrap');
+      const csel = document.getElementById('lmi-cvar-sel');
+      csel.value = cvar || varName;
+      wrap.style.display = '';
+    } catch (e) { st.textContent = 'error: ' + e.message; }
+  }
+
+  async function rerunLmiWithCvar(sel) {
+    await runGdmiLmi(_lmiStorm, null, sel.value);
   }
 
   let _trackStorm = '', _trackVar = '', _trackGridded = false;
@@ -2947,8 +3095,11 @@
 
   function ersstTsToComposite(which) {
     const years = (which === 'top' ? _etTop10 : _etBottom10).join(',');
-    if (document.getElementById('et-composite-type').value === 'hgt') {
+    const type = document.getElementById('et-composite-type').value;
+    if (type === 'hgt') {
       run20crInline(years, val('et-month'), 'et');
+    } else if (type === 'ace') {
+      runGriddedAceInline(years, val('ac-basin') || 'AL', 'et');
     } else {
       document.querySelector('.tab-btn[data-tab="ersst"]').click();
       document.getElementById('er-years').value = years;
@@ -3045,7 +3196,9 @@
 
   // ── PCA ───────────────────────────────────────────────────────────────────
 
-  let _pcaData = [];
+  let _pcaData    = [];
+  let _pcaTop10   = [];
+  let _pcaBottom10 = [];
   let _pcaSortCol = 'rank';
   let _pcaSortAsc = true;
 
@@ -3054,9 +3207,12 @@
       const v = _pcaSortAsc ? 1 : -1;
       return a[_pcaSortCol] < b[_pcaSortCol] ? -v : a[_pcaSortCol] > b[_pcaSortCol] ? v : 0;
     });
-    document.getElementById('pca-table-body').innerHTML = rows.map(r =>
-      `<tr><td>${r.rank}</td><td>${r.year}</td><td>${r.pc.toFixed(3)}</td></tr>`
-    ).join('');
+    const top10Set    = new Set(_pcaTop10);
+    const bottom10Set = new Set(_pcaBottom10);
+    document.getElementById('pca-table-body').innerHTML = rows.map(r => {
+      const cls = top10Set.has(r.year) ? 'ace-top' : bottom10Set.has(r.year) ? 'ace-bot' : '';
+      return `<tr class="${cls}"><td>${r.rank}</td><td>${r.year}</td><td>${r.pc.toFixed(3)}</td></tr>`;
+    }).join('');
   }
 
   function sortPca(col) {
@@ -3094,7 +3250,9 @@
       const data = await callAPI('/pca', params);
       const sorted = [...data.years].sort((a, b) => b.pc - a.pc);
       sorted.forEach((r, i) => r.rank = i + 1);
-      _pcaData = data.years.map(r => sorted.find(s => s.year === r.year));
+      _pcaData     = data.years.map(r => sorted.find(s => s.year === r.year));
+      _pcaTop10    = data.top10;
+      _pcaBottom10 = data.bottom10;
       _pcaSortCol = 'rank';
       _pcaSortAsc = true;
       document.getElementById('pca-sort-rank').textContent = ' ▲';
@@ -3110,11 +3268,43 @@
 
   function aceToComposite(which) {
     const years = (which === 'top' ? _aceTop10 : _aceBottom10).join(',');
-    if (document.getElementById('ac-composite-type').value === 'hgt') {
+    const type = document.getElementById('ac-composite-type').value;
+    if (type === 'hgt') {
       run20crInline(years, document.getElementById('ac-corr-month').value.trim(), 'ac');
+    } else if (type === 'ace') {
+      runGriddedAceInline(years, val('ac-basin'), 'ac');
     } else {
       document.querySelector('.tab-btn[data-tab="ersst"]').click();
       document.getElementById('er-years').value = years;
+    }
+  }
+
+  function pcaToComposite(which) {
+    const years = (which === 'top' ? _pcaTop10 : _pcaBottom10).join(',');
+    const type = document.getElementById('pca-composite-type').value;
+    if (type === 'hgt') {
+      run20crInline(years, document.getElementById('pca-corr-month').value.trim(), 'pca');
+    } else if (type === 'ace') {
+      runGriddedAceInline(years, val('ac-basin') || 'AL', 'pca');
+    } else {
+      document.querySelector('.tab-btn[data-tab="ersst"]').click();
+      document.getElementById('er-years').value = years;
+    }
+  }
+
+  async function runGriddedAceInline(years, basin, prefix) {
+    const statusEl = document.getElementById(`${prefix}-composite-status`);
+    statusEl.className = 'status loading';
+    statusEl.textContent = 'working...';
+    try {
+      const data = await callAPI('/gridded-ace', { basin: basin || 'AL', years });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      switchView('output');
+      statusEl.className = 'status done';
+      statusEl.textContent = 'done';
+    } catch (e) {
+      statusEl.className = 'status error';
+      statusEl.textContent = e.message;
     }
   }
 
@@ -3141,6 +3331,8 @@
         series    = _pcaData.map(r => r.pc);
         startYear = val('pca-start');
         endYear   = val('pca-end');
+        lat1 = val('pca-lat1'); lat2 = val('pca-lat2');
+        lon1 = val('pca-lon1'); lon2 = val('pca-lon2');
         label     = `EOF${val('pca-eof') || '1'} PC`;
       } else {
         series    = _aceData.map(r => r.ace);
@@ -3167,12 +3359,15 @@
         btn.disabled = false;
         return;
       }
+      const typeDropId = source === 'ersst-ts' ? 'et-composite-type' : source === 'pca' ? 'pca-composite-type' : 'ac-composite-type';
+      const corrField  = document.getElementById(typeDropId)?.value === 'ace' ? 'ace' : 'ersst';
       const params = {
         csv:        series.join(','),
         corr_month: corrMonth,
         start_year: String(startYear),
         end_year:   String(endYear),
         label,
+        corr_field: corrField,
       };
       if (source === 'ace') {
         const aceDay  = document.getElementById('ac-day')?.value?.trim();
@@ -3214,11 +3409,67 @@
     } catch (e) { setError('e5', btn, e.message); }
   }
 
+  let _icData = [];
+  let _icSortCol = 'windspd_kt';
+  let _icSortAsc = false;
+  const _icCols = ['station','latitude','longitude','windspd_kt','winddir','slp_hpa','temp_c','dewp_c'];
+
+  function renderIcoadsTable() {
+    const fmt = v => (v == null || (typeof v === 'number' && isNaN(v))) ? '—' : (typeof v === 'number' ? v.toFixed(1) : v);
+    const rows = [..._icData].sort((a, b) => {
+      const av = a[_icSortCol], bv = b[_icSortCol];
+      if (av == null && bv == null) return 0;
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      const v = _icSortAsc ? 1 : -1;
+      return av < bv ? -v : av > bv ? v : 0;
+    });
+    document.getElementById('icoads-obs-body').innerHTML = rows.map(r =>
+      `<tr><td>${r.station || '—'}</td><td>${fmt(r.latitude)}</td><td>${fmt(r.longitude)}</td><td>${fmt(r.windspd_kt)}</td><td>${fmt(r.winddir)}</td><td>${fmt(r.slp_hpa)}</td><td>${fmt(r.temp_c)}</td><td>${fmt(r.dewp_c)}</td></tr>`
+    ).join('');
+  }
+
+  function _icUpdateIndicators() {
+    _icCols.forEach(c => {
+      const el = document.getElementById('ic-sort-' + c);
+      if (el) el.textContent = c === _icSortCol ? (_icSortAsc ? ' ▲' : ' ▼') : '';
+    });
+  }
+
+  function sortIcoads(col) {
+    if (_icSortCol === col) {
+      _icSortAsc = !_icSortAsc;
+    } else {
+      _icSortCol = col;
+      _icSortAsc = col === 'station';
+    }
+    _icUpdateIndicators();
+    renderIcoadsTable();
+  }
+
+  async function runGriddedAce() {
+    const btn = event.target;
+    setLoading('ga', btn);
+    try {
+      const sliding = document.getElementById('ga-sliding').classList.contains('active');
+      const data = await callAPI('/gridded-ace', {
+        basin:      val('ga-basin'),
+        years:      val('ga-years'),
+        climo_type: sliding ? 'sliding' : 'fixed',
+        dtype:      val('ga-dtype'),
+      });
+      showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
+      setStatus('ga', 'success', 'done');
+      btn.disabled = false;
+    } catch (e) { setError('ga', btn, e.message); }
+  }
+
   async function runIcoads() {
     const btn = event.target;
     setLoading('ic', btn);
     hideAllTables();
     try {
+      const icoads = document.getElementById('ic-icoads').classList.contains('active');
       const data = await callAPI('/icoads', {
         stormname: val('ic-storm'),
         lat:       val('ic-lat'),
@@ -3229,17 +3480,19 @@
         hour:      val('ic-hour'),
         plottype:  val('ic-plottype'),
         level:     val('ic-level'),
+        icoads,
       });
       showImage(API_BASE + data.image_url + '?t=' + Date.now(), null, null);
       if (data.obs && data.obs.length) {
-        const fmt = v => (v == null || isNaN(v)) ? '—' : (+v).toFixed(1);
-        document.getElementById('icoads-obs-body').innerHTML = data.obs.map(r =>
-          `<tr><td>${r.station || '—'}</td><td>${fmt(r.latitude)}</td><td>${fmt(r.longitude)}</td><td>${fmt(r.windspd_kt)}</td><td>${fmt(r.winddir)}</td><td>${fmt(r.slp_hpa)}</td><td>${fmt(r.temp_c)}</td><td>${fmt(r.dewp_c)}</td></tr>`
-        ).join('');
+        _icData = data.obs;
+        _icSortCol = 'windspd_kt';
+        _icSortAsc = false;
+        _icUpdateIndicators();
+        renderIcoadsTable();
         document.getElementById('icoads-output-wrap').classList.add('visible');
-        switchView('table');
       }
-      setDone('ic', btn);
+      setStatus('ic', 'success', `done. switch to table view for obs list (${(data.obs || []).length} stations)`);
+      btn.disabled = false;
     } catch (e) { setError('ic', btn, e.message); }
   }
 
